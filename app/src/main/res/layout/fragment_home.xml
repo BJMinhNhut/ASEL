@@ -4,19 +4,71 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:layout_margin="18dp"
     tools:context=".ui.home.HomeFragment">
 
-    <TextView
-        android:id="@+id/text_home"
+    <RelativeLayout
+        android:id="@+id/user_info"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="8dp"
-        android:layout_marginTop="8dp"
-        android:layout_marginEnd="8dp"
-        android:textAlignment="center"
-        android:textSize="20sp"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        android:layout_height="100dp"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <ImageView
+            android:id="@+id/user_avatar"
+            android:src="@drawable/profile_image_default"
+            android:layout_width="70dp"
+            android:layout_height="70dp"
+            android:layout_margin="10dp"
+            android:layout_alignParentStart="true"
+            android:layout_alignParentBottom="true"
+            android:layout_alignParentTop="true"/>
+
+        <TextView
+            android:id="@+id/user_name"
+            android:text="@string/user_name"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_toEndOf="@id/user_avatar"
+            android:layout_centerVertical="true"
+            android:layout_marginStart="10dp"
+            android:textSize="20sp"
+            android:textStyle="bold"/>
+
+    </RelativeLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:orientation="vertical"
+        app:layout_constraintTop_toBottomOf="@id/user_info"
+        app:layout_constraintBottom_toBottomOf="parent">
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/events"
+            android:textSize="20sp"
+            android:textStyle="bold"
+            android:layout_marginTop="10dp"/>
+
+        <ScrollView
+            android:id="@+id/events_scroll_view"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"/>
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/emails"
+            android:textSize="20sp"
+            android:textStyle="bold"
+            android:layout_marginTop="10dp"/>
+
+        <ScrollView
+            android:id="@+id/emails_scroll_view"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"/>
+    </LinearLayout>
 </androidx.constraintlayout.widget.ConstraintLayout>
