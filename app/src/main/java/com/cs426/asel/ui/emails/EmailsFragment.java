@@ -15,6 +15,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.cs426.asel.R;
 import com.cs426.asel.databinding.FragmentEmailsBinding;
+import com.google.android.material.snackbar.Snackbar;
 
 public class EmailsFragment extends Fragment {
     private FragmentEmailsBinding binding;
@@ -32,6 +33,7 @@ public class EmailsFragment extends Fragment {
         emailListRecyclerView = root.findViewById(R.id.email_list_recycler_view);
         emailListRecyclerView.setAdapter(adapter);
 
+        // Swipe to delete or quick add
         SwipeCallback swipeCallback =
                 new SwipeCallback(0, ItemTouchHelper.LEFT | ItemTouchHelper.RIGHT) {
 
@@ -62,6 +64,13 @@ public class EmailsFragment extends Fragment {
                     // Right swipe to quick add
 
                     adapter.notifyItemRemoved(viewHolder.getAdapterPosition());
+
+                    Snackbar.make(emailListRecyclerView, "Event of email added to calendar", Snackbar.LENGTH_LONG)
+                            .setAction("Undo", v -> {
+                                // Undo the action
+
+//                                adapter.notifyItemInserted(viewHolder.getAdapterPosition());
+                            }).show();
                 }
             }
         };
@@ -86,6 +95,14 @@ public class EmailsFragment extends Fragment {
             holder.itemView.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
+                    // Open email detail fragment
+                    // TODO: Pass email ID to the fragment
+                    EmailDetailFragment emailDetailFragment = EmailDetailFragment.newInstance(1);
+
+                    getParentFragmentManager().beginTransaction()
+                            .replace(R.id.nav_host_fragment_activity_main, emailDetailFragment)
+                            .addToBackStack(null)
+                            .commit();
 
                 }
             });
