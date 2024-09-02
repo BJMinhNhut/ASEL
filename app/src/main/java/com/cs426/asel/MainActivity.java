@@ -28,11 +28,12 @@ import androidx.navigation.ui.NavigationUI;
 
 import com.cs426.asel.databinding.ActivityMainBinding;
 import com.google.api.services.gmail.GmailScopes;
+import com.google.api.services.gmail.model.Message; // Import statement added here
 
 import java.util.List;
 
 public class MainActivity extends AppCompatActivity
-    implements UpdateAccountFragment.OnFragmentInteractionListener
+        implements UpdateAccountFragment.OnFragmentInteractionListener
 {
 
     private ActivityMainBinding binding;
@@ -61,9 +62,11 @@ public class MainActivity extends AppCompatActivity
 
         GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
                 .requestEmail()
-                .requestIdToken(getString(R.string.client_id))
+                .requestScopes(new Scope(GmailScopes.GMAIL_READONLY))
+                .requestServerAuthCode(getString(R.string.web_client_id), true) // This forces consent dialog
+                .requestIdToken(getString(R.string.web_client_id))
                 .build();
-
+        Log.d("MainActivity", "Starting sign-in process...");
         mGoogleSignInClient = GoogleSignIn.getClient(this, gso);
 
         signInLauncher = registerForActivityResult(
@@ -73,8 +76,52 @@ public class MainActivity extends AppCompatActivity
                         Intent data = result.getData();
                         Task<GoogleSignInAccount> task = GoogleSignIn.getSignedInAccountFromIntent(data);
                         handleSignInResult(task);
-                   }
+                    }
                 });
 
+    }
+
+    @Override
+    public void addAccount() {
+        // Sign out of the current session
+        mGoogleSignInClient.signOut().addOnCompleteListener(this, task -> {
+            // After signing out, revoke access to ensure a fresh permission request
+            mGoogleSignInClient.revokeAccess().addOnCompleteListener(this, revokeTask -> {
+                // Now initiate the sign-in flow again
+                Intent signInIntent = mGoogleSignInClient.getSignInIntent();
+                signInLauncher.launch(signInIntent);
+            });
+        });
+    }
+
+    private void handleSignInResult(Task<GoogleSignInAccount> completedTask) {
+        try {
+            GoogleSignInAccount account = completedTask.getResult(ApiException.class);
+            // Signed in successfully, show authenticated UI.
+            GmailServices gmailServices = new GmailServices(this, account);
+            gmailServices.fetchEmails(new GmailServices.EmailFetchListener() {
+                @Override
+                public void onEmailsFetched(List<Message> messages) {
+                    Log.d("MainActivity", "Start onEmailsFetched");
+                    // Process and display the messages
+                    if (messages != null && !messages.isEmpty()) {
+                        Log.d("MainActivity", "Number of messages kakaka: " + messages.size());
+                        // Get the first message
+                        Message firstMessage = messages.get(0);
+                        Log.d("MainActivity", "First Message ID: " + firstMessage.getId());
+
+                        // Extract the snippet from the message (the snippet is a brief part of the message)
+                        String snippet = firstMessage.getSnippet();
+
+                        Log.d("MainActivity", "First Snippet: " + snippet);
+                    } else {
+                        Log.d("MainActivity", "No messages found");
+                    }
+                }
+            });
+        } catch (ApiException e) {
+            // Sign in failed, update UI appropriately
+            Toast.makeText(this, "Sign-in failed", Toast.LENGTH_SHORT).show();
+        }
     }
 }
