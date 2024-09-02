@@ -8,6 +8,7 @@ import android.os.Bundle;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import androidx.navigation.fragment.NavHostFragment;
 
 import android.view.LayoutInflater;
 import android.view.View;
@@ -45,15 +46,7 @@ public class AccountFragment extends Fragment {
 
     private void updateAccount() {
         //Jump to UpdateAccountFragment
-        // Create an instance of UpdateAccountFragment
-        UpdateAccountFragment updateAccountFragment = new UpdateAccountFragment();
-
-        // Use FragmentManager to begin a transaction
-        FragmentManager fragmentManager = requireActivity().getSupportFragmentManager();
-        fragmentManager.beginTransaction()
-                .replace(R.id.nav_host_fragment_activity_main, updateAccountFragment) // Replace with your container ID
-                .addToBackStack(null) // Add the transaction to the back stack
-                .commit();
+        NavHostFragment.findNavController(AccountFragment.this).navigate(R.id.action_navigation_account_to_updateAccountFragment);
     }
 
     @Override
