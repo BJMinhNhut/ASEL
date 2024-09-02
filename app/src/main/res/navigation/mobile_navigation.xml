@@ -18,6 +18,18 @@
         tools:layout="@layout/fragment_dashboard" />
 
     <fragment
+        android:id="@+id/navigation_notifications"
+        android:name="com.cs426.asel.ui.notifications.NotificationsFragment"
+        android:label="@string/title_notifications"
+        tools:layout="@layout/fragment_notifications" />
+
+    <fragment
+        android:id="@+id/navigation_account"
+        android:name="com.cs426.asel.ui.account.AccountFragment"
+        android:label="@string/title_account"
+        tools:layout="@layout/fragment_account" />
+
+    <fragment
         android:id="@+id/navigation_emails"
         android:name="com.cs426.asel.ui.emails.EmailsFragment"
         android:label="@string/title_emails"
