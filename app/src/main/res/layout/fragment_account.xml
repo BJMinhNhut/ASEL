@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    tools:context=".ui.account.AccountFragment">
+
+    <ImageView
+        android:id="@+id/account_avatar_view"
+        android:layout_width="50sp"
+        android:layout_height="50sp"
+        android:layout_margin="50sp"
+        android:src="@drawable/baseline_manage_accounts_24"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        />
+    <TextView
+        android:id="@+id/account_name_view"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Account Name"
+        android:textSize="20sp"
+        android:layout_margin="50sp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/account_avatar_view"
+        app:layout_constraintEnd_toEndOf="parent"
+        />
+    <Button
+        android:id="@+id/update_info_button"
+        android:layout_width="match_parent"
+        android:layout_height="50sp"
+        android:layout_margin="50sp"
+        android:text="Update Info"
+        app:layout_constraintTop_toBottomOf="@id/account_name_view"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        />
+    <Button
+        android:id="@+id/update_account_button"
+        android:layout_width="match_parent"
+        android:layout_height="50sp"
+        android:layout_margin="50sp"
+        android:text="Update Account"
+        app:layout_constraintTop_toBottomOf="@id/update_info_button"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        />
+    <Button
+        android:id="@+id/settings_button"
+        android:layout_width="match_parent"
+        android:layout_height="50sp"
+        android:layout_margin="50sp"
+        android:text="Settings"
+        app:layout_constraintTop_toBottomOf="@id/update_account_button"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        />
+
+
+
+</androidx.constraintlayout.widget.ConstraintLayout>

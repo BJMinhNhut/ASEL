@@ -1,3 +1,5 @@
+import com.android.build.api.dsl.Packaging
+
 plugins {
     alias(libs.plugins.android.application)
 }
@@ -32,6 +34,15 @@ android {
     buildFeatures {
         viewBinding = true
     }
+    packaging {
+        resources {
+            excludes += "META-INF/DEPENDENCIES"
+            excludes += "META-INF/LICENSE"
+            excludes += "META-INF/LICENSE.txt"
+            excludes += "META-INF/NOTICE"
+            excludes += "META-INF/NOTICE.txt"
+        }
+    }
 }
 
 dependencies {
@@ -43,7 +54,15 @@ dependencies {
     implementation(libs.lifecycle.viewmodel.ktx)
     implementation(libs.navigation.fragment)
     implementation(libs.navigation.ui)
+    implementation(libs.legacy.support.v4)
+    implementation("com.google.android.gms:play-services-auth:20.4.1")
+    implementation("com.google.api-client:google-api-client:1.33.0")
+    implementation("com.google.api-client:google-api-client-android:1.33.0")
+    implementation("com.google.api-client:google-api-client-gson:1.33.0")
+    implementation("com.google.apis:google-api-services-gmail:v1-rev110-1.25.0")
+    implementation("com.google.http-client:google-http-client-jackson2:1.41.5")
     testImplementation(libs.junit)
     androidTestImplementation(libs.ext.junit)
     androidTestImplementation(libs.espresso.core)
+
 }
