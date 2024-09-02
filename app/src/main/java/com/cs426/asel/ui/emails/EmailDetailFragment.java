@@ -35,6 +35,13 @@ public class EmailDetailFragment extends Fragment {
 
         // Bind onClick
 
+        return view;
+    }
+
+    @Override
+    public void onViewCreated(View view, Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+
         Button createEventButton = view.findViewById(R.id.create_event_button);
         createEventButton.setOnClickListener(v -> {
             Intent intent = new Intent(getContext(), EventEditorActivity.class);
@@ -46,13 +53,6 @@ public class EmailDetailFragment extends Fragment {
         moveToReadButton.setOnClickListener(v -> {
             // TODO: Move email to read
         });
-
-        return view;
-    }
-
-    @Override
-    public void onViewCreated(View view, Bundle savedInstanceState) {
-        super.onViewCreated(view, savedInstanceState);
     }
 
     @Override
