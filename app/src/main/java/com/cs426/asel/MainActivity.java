@@ -61,7 +61,6 @@ public class MainActivity extends AppCompatActivity
 
         GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
                 .requestEmail()
-                .requestScopes(new Scope(GmailScopes.GMAIL_READONLY))
                 .requestIdToken(getString(R.string.client_id))
                 .build();
 
@@ -74,7 +73,7 @@ public class MainActivity extends AppCompatActivity
                         Intent data = result.getData();
                         Task<GoogleSignInAccount> task = GoogleSignIn.getSignedInAccountFromIntent(data);
                         handleSignInResult(task);
-                    }
+                   }
                 });
 
     }
