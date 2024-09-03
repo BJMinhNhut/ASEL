@@ -26,7 +26,7 @@ public class AccountFragment extends Fragment {
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
         AccountViewModel accountViewModel =
-                new ViewModelProvider(this).get(AccountViewModel.class);
+                new ViewModelProvider(requireActivity()).get(AccountViewModel.class);
 
         binding = FragmentAccountBinding.inflate(inflater, container, false);
         View root = binding.getRoot();

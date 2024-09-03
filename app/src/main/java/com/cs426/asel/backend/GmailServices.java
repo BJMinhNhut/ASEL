@@ -1,10 +1,21 @@
 package com.cs426.asel.backend;
 
+import static android.provider.Settings.System.getString;
+
 import android.content.Context;
+import android.content.Intent;
 import android.util.Log;
 import android.widget.Toast;
 
+import androidx.activity.result.ActivityResultLauncher;
+
+import com.cs426.asel.R;
+import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
+import com.google.android.gms.auth.api.signin.GoogleSignInClient;
+import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
+import com.google.android.gms.common.api.ApiException;
+import com.google.android.gms.tasks.Task;
 import com.google.api.client.googleapis.extensions.android.gms.auth.GoogleAccountCredential;
 import com.google.api.client.googleapis.json.GoogleJsonResponseException;
 import com.google.api.client.http.javanet.NetHttpTransport;
@@ -24,89 +35,116 @@ import java.util.concurrent.Executors;
 public class GmailServices {
     private Context context;
     private Gmail gmailService;
+    private GoogleSignInClient googleSignInClient;
     private ExecutorService executorService;
+    private ActivityResultLauncher<Intent> signInLauncher;
+    private SignInCallback signInCallback;
 
-    public GmailServices(Context context, GoogleSignInAccount account) {
+    public GmailServices(Context context, ActivityResultLauncher<Intent> signInLauncher, SignInCallback signInCallback) {
         this.context = context;
+        this.signInLauncher = signInLauncher;
+        this.signInCallback = signInCallback;
+
+        initializeGoogleSignInClient();
+    }
+
+    private void initializeGoogleSignInClient() {
+        GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+                .requestEmail()
+                .requestScopes(new com.google.android.gms.common.api.Scope(GmailScopes.GMAIL_READONLY))
+                .requestServerAuthCode(context.getString(R.string.web_client_id), true)
+                .requestIdToken(context.getString(R.string.web_client_id))
+                .build();
+        googleSignInClient = GoogleSignIn.getClient(context, gso);
+    }
+
+    public void signIn() {
+        Intent signInIntent = googleSignInClient.getSignInIntent();
+        signInLauncher.launch(signInIntent);
+    }
+
+    public void handleSignInResult(Task<GoogleSignInAccount> completedTask) {
+        try {
+            GoogleSignInAccount account = completedTask.getResult(ApiException.class);
+            if (account != null) {
+                setupGmailService(account);
+                signInCallback.onSignInSuccess(account);
+            }
+        } catch (ApiException e) {
+            signInCallback.onSignInFailure("Sign-in failed: " + e.getMessage());
+        }
+    }
+
+    private void setupGmailService(GoogleSignInAccount account) {
         GoogleAccountCredential credential = GoogleAccountCredential.usingOAuth2(
                 context, Collections.singleton(GmailScopes.GMAIL_READONLY));
         credential.setSelectedAccount(account.getAccount());
-        Toast.makeText(context, "Account name: " + account.getDisplayName(), Toast.LENGTH_SHORT).show();
         gmailService = new Gmail.Builder(new NetHttpTransport(), GsonFactory.getDefaultInstance(), credential)
                 .setApplicationName("Your App Name")
                 .build();
     }
 
-    public void fetchEmails(EmailFetchListener listener) {
+    public List<String> fetchAllEmailIDs() {
+        List<String> emailIDs = new ArrayList<>();
         executorService = Executors.newSingleThreadExecutor();
         executorService.submit(() -> {
             try {
-                Log.d("GmailServices", "Fetching emails...");
-
-                // Perform the network request to fetch the list of messages
                 ListMessagesResponse messagesResponse = gmailService.users().messages().list("me").execute();
                 List<Message> messageList = messagesResponse.getMessages();
+                Log.d("GmailServices", "Fetched " + messageList.size() + " emails.");
 
-                List<Message> fullMessages = new ArrayList<>();
                 if (messageList != null) {
-                    Log.d("GmailServices", "Number of messages: " + messageList.size());
-                    // Limit the number of messages processed to a maximum of 5
-                    int messagesToFetch = Math.min(5, messageList.size());
-                    for (int i = 0; i < messagesToFetch; i++) {
-                        Message message = messageList.get(i);
-                        // Fetch each message's full details using its ID
-                        Message fullMessage = gmailService.users().messages().get("me", message.getId()).execute();
-                        fullMessages.add(fullMessage);
+                    for (Message message : messageList) {
+                        emailIDs.add(message.getId());
                     }
-                    Log.d("GmailServices", "Fetched " + fullMessages.size() + " messages");
-                    for (Message message : fullMessages) {
-                        Log.d("GmailServices", "Message ID: " + message.getId());
-                        Log.d("GmailServices", "Message Snippet: " + message.getSnippet());
-                    }
-                    Log.d("GmailServices", "Emails fetched successfully");
                 }
 
-                // Pass the full messages to the listener
-                if (listener != null) {
-                    listener.onEmailsFetched(fullMessages);
-                }
+                signInCallback.onEmailIDsFetched(emailIDs);
 
             } catch (GoogleJsonResponseException e) {
-                // Handle Google API-specific exceptions
                 Log.e("GmailServices", "Google API error: " + e.getMessage(), e);
-                showToast("Google API error: " + e.getMessage());
-                if (listener != null) {
-                    listener.onEmailsFetched(null);
-                }
+                showLog("Google API error: " + e.getMessage());
+                signInCallback.onEmailIDsFetched(null);
             } catch (IOException e) {
-                // Handle general network and I/O exceptions
                 Log.e("GmailServices", "Network error: " + e.getMessage(), e);
-                showToast("Network error: " + e.getMessage());
-                if (listener != null) {
-                    listener.onEmailsFetched(null);
-                }
+                showLog("Network error: " + e.getMessage());
+                signInCallback.onEmailIDsFetched(null);
             } catch (Exception e) {
-                // Handle other exceptions
                 Log.e("GmailServices", "Unknown error occurred", e);
-                showToast("Unknown error occurred");
-                if (listener != null) {
-                    listener.onEmailsFetched(null);
-                }
-            } finally {
-                // Shutdown the executor service to free up resources
-                executorService.shutdown();
+                showLog("Unknown error occurred");
+                signInCallback.onEmailIDsFetched(null);
+            }
+        });
+        return emailIDs;
+    }
+
+    public interface FetchEmailCallback {
+        void onEmailFetched(Message message);
+        void onFetchEmailFailed(String errorMessage);
+    }
+
+    public void fetchEmailById(String id, FetchEmailCallback callback) {
+        executorService = Executors.newSingleThreadExecutor();
+        executorService.submit(() -> {
+            try {
+                Message message = gmailService.users().messages().get("me", id).execute();
+                callback.onEmailFetched(message);
+            } catch (IOException e) {
+                Log.e("GmailServices", "Error fetching email: " + e.getMessage());
+                callback.onFetchEmailFailed("Error fetching email: " + e.getMessage());
             }
         });
     }
 
-    private void showToast(String message) {
-        // Show toast on the main thread
-        if (context != null) {
-            ((android.app.Activity) context).runOnUiThread(() -> Toast.makeText(context, message, Toast.LENGTH_SHORT).show());
-        }
+    private void showLog(String message) {
+        Log.d("GmailServices", message);
     }
 
-    public interface EmailFetchListener {
-        void onEmailsFetched(List<Message> messages);
+    public interface SignInCallback {
+        void onSignInSuccess(GoogleSignInAccount account);
+
+        void onSignInFailure(String errorMessage);
+
+        void onEmailIDsFetched(List<String> emailIDs);
     }
 }
