@@ -1,17 +1,62 @@
 <?xml version="1.0" encoding="utf-8"?>
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     tools:context=".ui.account.UpdateAccountFragment">
+
+    <TextView
+        android:id="@+id/text_account_name"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text=""
+        android:layout_margin="50sp"
+        android:textSize="20sp"
+        android:gravity="center"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toTopOf="@+id/button_add_account"
+        />
 
     <Button
         android:id="@+id/button_add_account"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Connect gmail accout"
+        android:text="Connect gmail account"
         android:layout_margin="50sp"
+        app:layout_constraintTop_toBottomOf="@id/text_account_name"
+        />
+
+    <Button
+        android:id="@+id/fetch_email_ids"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Fetch Email IDs"
+        android:layout_margin="50sp"
+        app:layout_constraintTop_toBottomOf="@+id/button_add_account"
+        />
+
+    <Button
+        android:id="@+id/fetch_email_content"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Fetch Email Content"
+        android:layout_margin="50sp"
+        app:layout_constraintTop_toBottomOf="@+id/fetch_email_ids"
+        />
+
+    <Button
+        android:id="@+id/print_email_content"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Print Email Content"
+        android:layout_margin="50sp"
+        app:layout_constraintTop_toBottomOf="@+id/fetch_email_content"
         />
 
 
-</FrameLayout>
+
+
+</androidx.constraintlayout.widget.ConstraintLayout>
