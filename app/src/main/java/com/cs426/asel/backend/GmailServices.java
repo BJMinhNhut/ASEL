@@ -1,7 +1,5 @@
 package com.cs426.asel.backend;
 
-import static android.provider.Settings.System.getString;
-
 import android.content.Context;
 import android.content.Intent;
 import android.util.Log;
@@ -24,6 +22,7 @@ import com.google.api.services.gmail.Gmail;
 import com.google.api.services.gmail.GmailScopes;
 import com.google.api.services.gmail.model.ListMessagesResponse;
 import com.google.api.services.gmail.model.Message;
+import com.google.android.gms.common.api.Scope;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -39,6 +38,7 @@ public class GmailServices {
     private ExecutorService executorService;
     private ActivityResultLauncher<Intent> signInLauncher;
     private SignInCallback signInCallback;
+    private EmailCallback emailCallback; // New field for email-related callbacks
 
     public GmailServices(Context context, ActivityResultLauncher<Intent> signInLauncher, SignInCallback signInCallback) {
         this.context = context;
@@ -48,10 +48,20 @@ public class GmailServices {
         initializeGoogleSignInClient();
     }
 
+    public GmailServices(Context context, EmailCallback emailCallback) { // Overloaded constructor for email operations
+        this.context = context;
+        this.emailCallback = emailCallback;
+
+        GoogleSignInAccount account = GoogleSignIn.getLastSignedInAccount(context);
+        if (account != null) {
+            setupGmailService(account);
+        }
+    }
+
     private void initializeGoogleSignInClient() {
         GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
                 .requestEmail()
-                .requestScopes(new com.google.android.gms.common.api.Scope(GmailScopes.GMAIL_READONLY))
+                .requestScopes(new Scope(GmailScopes.GMAIL_READONLY))
                 .requestServerAuthCode(context.getString(R.string.web_client_id), true)
                 .requestIdToken(context.getString(R.string.web_client_id))
                 .build();
@@ -84,14 +94,14 @@ public class GmailServices {
                 .build();
     }
 
-    public List<String> fetchAllEmailIDs() {
-        List<String> emailIDs = new ArrayList<>();
+    public void fetchAllEmailIDs() {
         executorService = Executors.newSingleThreadExecutor();
         executorService.submit(() -> {
+            List<String> emailIDs = new ArrayList<>();
             try {
                 ListMessagesResponse messagesResponse = gmailService.users().messages().list("me").execute();
                 List<Message> messageList = messagesResponse.getMessages();
-                Log.d("GmailServices", "Fetched " + messageList.size() + " emails.");
+                Log.d("GmailServices", "Fetched " + (messageList != null ? messageList.size() : 0) + " emails.");
 
                 if (messageList != null) {
                     for (Message message : messageList) {
@@ -99,23 +109,19 @@ public class GmailServices {
                     }
                 }
 
-                signInCallback.onEmailIDsFetched(emailIDs);
+                emailCallback.onEmailIDsFetched(emailIDs);
 
             } catch (GoogleJsonResponseException e) {
                 Log.e("GmailServices", "Google API error: " + e.getMessage(), e);
-                showLog("Google API error: " + e.getMessage());
-                signInCallback.onEmailIDsFetched(null);
+                emailCallback.onEmailIDsFetched(null);
             } catch (IOException e) {
                 Log.e("GmailServices", "Network error: " + e.getMessage(), e);
-                showLog("Network error: " + e.getMessage());
-                signInCallback.onEmailIDsFetched(null);
+                emailCallback.onEmailIDsFetched(null);
             } catch (Exception e) {
                 Log.e("GmailServices", "Unknown error occurred", e);
-                showLog("Unknown error occurred");
-                signInCallback.onEmailIDsFetched(null);
+                emailCallback.onEmailIDsFetched(null);
             }
         });
-        return emailIDs;
     }
 
     public interface FetchEmailCallback {
@@ -136,15 +142,12 @@ public class GmailServices {
         });
     }
 
-    private void showLog(String message) {
-        Log.d("GmailServices", message);
-    }
-
     public interface SignInCallback {
         void onSignInSuccess(GoogleSignInAccount account);
-
         void onSignInFailure(String errorMessage);
+    }
 
+    public interface EmailCallback {
         void onEmailIDsFetched(List<String> emailIDs);
     }
 }

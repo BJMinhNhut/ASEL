@@ -10,7 +10,6 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
-import androidx.navigation.NavController;
 import androidx.navigation.fragment.NavHostFragment;
 import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.RecyclerView;
@@ -23,11 +22,13 @@ import com.google.android.material.snackbar.Snackbar;
 public class EmailsFragment extends Fragment {
     private FragmentEmailsBinding binding;
     private RecyclerView emailListRecyclerView;
+    private EmailsViewModel emailsViewModel; // Reference to the shared ViewModel
 
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        EmailsViewModel emailsViewModel = new ViewModelProvider(this).get(EmailsViewModel.class);
+        // Obtain EmailsViewModel from the activity's ViewModelProvider
+        emailsViewModel = new ViewModelProvider(requireActivity()).get(EmailsViewModel.class);
 
         binding = FragmentEmailsBinding.inflate(inflater, container, false);
 
@@ -57,8 +58,7 @@ public class EmailsFragment extends Fragment {
                                     .create();
 
                             dialog.setButton(AlertDialog.BUTTON_POSITIVE, "Yes", (dialog1, which) -> {
-                                // Delete email
-
+                                // Delete email (implement the delete logic here)
 
                                 adapter.notifyItemRemoved(viewHolder.getAdapterPosition());
                             });
@@ -77,9 +77,8 @@ public class EmailsFragment extends Fragment {
 
                             Snackbar.make(emailListRecyclerView, "Event of email added to calendar", Snackbar.LENGTH_LONG)
                                     .setAction("Undo", v -> {
-                                        // Undo the action
-
-//                                adapter.notifyItemInserted(viewHolder.getAdapterPosition());
+                                        // Undo the action (implement undo logic here)
+                                        adapter.notifyItemInserted(viewHolder.getAdapterPosition());
                                     }).show();
                         }
                     }
@@ -99,22 +98,19 @@ public class EmailsFragment extends Fragment {
 
         @Override
         public void onBindViewHolder(@NonNull EmailViewHolder holder, int position) {
+            holder.itemView.setOnClickListener(v -> {
+                // TODO: Pass email ID to the fragment
+                Bundle bundle = new Bundle();
+                bundle.putInt("emailId", 1); // Replace 1 with the actual email ID you want to pass
 
-            holder.itemView.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    // TODO: Pass email ID to the fragment
-                    Bundle bundle = new Bundle();
-                    bundle.putInt("emailId", 1);
-
-                    NavHostFragment.findNavController(EmailsFragment.this)
-                            .navigate(R.id.navigation_email_detail, bundle);
-                }
+                NavHostFragment.findNavController(EmailsFragment.this)
+                        .navigate(R.id.navigation_email_detail, bundle);
             });
         }
 
         @Override
         public int getItemCount() {
+            // Update to reflect actual number of emails from ViewModel or LiveData
             return 5;
         }
 
