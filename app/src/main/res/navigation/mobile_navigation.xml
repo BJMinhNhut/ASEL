@@ -31,10 +31,19 @@
         <action
             android:id="@+id/action_navigation_account_to_updateAccountFragment"
             app:destination="@id/updateAccountFragment" />
+        <action
+            android:id="@+id/action_navigation_account_to_updateInfoFragment"
+            app:destination="@id/updateInfoFragment" />
     </fragment>
     <fragment
         android:id="@+id/updateAccountFragment"
         android:name="com.cs426.asel.ui.account.UpdateAccountFragment"
         android:label="fragment_update_account"
         tools:layout="@layout/fragment_update_account" />
+    <fragment
+        android:id="@+id/updateInfoFragment"
+        android:name="com.cs426.asel.ui.account.UpdateInfoFragment"
+        android:label="fragment_update_info"
+        tools:layout="@layout/fragment_update_info" >
+    </fragment>
 </navigation>

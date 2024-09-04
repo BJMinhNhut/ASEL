@@ -1,0 +1,211 @@
+<!-- res/layout/fragment_update_info.xml -->
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="16dp">
+
+        <!-- Avatar Selection -->
+        <ImageButton
+            android:id="@+id/imageButtonAvatar"
+            android:layout_width="100dp"
+            android:layout_height="100dp"
+            android:layout_gravity="center"
+            android:src="@drawable/profile_image_default"
+            android:contentDescription="Select Avatar"
+            android:background="?android:attr/selectableItemBackground"
+            android:scaleType="centerCrop"
+            android:layout_marginBottom="16dp"/>
+
+        <!-- Row for Full Name -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:padding="4dp">
+
+            <!-- Label -->
+            <TextView
+                android:layout_width="100dp"
+                android:layout_height="wrap_content"
+                android:text="Full Name"
+                android:textSize="16sp"
+                android:layout_marginEnd="8dp"
+                android:gravity="center_vertical" />
+
+            <!-- Input Field -->
+            <EditText
+                android:id="@+id/editTextFullName"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:hint="Enter Full Name"
+                android:textSize="16sp" />
+        </LinearLayout>
+
+        <!-- Row for Student ID -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:padding="4dp">
+
+            <!-- Label -->
+            <TextView
+                android:layout_width="100dp"
+                android:layout_height="wrap_content"
+                android:text="Student ID"
+                android:textSize="16sp"
+                android:layout_marginEnd="8dp"
+                android:gravity="center_vertical" />
+
+            <!-- Input Field -->
+            <EditText
+                android:id="@+id/editTextStudentId"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:hint="Enter Student ID"
+                android:textSize="16sp" />
+        </LinearLayout>
+
+        <!-- Row for Birthday with Calendar Icon -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:padding="4dp">
+
+            <!-- Label -->
+            <TextView
+                android:layout_width="100dp"
+                android:layout_height="wrap_content"
+                android:text="Birthday"
+                android:textSize="16sp"
+                android:layout_marginEnd="8dp"
+                android:gravity="center_vertical" />
+
+            <!-- Input Field as TextView -->
+            <TextView
+                android:id="@+id/textViewBirthday"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:textSize="16sp"
+                android:textColor="#000000"
+                android:background="?android:attr/editTextBackground"
+                android:gravity="center_vertical"
+                android:hint="Select Birthday"
+                android:clickable="true"
+                android:focusable="true" />
+
+            <!-- Calendar Icon -->
+            <ImageView
+                android:id="@+id/imageViewCalendar"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@drawable/ic_edit_calendar"
+                android:contentDescription="Select Date"
+                android:padding="8dp"
+                android:clickable="true"
+                android:focusable="true" />
+        </LinearLayout>
+
+        <!-- Row for School/University -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:padding="4dp">
+
+            <!-- Label -->
+            <TextView
+                android:layout_width="100dp"
+                android:layout_height="wrap_content"
+                android:text="School/Uni"
+                android:textSize="16sp"
+                android:layout_marginEnd="8dp"
+                android:gravity="center_vertical" />
+
+            <!-- Input Field -->
+            <EditText
+                android:id="@+id/editTextSchool"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:hint="Enter School/University"
+                android:textSize="16sp" />
+        </LinearLayout>
+
+        <!-- Row for Faculty -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:padding="4dp">
+
+            <!-- Label -->
+            <TextView
+                android:layout_width="100dp"
+                android:layout_height="wrap_content"
+                android:text="Faculty"
+                android:textSize="16sp"
+                android:layout_marginEnd="8dp"
+                android:gravity="center_vertical" />
+
+            <!-- Input Field -->
+            <EditText
+                android:id="@+id/editTextFaculty"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:hint="Enter Faculty"
+                android:textSize="16sp" />
+        </LinearLayout>
+
+        <!-- Row for Degree -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:padding="4dp">
+
+            <!-- Label -->
+            <TextView
+                android:layout_width="100dp"
+                android:layout_height="wrap_content"
+                android:text="Degree"
+                android:textSize="16sp"
+                android:layout_marginEnd="8dp"
+                android:gravity="center_vertical" />
+
+            <!-- Input Field -->
+            <EditText
+                android:id="@+id/editTextDegree"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:hint="Enter Degree"
+                android:textSize="16sp" />
+        </LinearLayout>
+
+        <!-- Save Button -->
+        <Button
+            android:id="@+id/buttonSave"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Save"
+            android:layout_gravity="center"
+            android:paddingTop="16dp" />
+    </LinearLayout>
+</ScrollView>
