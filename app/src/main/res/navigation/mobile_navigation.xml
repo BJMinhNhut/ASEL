@@ -18,8 +18,24 @@
         tools:layout="@layout/fragment_dashboard" />
 
     <fragment
-        android:id="@+id/navigation_notifications"
-        android:name="com.cs426.asel.ui.notifications.NotificationsFragment"
-        android:label="@string/title_notifications"
-        tools:layout="@layout/fragment_notifications" />
+        android:id="@+id/navigation_emails"
+        android:name="com.cs426.asel.ui.emails.EmailsFragment"
+        android:label="@string/title_emails"
+        tools:layout="@layout/fragment_emails" >
+        <action
+            android:id="@+id/navigate_to_email_detail"
+            app:destination="@id/navigation_email_detail" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/navigation_email_detail"
+        android:name="com.cs426.asel.ui.emails.EmailDetailFragment"
+        android:label="@string/title_email_detail"
+        tools:layout="@layout/fragment_email_detail">
+
+        <argument
+            android:name="emailId"
+            app:argType="integer" />
+    </fragment>
+
 </navigation>
