@@ -2,18 +2,14 @@ package com.cs426.asel;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.util.Log;
 import android.widget.Toast;
 
 import com.cs426.asel.ui.account.AccountViewModel;
 import com.cs426.asel.ui.account.AccountViewModelFactory;
-import com.cs426.asel.ui.account.UpdateAccountFragment;
+import com.cs426.asel.ui.emails.EmailsViewModel;
+import com.cs426.asel.ui.emails.EmailsViewModelFactory;
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
-import com.google.android.gms.auth.api.signin.GoogleSignInClient;
-import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
-import com.google.android.gms.common.api.ApiException;
-import com.google.android.gms.common.api.Scope;
 import com.google.android.gms.tasks.Task;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 
@@ -22,20 +18,17 @@ import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.navigation.NavController;
-import androidx.navigation.Navigation;
 import androidx.navigation.fragment.NavHostFragment;
 import androidx.navigation.ui.AppBarConfiguration;
 import androidx.navigation.ui.NavigationUI;
 
 import com.cs426.asel.databinding.ActivityMainBinding;
-import com.google.android.gms.auth.api.signin.GoogleSignIn;
-import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
-import com.google.android.gms.tasks.Task;
 
 public class MainActivity extends AppCompatActivity {
 
     private ActivityMainBinding binding;
     private AccountViewModel accountViewModel;
+    private EmailsViewModel emailsViewModel; // Initialize here
     private ActivityResultLauncher<Intent> signInLauncher;
 
     @Override
@@ -57,8 +50,12 @@ public class MainActivity extends AppCompatActivity {
         NavigationUI.setupWithNavController(binding.navView, navController);
 
         // Initialize AccountViewModel
-        AccountViewModelFactory factory = new AccountViewModelFactory(getApplicationContext());
-        accountViewModel = new ViewModelProvider(this, factory).get(AccountViewModel.class);
+        AccountViewModelFactory accountFactory = new AccountViewModelFactory(getApplicationContext());
+        accountViewModel = new ViewModelProvider(this, accountFactory).get(AccountViewModel.class);
+
+        // Initialize EmailsViewModel using the factory
+        EmailsViewModelFactory emailsFactory = new EmailsViewModelFactory(getApplicationContext());
+        emailsViewModel = new ViewModelProvider(this, emailsFactory).get(EmailsViewModel.class);
 
         // Register ActivityResultLauncher for sign-in and pass it to the ViewModel
         signInLauncher = registerForActivityResult(
@@ -67,25 +64,21 @@ public class MainActivity extends AppCompatActivity {
                     if (result.getResultCode() == RESULT_OK) {
                         Intent data = result.getData();
                         Task<GoogleSignInAccount> task = GoogleSignIn.getSignedInAccountFromIntent(data);
-
-                        // Call GmailServices to handle the sign-in result through the ViewModel
-                        accountViewModel.getGmailServices().handleSignInResult(task);
+                        accountViewModel.onSignInSuccess(task.getResult());
                     } else {
-                        accountViewModel.getGmailServices().handleSignInResult(null);
+                        accountViewModel.onSignInFailure("Sign-in canceled or failed");
                         Toast.makeText(this, "Sign-in canceled or failed", Toast.LENGTH_SHORT).show();
                     }
                 });
 
-        // Pass the launcher to the ViewModel
+        // Pass the launcher to the AccountViewModel
         accountViewModel.setSignInLauncher(signInLauncher);
 
-        // Observe the sign-in result from ViewModel
+        // Observe the sign-in result from AccountViewModel
         accountViewModel.getSignInResult().observe(this, account -> {
             if (account != null) {
-                // Handle successful sign-in, e.g., update UI or proceed with fetching emails
                 Toast.makeText(MainActivity.this, "Welcome, " + account.getDisplayName(), Toast.LENGTH_SHORT).show();
             } else {
-                // Handle sign-in failure
                 Toast.makeText(MainActivity.this, "Sign-in failed", Toast.LENGTH_SHORT).show();
             }
         });

@@ -2,13 +2,7 @@ package com.cs426.asel.ui.account;
 
 import androidx.lifecycle.ViewModelProvider;
 
-import android.content.Context;
 import android.os.Bundle;
-
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.fragment.app.Fragment;
-
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -16,7 +10,12 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.TextView;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.fragment.app.Fragment;
+
 import com.cs426.asel.R;
+import com.cs426.asel.ui.emails.EmailsViewModel;
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
@@ -26,7 +25,8 @@ import java.util.List;
 
 public class UpdateAccountFragment extends Fragment {
 
-    private AccountViewModel mViewModel;
+    private AccountViewModel accountViewModel;
+    private EmailsViewModel emailsViewModel;
     private List<String> emailIDs;
 
     public static UpdateAccountFragment newInstance() {
@@ -42,10 +42,16 @@ public class UpdateAccountFragment extends Fragment {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        mViewModel = new ViewModelProvider(requireActivity()).get(AccountViewModel.class);
+
+        // Obtain ViewModels from the activity's ViewModelProvider
+        accountViewModel = new ViewModelProvider(requireActivity()).get(AccountViewModel.class);
+        emailsViewModel = new ViewModelProvider(requireActivity()).get(EmailsViewModel.class); // No need for a factory here
 
         TextView accountName = view.findViewById(R.id.text_account_name);
-        accountName.setText(mViewModel.getCurrentSignedInAccount().getDisplayName());
+        GoogleSignInAccount account = accountViewModel.getCurrentSignedInAccount();
+        if (account != null) {
+            accountName.setText(account.getDisplayName());
+        }
 
         Button addAccount = view.findViewById(R.id.button_add_account);
         addAccount.setOnClickListener(v -> addAccount());
@@ -61,36 +67,42 @@ public class UpdateAccountFragment extends Fragment {
     }
 
     private void printEmailContent() {
-        emailIDs = mViewModel.getEmailsID();
+        emailIDs = emailsViewModel.getEmailsID(); // Use EmailsViewModel for email-related operations
         for (int i = 0; i < Math.min(5, emailIDs.size()); i++) {
-            Message message = mViewModel.getMessage(emailIDs.get(i));
-            Log.d("Email ID", "ID " + emailIDs.get(i) + ": " + message.getSnippet());
+            Message message = emailsViewModel.getMessage(emailIDs.get(i)); // Use EmailsViewModel
+            if (message != null) {
+                Log.d("Email ID", "ID " + emailIDs.get(i) + ": " + message.getSnippet());
+            }
         }
     }
 
     private void fetchEmailContent() {
-        emailIDs = mViewModel.getEmailsID();
+        emailIDs = emailsViewModel.getEmailsID(); // Use EmailsViewModel
         for (int i = 0; i < Math.min(5, emailIDs.size()); i++) {
             Log.d("Email ID", "Fetching ID " + i + ": " + emailIDs.get(i));
-            mViewModel.fetchEmailContent(emailIDs.get(i));
+            emailsViewModel.fetchEmailContent(emailIDs.get(i)); // Use EmailsViewModel
         }
     }
 
     private void fetchEmailIds() {
-        mViewModel.fetchAllEmailsID();
+        emailsViewModel.fetchAllEmailsID(); // Use EmailsViewModel
     }
 
     private void addAccount() {
         // Sign out of the current session
-        GoogleSignInAccount account = mViewModel.getCurrentSignedInAccount();
+        GoogleSignInAccount account = accountViewModel.getCurrentSignedInAccount();
         if (account != null) {
-            GoogleSignIn.getClient(requireContext(), GoogleSignInOptions.DEFAULT_SIGN_IN).signOut().addOnCompleteListener(requireActivity(), task -> {
-                // After signing out, revoke access to ensure a fresh permission request
-                GoogleSignIn.getClient(requireContext(), GoogleSignInOptions.DEFAULT_SIGN_IN).revokeAccess().addOnCompleteListener(requireActivity(), revokeTask -> {
-                    // Now initiate the sign-in flow again
-                    mViewModel.signIn();
-                });
-            });
+            GoogleSignIn.getClient(requireContext(), GoogleSignInOptions.DEFAULT_SIGN_IN)
+                    .signOut()
+                    .addOnCompleteListener(requireActivity(), task -> {
+                        // After signing out, revoke access to ensure a fresh permission request
+                        GoogleSignIn.getClient(requireContext(), GoogleSignInOptions.DEFAULT_SIGN_IN)
+                                .revokeAccess()
+                                .addOnCompleteListener(requireActivity(), revokeTask -> {
+                                    // Now initiate the sign-in flow again
+                                    accountViewModel.signIn();
+                                });
+                    });
         }
     }
 }
