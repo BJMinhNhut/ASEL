@@ -8,13 +8,15 @@
 
     <ImageView
         android:id="@+id/account_avatar_view"
-        android:layout_width="50sp"
-        android:layout_height="50sp"
-        android:layout_margin="50sp"
-        android:src="@drawable/baseline_manage_accounts_24"
+        android:layout_width="100sp"
+        android:layout_height="100sp"
+        android:src="@drawable/profile_image_default"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
+        android:background="?android:attr/selectableItemBackground"
+        android:scaleType="centerCrop"
+        android:layout_marginBottom="16dp"/>
         />
     <TextView
         android:id="@+id/account_name_view"
