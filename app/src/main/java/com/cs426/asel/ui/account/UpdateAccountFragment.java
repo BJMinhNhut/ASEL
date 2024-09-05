@@ -15,6 +15,7 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
 import com.cs426.asel.R;
+import com.cs426.asel.backend.Mail;
 import com.cs426.asel.ui.emails.EmailsViewModel;
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
@@ -64,6 +65,21 @@ public class UpdateAccountFragment extends Fragment {
 
         Button printEmailContent = view.findViewById(R.id.print_email_content);
         printEmailContent.setOnClickListener(v -> printEmailContent());
+
+        Button testMail = view.findViewById(R.id.test_mail);
+        testMail.setOnClickListener(v -> testMail());
+    }
+
+    private void testMail() {
+        Mail mail = new Mail(emailsViewModel.getMessages().get(0));
+//        mail.summarize();
+
+        System.out.println(mail.getEmailID());
+        System.out.println(mail.getTitle());
+        System.out.println(mail.getSender());
+        System.out.println(mail.getSummary());
+        System.out.println(mail.getContent());
+
     }
 
     private void printEmailContent() {
@@ -78,10 +94,10 @@ public class UpdateAccountFragment extends Fragment {
 
     private void fetchEmailContent() {
         emailIDs = emailsViewModel.getEmailsID(); // Use EmailsViewModel
-        for (int i = 0; i < Math.min(5, emailIDs.size()); i++) {
-            Log.d("Email ID", "Fetching ID " + i + ": " + emailIDs.get(i));
-            emailsViewModel.fetchEmailContent(emailIDs.get(i)); // Use EmailsViewModel
-        }
+//        for (int i = 0; i < Math.min(5, emailIDs.size()); i++) {
+//            Log.d("Email ID", "Fetching ID " + i + ": " + emailIDs.get(i));
+//            emailsViewModel.fetchEmailContent(emailIDs.get(i)); // Use EmailsViewModel
+//        }
     }
 
     private void fetchEmailIds() {

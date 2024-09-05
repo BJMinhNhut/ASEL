@@ -29,8 +29,9 @@ public class EmailsFragment extends Fragment {
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         // Obtain EmailsViewModel from the activity's ViewModelProvider
         emailsViewModel = new ViewModelProvider(requireActivity()).get(EmailsViewModel.class);
-
         binding = FragmentEmailsBinding.inflate(inflater, container, false);
+
+        emailsViewModel.fetchEmails();
 
         return binding.getRoot();
     }
