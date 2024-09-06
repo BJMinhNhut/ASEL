@@ -25,12 +25,14 @@ public class Mail {
     private final String emailID;
     private String title;
     private String sender;
+    private String receiver;
     private String content;
     private String summary;
 
     public Mail(Message message) {
         title = "";
         sender = "";
+        receiver = "";
         content = "";
         summary = "";
 
@@ -43,6 +45,8 @@ public class Mail {
                 title = h.getValue();
             } else if (h.getName().equals("From")) {
                 sender = h.getValue();
+            } else if (h.getName().equals("To")) {
+                receiver = h.getValue();
             }
         }
 
@@ -98,6 +102,10 @@ public class Mail {
         return sender;
     }
 
+    public String getReceiver() {
+        return receiver;
+    }
+
     public String getSummary() {
         return summary;
     }
@@ -108,5 +116,14 @@ public class Mail {
 
     public void setSummary(String summary) {
         this.summary = summary;
+    }
+
+    public class MailInfo {
+        private String location;
+        private String fromDate;
+        private String toDate;
+        private String fromTime;
+        private String toTime;
+        private String summary;
     }
 }
