@@ -43,7 +43,7 @@ public class ChatGPTUtils {
     public static ListenableFuture<GenerateContentResponse> getResponse(String prompt) {
         GenerativeModel gm = new GenerativeModel(MODEL, BuildConfig.API_KEY);
         GenerativeModelFutures model = GenerativeModelFutures.from(gm);
-        Content content = new Content.Builder().addText(pgitrompt).build();
+        Content content = new Content.Builder().addText(prompt).build();
 
         return model.generateContent(content);
     }
