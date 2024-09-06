@@ -33,6 +33,9 @@ import com.google.common.util.concurrent.ListenableFuture;
 public class ChatGPTUtils {
     private static final String MODEL = "gemini-1.5-flash";
     private static final GenerationConfig CONFIG;
+    private static final int KEY_COUNT = 2;
+
+    private static int currentKeyIndex = 0;
 
     static {
         GenerationConfig.Builder builder = new GenerationConfig.Builder();
@@ -41,7 +44,7 @@ public class ChatGPTUtils {
     }
 
     public static ListenableFuture<GenerateContentResponse> getResponse(String prompt) {
-        GenerativeModel gm = new GenerativeModel(MODEL, BuildConfig.API_KEY);
+        GenerativeModel gm = new GenerativeModel(MODEL, getAPIKey());
         GenerativeModelFutures model = GenerativeModelFutures.from(gm);
         Content content = new Content.Builder().addText(prompt).build();
 
@@ -55,7 +58,16 @@ public class ChatGPTUtils {
     }
 
     private static String getAPIKey() {
-        return BuildConfig.API_KEY;
+        currentKeyIndex = (currentKeyIndex + 1) % KEY_COUNT;
+
+        switch (currentKeyIndex) {
+            case 0:
+                return BuildConfig.API_KEY1;
+            case 1:
+                return BuildConfig.API_KEY2;
+            default:
+                return BuildConfig.API_KEY1;
+        }
     }
 
     public interface ResponseCallback {
