@@ -18,9 +18,9 @@ jobs:
     - name: Set up local.properties
       run: |
         echo "sdk.dir=$ANDROID_SDK_ROOT" > ./local.properties
-        echo "API_KEY1=" >> ./local.properties
-        echo "API_KEY2=" >> ./local.properties
-        echo "API_KEY3=" >> ./local.properties
+        echo 'API_KEY1=""' >> ./local.properties
+        echo 'API_KEY2=""' >> ./local.properties
+        echo 'API_KEY3=""'' >> ./local.properties
     
     - name: set up JDK 17
       uses: actions/setup-java@v3
