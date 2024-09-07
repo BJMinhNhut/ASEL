@@ -1,12 +1,23 @@
 import com.android.build.api.dsl.Packaging
+import java.util.Properties
+
+val localProperties = Properties()
+val localPropertiesFile = rootProject.file("local.properties")
+if (localPropertiesFile.exists()) {
+    localPropertiesFile.inputStream().use { input ->
+        localProperties.load(input)
+    }
+}
 
 plugins {
     alias(libs.plugins.android.application)
+    id("com.google.android.libraries.mapsplatform.secrets-gradle-plugin")
 }
 
 android {
     namespace = "com.cs426.asel"
     compileSdk = 34
+    buildFeatures.buildConfig = true
 
     defaultConfig {
         applicationId = "com.cs426.asel"
@@ -16,6 +27,22 @@ android {
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+
+        buildConfigField(
+            "String",
+            "API_KEY1",
+            "\"${localProperties.getProperty("apiKey1", "")}\""
+        )
+        buildConfigField(
+            "String",
+            "API_KEY2",
+            "\"${localProperties.getProperty("apiKey2", "")}\""
+        )
+        buildConfigField(
+            "String",
+            "API_KEY3",
+            "\"${localProperties.getProperty("apiKey3", "")}\""
+        )
     }
 
     buildTypes {
@@ -61,6 +88,8 @@ dependencies {
     implementation("com.google.api-client:google-api-client-gson:1.33.0")
     implementation("com.google.apis:google-api-services-gmail:v1-rev110-1.25.0")
     implementation("com.google.http-client:google-http-client-jackson2:1.41.5")
+    implementation(libs.jsoup)
+    implementation(libs.generativeai)
     testImplementation(libs.junit)
     androidTestImplementation(libs.ext.junit)
     androidTestImplementation(libs.espresso.core)

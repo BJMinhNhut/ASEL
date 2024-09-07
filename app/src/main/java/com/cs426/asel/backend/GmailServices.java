@@ -3,8 +3,6 @@ package com.cs426.asel.backend;
 import android.content.Context;
 import android.content.Intent;
 import android.util.Log;
-import android.widget.Toast;
-
 import androidx.activity.result.ActivityResultLauncher;
 
 import com.cs426.asel.R;
@@ -23,7 +21,6 @@ import com.google.api.services.gmail.GmailScopes;
 import com.google.api.services.gmail.model.ListMessagesResponse;
 import com.google.api.services.gmail.model.Message;
 import com.google.android.gms.common.api.Scope;
-
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -38,7 +35,7 @@ public class GmailServices {
     private ExecutorService executorService;
     private ActivityResultLauncher<Intent> signInLauncher;
     private SignInCallback signInCallback;
-    private EmailCallback emailCallback; // New field for email-related callbacks
+    private EmailCallback emailCallback;
 
     public GmailServices(Context context, ActivityResultLauncher<Intent> signInLauncher, SignInCallback signInCallback) {
         this.context = context;
@@ -48,7 +45,7 @@ public class GmailServices {
         initializeGoogleSignInClient();
     }
 
-    public GmailServices(Context context, EmailCallback emailCallback) { // Overloaded constructor for email operations
+    public GmailServices(Context context, EmailCallback emailCallback) {
         this.context = context;
         this.emailCallback = emailCallback;
 
@@ -124,11 +121,6 @@ public class GmailServices {
         });
     }
 
-    public interface FetchEmailCallback {
-        void onEmailFetched(Message message);
-        void onFetchEmailFailed(String errorMessage);
-    }
-
     public void fetchEmailById(String id, FetchEmailCallback callback) {
         executorService = Executors.newSingleThreadExecutor();
         executorService.submit(() -> {
@@ -142,6 +134,11 @@ public class GmailServices {
         });
     }
 
+    public interface FetchEmailCallback {
+        void onEmailFetched(Message message);
+        void onFetchEmailFailed(String errorMessage);
+    }
+
     public interface SignInCallback {
         void onSignInSuccess(GoogleSignInAccount account);
         void onSignInFailure(String errorMessage);
@@ -149,5 +146,6 @@ public class GmailServices {
 
     public interface EmailCallback {
         void onEmailIDsFetched(List<String> emailIDs);
+        void onEmailContentFetched();
     }
 }
