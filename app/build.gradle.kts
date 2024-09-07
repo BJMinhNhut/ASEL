@@ -1,4 +1,13 @@
 import com.android.build.api.dsl.Packaging
+import java.util.Properties
+
+val localProperties = Properties()
+val localPropertiesFile = rootProject.file("local.properties")
+if (localPropertiesFile.exists()) {
+    localPropertiesFile.inputStream().use { input ->
+        localProperties.load(input)
+    }
+}
 
 plugins {
     alias(libs.plugins.android.application)
@@ -18,6 +27,22 @@ android {
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+
+        buildConfigField(
+            "String",
+            "API_KEY1",
+            "\"${localProperties.getProperty("apiKey1", "")}\""
+        )
+        buildConfigField(
+            "String",
+            "API_KEY2",
+            "\"${localProperties.getProperty("apiKey2", "")}\""
+        )
+        buildConfigField(
+            "String",
+            "API_KEY3",
+            "\"${localProperties.getProperty("apiKey3", "")}\""
+        )
     }
 
     buildTypes {
