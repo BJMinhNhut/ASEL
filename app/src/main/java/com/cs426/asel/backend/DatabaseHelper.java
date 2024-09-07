@@ -26,14 +26,18 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
     /**
      * Database description:
-     * ACCOUNTS(_id, gg_sig_in, email)
-     * EVENTS(_id, title, desc, from_datetime, duration, place, repeat, remind_timestamp, all_day)
-     * MAILS(_id, short desc, title, evt_id, mail_from, mail_to, send_time, tags)
+     * EVENTS(_id, title, desc, from_datetime, duration, place, is_repeat, repeat_frequency, repeat_end, remind_time, all_day)
+     * MAILS(_id, summary, title, sender, receiver, send_time, event_id)
+     * TAGS(_id, name)
+     * MAIL_TAGS(mail_id, tag_id)
      */
 
     private void updateMyDatabase(SQLiteDatabase db, int oldVersion, int newVersion) {
         if (oldVersion < 1) {
-            // init
+            db.execSQL("CREATE TABLE EVENTS (_id INTEGER PRIMARY KEY AUTOINCREMENT, title TEXT, desc TEXT, from_datetime TEXT, duration INTEGER, place TEXT, is_repeat INTEGER, repeat_frequency INTEGER, repeat_end TEXT, remind_time TEXT, all_day INTEGER)");
+            db.execSQL("CREATE TABLE MAILS (_id INTEGER PRIMARY KEY AUTOINCREMENT, summary TEXT, title TEXT, sender TEXT, receiver TEXT, send_time TEXT, event_id INTEGER)");
+            db.execSQL("CREATE TABLE TAGS (_id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT)");
+            db.execSQL("CREATE TABLE MAIL_TAGS (mail_id INTEGER, tag_id INTEGER)");
         }
     }
 }
