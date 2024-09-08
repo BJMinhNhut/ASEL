@@ -4,11 +4,16 @@ import static java.lang.Math.min;
 
 import android.content.Context;
 import android.util.Log;
+
+import androidx.lifecycle.LiveData;
+import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
 import com.cs426.asel.backend.GmailServices;
+import com.cs426.asel.backend.GoogleAccountServices;
 import com.cs426.asel.backend.Mail;
 import com.cs426.asel.backend.MailList;
 import com.google.ai.client.generativeai.type.GenerateContentResponse;
+import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
 import com.google.api.services.gmail.model.Message;
 import com.google.common.util.concurrent.FutureCallback;
 import com.google.common.util.concurrent.Futures;
@@ -60,62 +65,51 @@ public class EmailsViewModel extends ViewModel implements GmailServices.EmailCal
         gmailServices.fetchAllEmailIDs();
     }
 
+    private List<String> getUnfetchedID() {
+        List<String> unfetchedID = new ArrayList<>();
+        for (Map.Entry<String, Message> entry: messageCache.entrySet()) {
+            if (entry.getValue() == null) {
+                unfetchedID.add(entry.getKey());
+            }
+        }
+        return unfetchedID;
+    }
+
     private void fetchAllEmailsContent() {
         ExecutorService executor = Executors.newFixedThreadPool(4); // Adjust the pool size as needed
         List<Callable<Void>> tasks = new ArrayList<>();
 
-        List<String> messageIds = new ArrayList<>(messageCache.keySet());
-        final CountDownLatch latch = new CountDownLatch(min(EMAIL_PER_FETCH, messageIds.size()));
 
-        for (int i = 0; i < min(EMAIL_PER_FETCH, messageIds.size()); i++) {
-            final int index = i;
-            tasks.add(() -> {
-                fetchEmailContent(messageIds.get(index), latch);
-                return null;
-            });
-        }
-
-        try {
-            executor.invokeAll(tasks); // This will block until all tasks are completed
-            latch.await(); // Wait until all tasks signal completion
-            onEmailContentFetched(); // This will be called once all emails are fetched
-        } catch (InterruptedException e) {
-            e.printStackTrace(); // Handle exception as needed
-        } finally {
-            executor.shutdown(); // Shut down the executor after all tasks are complete
-        }
+        List<String> unfetchedID = getUnfetchedID();
+        fetchEmailContent(unfetchedID);
     }
 
-    public void fetchEmailContent(String id, CountDownLatch latch) {
-        if (messageCache.containsKey(id) && messageCache.get(id) != null) {
-            latch.countDown(); // Decrement latch count even if the message is already fetched
-            return; // Return cached message if already fetched
-        } else {
-            gmailServices.fetchEmailById(id, new GmailServices.FetchEmailCallback() {
-                @Override
-                public void onEmailFetched(Message message) {
-                    storeMessage(id, message);
-                    Log.d("EmailsViewModel", "Email ID " + id + " fetched and stored.");
-                    latch.countDown(); // Signal completion of this task
+    public void fetchEmailContent(List<String>id) {
+        gmailServices.fetchEmailByIds(id, new GmailServices.FetchEmailCallback() {
+            @Override
+            public void onEmailFetched(List<Message> messages) {
+                for (Message message: messages) {
+                    storeMessage(message.getId(), message);
+                    Log.d("EmailsViewModel", "Fetched " + message.getId() + ": " + message.getSnippet());
                 }
+                processEmails();
+            }
 
-                @Override
-                public void onFetchEmailFailed(String errorMessage) {
-                    Log.e("EmailsViewModel", errorMessage);
-                    latch.countDown(); // Signal completion even if the task failed
-                }
-            });
-        }
+            @Override
+            public void onFetchEmailFailed(String errorMessage) {
+                Log.e("EmailsViewModel", errorMessage);
+            }
+        });
     }
 
     @Override
-    public void onEmailIDsFetched(List<String> emailIDs) {
+    public void onEmailIDsFetched(List<Message> emailIDs) {
         if (emailIDs != null) {
             reset();
-            for (String id : emailIDs) {
-                storeID(id);
+            for (Message message: emailIDs) {
+                String id = message.getId();
+                storeID(message.getId());
             }
-
             fetchAllEmailsContent(); // Step 2: Fetch all emails content after IDs are fetched
         }
     }
@@ -124,7 +118,7 @@ public class EmailsViewModel extends ViewModel implements GmailServices.EmailCal
     public void onEmailContentFetched() {
         // Process emails or perform other actions after all content is fetched
         Log.d("EmailsViewModel", "All email content fetched.");
-        processEmails();
+        //processEmails();
     }
 
     private void processEmails() {
@@ -211,23 +205,14 @@ public class EmailsViewModel extends ViewModel implements GmailServices.EmailCal
     }
 
     public Message getMessage(String id) {
+        if (!messageCache.containsKey(id)) {
+            return null;
+        }
         return messageCache.getOrDefault(id, null);
     }
 
     public ArrayList<Message> getMessages() {
-        ArrayList<Message> messages = new ArrayList<>();
-        for (Map.Entry<String, Message> entry : messageCache.entrySet()) {
-            if (entry.getValue() == null) {
-                Log.d("EmailsViewModel", "Email ID " + entry.getKey() + " is null. Skipping.");
-                continue;
-            }
-            messages.add(entry.getValue());
-        }
-        return messages;
-    }
-
-    public List<String> getEmailsID() {
-        return new ArrayList<>(messageCache.keySet());
+        return new ArrayList<>(messageCache.values());
     }
 
     public void reset() {
@@ -236,13 +221,16 @@ public class EmailsViewModel extends ViewModel implements GmailServices.EmailCal
 
     public void storeID(String id) {
         if (!messageCache.containsKey(id)) {
-            messageCache.put(id, null); // Placeholder for future message content
+            messageCache.put(id, null);
         }
     }
 
     public void storeMessage(String id, Message message) {
-        if (message != null) {
+        if (messageCache.containsKey(id)) {
             messageCache.put(id, message);
+        }
+        else {
+            Log.d("EmailsViewModel", "Found no id " + id + " in message cache");
         }
     }
 }
