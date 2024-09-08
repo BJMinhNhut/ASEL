@@ -65,4 +65,13 @@
         app:layout_constraintTop_toBottomOf="@+id/fetch_email_content"
         />
 
+    <Button
+        android:id="@+id/log_out"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Log out"
+        android:layout_margin="50sp"
+        app:layout_constraintTop_toBottomOf="@+id/test_mail"
+        />
+
 </androidx.constraintlayout.widget.ConstraintLayout>

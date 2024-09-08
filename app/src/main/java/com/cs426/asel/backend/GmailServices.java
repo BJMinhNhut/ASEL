@@ -4,6 +4,8 @@ import android.content.Context;
 import android.content.Intent;
 import android.util.Log;
 import androidx.activity.result.ActivityResultLauncher;
+import androidx.lifecycle.LiveData;
+import androidx.lifecycle.MutableLiveData;
 
 import com.cs426.asel.R;
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
@@ -24,88 +26,56 @@ import com.google.android.gms.common.api.Scope;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 
 public class GmailServices {
     private Context context;
-    private Gmail gmailService;
-    private GoogleSignInClient googleSignInClient;
     private ExecutorService executorService;
-    private ActivityResultLauncher<Intent> signInLauncher;
-    private SignInCallback signInCallback;
     private EmailCallback emailCallback;
-
-    public GmailServices(Context context, ActivityResultLauncher<Intent> signInLauncher, SignInCallback signInCallback) {
-        this.context = context;
-        this.signInLauncher = signInLauncher;
-        this.signInCallback = signInCallback;
-
-        initializeGoogleSignInClient();
-    }
 
     public GmailServices(Context context, EmailCallback emailCallback) {
         this.context = context;
         this.emailCallback = emailCallback;
+    }
 
-        GoogleSignInAccount account = GoogleSignIn.getLastSignedInAccount(context);
-        if (account != null) {
-            setupGmailService(account);
+    private Gmail getGmailService(GoogleSignInAccount account) {
+        GoogleSignInAccount lastSignedIn = GoogleSignIn.getLastSignedInAccount(context);
+        if (lastSignedIn == null) {
+            return null;
         }
-    }
-
-    private void initializeGoogleSignInClient() {
-        GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
-                .requestEmail()
-                .requestScopes(new Scope(GmailScopes.GMAIL_READONLY))
-                .requestServerAuthCode(context.getString(R.string.web_client_id), true)
-                .requestIdToken(context.getString(R.string.web_client_id))
-                .build();
-        googleSignInClient = GoogleSignIn.getClient(context, gso);
-    }
-
-    public void signIn() {
-        Intent signInIntent = googleSignInClient.getSignInIntent();
-        signInLauncher.launch(signInIntent);
-    }
-
-    public void handleSignInResult(Task<GoogleSignInAccount> completedTask) {
-        try {
-            GoogleSignInAccount account = completedTask.getResult(ApiException.class);
-            if (account != null) {
-                setupGmailService(account);
-                signInCallback.onSignInSuccess(account);
-            }
-        } catch (ApiException e) {
-            signInCallback.onSignInFailure("Sign-in failed: " + e.getMessage());
-        }
-    }
-
-    private void setupGmailService(GoogleSignInAccount account) {
         GoogleAccountCredential credential = GoogleAccountCredential.usingOAuth2(
                 context, Collections.singleton(GmailScopes.GMAIL_READONLY));
         credential.setSelectedAccount(account.getAccount());
-        gmailService = new Gmail.Builder(new NetHttpTransport(), GsonFactory.getDefaultInstance(), credential)
-                .setApplicationName("Your App Name")
+        return new Gmail.Builder(new NetHttpTransport(), GsonFactory.getDefaultInstance(), credential)
+                .setApplicationName("ASEL")
                 .build();
     }
 
     public void fetchAllEmailIDs() {
         executorService = Executors.newSingleThreadExecutor();
         executorService.submit(() -> {
-            List<String> emailIDs = new ArrayList<>();
+            List<Message> emailIDs = null;
             try {
-                ListMessagesResponse messagesResponse = gmailService.users().messages().list("me").execute();
-                List<Message> messageList = messagesResponse.getMessages();
-                Log.d("GmailServices", "Fetched " + (messageList != null ? messageList.size() : 0) + " emails.");
+                GoogleSignInAccount account = GoogleSignIn.getLastSignedInAccount(context);
+                if (account == null) {
+                    Log.d("GmailServices", "Account is null. Skipping.");
+                }
+                else {
+                    Gmail gmailService = getGmailService(account);
+                    ListMessagesResponse messagesResponse = gmailService.users().messages().list("me").execute();
+                    List<Message> messageList = messagesResponse.getMessages();
+                    Log.d("GmailServices", "Fetched " + (messageList != null ? messageList.size() : 0) + " emails.");
 
-                if (messageList != null) {
-                    for (Message message : messageList) {
-                        emailIDs.add(message.getId());
+                    if (messageList != null) {
+                        emailIDs = messageList;
                     }
                 }
-
                 emailCallback.onEmailIDsFetched(emailIDs);
 
             } catch (GoogleJsonResponseException e) {
@@ -121,21 +91,48 @@ public class GmailServices {
         });
     }
 
-    public void fetchEmailById(String id, FetchEmailCallback callback) {
-        executorService = Executors.newSingleThreadExecutor();
+    public void fetchEmailByIds(List<String> ids, FetchEmailCallback callback) {
+        // Create a fixed thread pool with 4 threads
+        ExecutorService executorService = Executors.newFixedThreadPool(16);
+
+        GoogleSignInAccount account = GoogleSignIn.getLastSignedInAccount(context);
         executorService.submit(() -> {
             try {
-                Message message = gmailService.users().messages().get("me", id).execute();
-                callback.onEmailFetched(message);
-            } catch (IOException e) {
-                Log.e("GmailServices", "Error fetching email: " + e.getMessage());
-                callback.onFetchEmailFailed("Error fetching email: " + e.getMessage());
+                List<Message> messages = new ArrayList<>();
+                Gmail gmailService = getGmailService(account);
+
+                // Create a list to hold futures for asynchronous email fetching
+                List<Future<Message>> futures = new ArrayList<>();
+
+                // Submit tasks to fetch emails concurrently
+                for (String id : ids) {
+                    futures.add(executorService.submit(() -> {
+                        Message message = gmailService.users().messages().get("me", id).execute();
+                        Log.d("GmailServices", "Fetched email with ID: " + id);
+                        return message;
+                    }));
+                }
+
+                // Collect results from the futures
+                for (Future<Message> future : futures) {
+                    try {
+                        messages.add(future.get()); // Blocking call to get the result
+                    } catch (InterruptedException | ExecutionException e) {
+                        Log.e("GmailServices", "Error fetching email: " + e.getMessage());
+                    }
+                }
+
+                callback.onEmailFetched(messages);
+            } catch (Exception e) {
+                Log.e("GmailServices", "Error: " + e.getMessage());
+                callback.onFetchEmailFailed("Error: " + e.getMessage());
             }
         });
+
     }
 
     public interface FetchEmailCallback {
-        void onEmailFetched(Message message);
+        void onEmailFetched(List<Message> message);
         void onFetchEmailFailed(String errorMessage);
     }
 
@@ -145,7 +142,7 @@ public class GmailServices {
     }
 
     public interface EmailCallback {
-        void onEmailIDsFetched(List<String> emailIDs);
+        void onEmailIDsFetched(List<Message> emailIDs);
         void onEmailContentFetched();
     }
 }
