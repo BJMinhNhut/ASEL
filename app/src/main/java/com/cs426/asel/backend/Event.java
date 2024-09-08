@@ -5,6 +5,7 @@ import androidx.annotation.NonNull;
 import java.time.Instant;
 
 public class Event {
+    int mID;
     String mMailID;
     String mTitle;
     Instant mStartTime;
@@ -23,6 +24,7 @@ public class Event {
     boolean mIsAllDay;
 
     public Event() {
+        mID = -1; // -1 for undefined ID (not in the database)
         mMailID = "";
         mTitle = "";
         mStartTime = Instant.now();
@@ -36,7 +38,8 @@ public class Event {
         mIsAllDay = false;
     }
 
-    public Event(String mailID, String title, Instant startTime, int duration, String location, boolean isRepeating, String repeatFrequency, Instant repeatEndDate, Instant reminderTime, String description, boolean isAllDay) {
+    public Event(int id, String mailID, String title, Instant startTime, int duration, String location, boolean isRepeating, String repeatFrequency, Instant repeatEndDate, Instant reminderTime, String description, boolean isAllDay) {
+        mID = id;
         mMailID = mailID;
         mTitle = title;
         mStartTime = startTime;
@@ -48,6 +51,25 @@ public class Event {
         mReminderTime = reminderTime;
         mDescription = description;
         mIsAllDay = isAllDay;
+    }
+
+    public Event(String mailID, String title, Instant startTime, int duration, String location, boolean isRepeating, String repeatFrequency, Instant repeatEndDate, Instant reminderTime, String description, boolean isAllDay) {
+        mID = -1; // -1 for undefined ID (not in the database)
+        mMailID = mailID;
+        mTitle = title;
+        mStartTime = startTime;
+        mDuration = duration;
+        mLocation = location;
+        mIsRepeating = isRepeating;
+        mRepeatFrequency = repeatFrequency;
+        mRepeatEndDate = repeatEndDate;
+        mReminderTime = reminderTime;
+        mDescription = description;
+        mIsAllDay = isAllDay;
+    }
+
+    public int getID() {
+        return mID;
     }
 
     public String getMailID() {
@@ -143,7 +165,8 @@ public class Event {
     @NonNull
     public String toString() {
         return "Event{" +
-                "mMailID='" + mMailID + '\'' +
+                "mID=" + mID +
+                ", mMailID='" + mMailID + '\'' +
                 ", mTitle='" + mTitle + '\'' +
                 ", mStartTime=" + mStartTime +
                 ", mDuration=" + mDuration +
