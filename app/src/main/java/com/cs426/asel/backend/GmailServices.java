@@ -29,8 +29,10 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 
 public class GmailServices {
     private Context context;
@@ -90,23 +92,43 @@ public class GmailServices {
     }
 
     public void fetchEmailByIds(List<String> ids, FetchEmailCallback callback) {
-        executorService = Executors.newSingleThreadExecutor();
+        // Create a fixed thread pool with 4 threads
+        ExecutorService executorService = Executors.newFixedThreadPool(16);
+
         GoogleSignInAccount account = GoogleSignIn.getLastSignedInAccount(context);
         executorService.submit(() -> {
             try {
                 List<Message> messages = new ArrayList<>();
                 Gmail gmailService = getGmailService(account);
+
+                // Create a list to hold futures for asynchronous email fetching
+                List<Future<Message>> futures = new ArrayList<>();
+
+                // Submit tasks to fetch emails concurrently
                 for (String id : ids) {
-                    Message message = gmailService.users().messages().get("me", id).execute();
-                    messages.add(message);
-                    Log.d("GmailServices", "Fetched email with ID: " + id);
+                    futures.add(executorService.submit(() -> {
+                        Message message = gmailService.users().messages().get("me", id).execute();
+                        Log.d("GmailServices", "Fetched email with ID: " + id);
+                        return message;
+                    }));
                 }
+
+                // Collect results from the futures
+                for (Future<Message> future : futures) {
+                    try {
+                        messages.add(future.get()); // Blocking call to get the result
+                    } catch (InterruptedException | ExecutionException e) {
+                        Log.e("GmailServices", "Error fetching email: " + e.getMessage());
+                    }
+                }
+
                 callback.onEmailFetched(messages);
-            } catch (IOException e) {
-                Log.e("GmailServices", "Error fetching email: " + e.getMessage());
-                callback.onFetchEmailFailed("Error fetching email: " + e.getMessage());
+            } catch (Exception e) {
+                Log.e("GmailServices", "Error: " + e.getMessage());
+                callback.onFetchEmailFailed("Error: " + e.getMessage());
             }
         });
+
     }
 
     public interface FetchEmailCallback {
