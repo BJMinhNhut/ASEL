@@ -28,7 +28,7 @@ public class MailList {
 
     public Mail findMailbyID(String id) {
         for (Mail mail : mailList) {
-            if (mail.getEmailID().equals(id)) {
+            if (mail.getId().equals(id)) {
                 return mail;
             }
         }

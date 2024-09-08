@@ -1,57 +1,77 @@
 package com.cs426.asel.backend;
 
-import android.content.Context;
 import android.util.Log;
 
 import com.google.ai.client.generativeai.type.GenerateContentResponse;
-import com.google.api.client.util.StringUtils;
 import com.google.api.services.gmail.model.Message;
 import com.google.api.services.gmail.model.MessagePart;
-import com.google.api.services.gmail.model.MessagePartBody;
 import com.google.api.services.gmail.model.MessagePartHeader;
 import com.google.common.util.concurrent.ListenableFuture;
 
 import org.apache.commons.codec.binary.Base64;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
-import org.w3c.dom.Text;
 
+import java.time.Instant;
 import java.util.List;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
-
-import javax.security.auth.callback.Callback;
 
 public class Mail {
-    private final String emailID;
-    private String title;
-    private String sender;
-    private String receiver;
-    private String content;
-    private String summary;
+    private final String mId;
+    private String mTitle;
+    private String mSender;
+    private String mReceiver;
+    private String mContent;
+    private String mSummary;
+    private Event mEvent;
+    private Instant mReceivedTime;
+    private boolean mIsRead;
+
+    public Mail() {
+        mId = "";
+        mTitle = "";
+        mSender = "";
+        mReceiver = "";
+        mContent = "";
+        mSummary = "";
+        mEvent = new Event();
+        mIsRead = false;
+        mReceivedTime = Instant.now();
+    }
+
+    public Mail(String id, String title, String sender, String receiver, String content, String summary, Event event, Instant receivedTime, boolean isRead) {
+        mId = id;
+        mTitle = title;
+        mSender = sender;
+        mReceiver = receiver;
+        mContent = content;
+        mSummary = summary;
+        mEvent = event;
+        mReceivedTime = receivedTime;
+        mIsRead = isRead;
+    }
 
     public Mail(Message message) {
-        title = "";
-        sender = "";
-        receiver = "";
-        content = "";
-        summary = "";
+        mTitle = "";
+        mSender = "";
+        mReceiver = "";
+        mContent = "";
+        mSummary = "";
 
-        emailID = message.getId();
+        mId = message.getId();
         List<MessagePartHeader> header = message.getPayload().getHeaders();
         List<MessagePart> parts = message.getPayload().getParts();
 
         for (MessagePartHeader h : header) {
             if (h.getName().equals("Subject")) {
-                title = h.getValue();
+                mTitle = h.getValue();
             } else if (h.getName().equals("From")) {
-                sender = h.getValue();
+                mSender = h.getValue();
             } else if (h.getName().equals("To")) {
-                receiver = h.getValue();
+                mReceiver = h.getValue();
             }
         }
 
-        content = getDecodedBody(message);
+        mContent = getDecodedBody(message);
     }
 
     private String getDecodedBody(Message message) {
@@ -88,44 +108,75 @@ public class Mail {
 
     public ListenableFuture<GenerateContentResponse> summarize() {
         String prompt = "Give a brief and general summary of the following email content in a short paragraph";
-        Log.d("Mail", "Summarizing email with ID: " + emailID + " and content: " + content);
-        return ChatGPTUtils.getResponse(prompt + content);
+        Log.d("Mail", "Summarizing email with ID: " + mId + " and content: " + mContent);
+        return ChatGPTUtils.getResponse(prompt + mContent);
     }
 
-    public String getEmailID() {
-        return emailID;
+    public String getId() {
+        return mId;
     }
 
     public String getTitle() {
-        return title;
+        return mTitle;
     }
 
     public String getSender() {
-        return sender;
+        return mSender;
     }
 
     public String getReceiver() {
-        return receiver;
+        return mReceiver;
     }
 
     public String getSummary() {
-        return summary;
+        return mSummary;
     }
 
     public String getContent() {
-        return content;
+        return mContent;
     }
 
-    public void setSummary(String summary) {
-        this.summary = summary;
+    public Event getEvent() {
+        return mEvent;
     }
 
-    public class MailInfo {
-        private String location;
-        private String fromDate;
-        private String toDate;
-        private String fromTime;
-        private String toTime;
-        private String summary;
+    public Instant getReceivedTime() {
+        return mReceivedTime;
+    }
+
+    public boolean isRead() {
+        return mIsRead;
+    }
+
+    public void setRead(boolean isRead) {
+        mIsRead = isRead;
+    }
+
+    public void setSummary(String mSummary) {
+        mSummary = mSummary;
+    }
+
+    public void setEvent(Event event) {
+        mEvent = event;
+    }
+
+    public void setContent(String content) {
+        mContent = content;
+    }
+
+    public void setTitle(String title) {
+        mTitle = title;
+    }
+
+    public void setSender(String sender) {
+        mSender = sender;
+    }
+
+    public void setReceiver(String receiver) {
+        mReceiver = receiver;
+    }
+
+    public void setReceivedTime(Instant receivedTime) {
+        mReceivedTime = receivedTime;
     }
 }

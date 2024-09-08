@@ -5,15 +5,11 @@ import static java.lang.Math.min;
 import android.content.Context;
 import android.util.Log;
 
-import androidx.lifecycle.LiveData;
-import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
 import com.cs426.asel.backend.GmailServices;
-import com.cs426.asel.backend.GoogleAccountServices;
 import com.cs426.asel.backend.Mail;
 import com.cs426.asel.backend.MailList;
 import com.google.ai.client.generativeai.type.GenerateContentResponse;
-import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
 import com.google.api.services.gmail.model.Message;
 import com.google.common.util.concurrent.FutureCallback;
 import com.google.common.util.concurrent.Futures;
@@ -26,10 +22,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Callable;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -182,13 +174,13 @@ public class EmailsViewModel extends ViewModel implements GmailServices.EmailCal
 
                     @Override
                     public void onFailure(Throwable t) {
-                        Log.e("EmailsViewModel", "Error processing email ID " + mail.getEmailID(), t);
+                        Log.e("EmailsViewModel", "Error processing email ID " + mail.getId(), t);
                         if (retryCount < MAX_RETRY_COUNT) {
                             int newRetryCount = retryCount + 1;
                             retryCounts.put(future, newRetryCount);
                             scheduleRetry(mail, newRetryCount);
                         } else {
-                            Log.e("EmailsViewModel", "Max retry count reached for email ID " + mail.getEmailID());
+                            Log.e("EmailsViewModel", "Max retry count reached for email ID " + mail.getId());
                         }
                     }
                 },
