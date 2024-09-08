@@ -75,13 +75,5 @@ public class MainActivity extends AppCompatActivity {
         // Pass the launcher to the AccountViewModel
         accountViewModel.setSignInLauncher(signInLauncher);
 
-        // Observe the sign-in result from AccountViewModel
-        accountViewModel.getSignInResult().observe(this, account -> {
-            if (account != null) {
-                Toast.makeText(MainActivity.this, "Welcome, " + account.getDisplayName(), Toast.LENGTH_SHORT).show();
-            } else {
-                Toast.makeText(MainActivity.this, "Sign-in failed", Toast.LENGTH_SHORT).show();
-            }
-        });
     }
 }

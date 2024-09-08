@@ -1,6 +1,7 @@
 package com.cs426.asel.backend;
 
 import android.content.Context;
+import android.util.Log;
 
 import com.google.ai.client.generativeai.type.GenerateContentResponse;
 import com.google.api.client.util.StringUtils;
@@ -87,6 +88,7 @@ public class Mail {
 
     public ListenableFuture<GenerateContentResponse> summarize() {
         String prompt = "Give a brief and general summary of the following email content in a short paragraph";
+        Log.d("Mail", "Summarizing email with ID: " + emailID + " and content: " + content);
         return ChatGPTUtils.getResponse(prompt + content);
     }
 
