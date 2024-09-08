@@ -3,8 +3,13 @@ package com.cs426.asel.ui.emails;
 import android.content.Context;
 
 import androidx.annotation.NonNull;
+import androidx.lifecycle.LiveData;
 import androidx.lifecycle.ViewModel;
 import androidx.lifecycle.ViewModelProvider;
+
+import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
+
+import java.util.List;
 
 public class EmailsViewModelFactory implements ViewModelProvider.Factory {
 

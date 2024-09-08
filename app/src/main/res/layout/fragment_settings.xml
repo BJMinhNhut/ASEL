@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    tools:context=".ui.account.SettingsFragment">
+
+    <TextView
+        android:id="@+id/theme_title"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Theme"
+        android:textStyle="bold"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintLeft_toLeftOf="parent"
+        />
+
+    <RadioGroup
+        android:id="@+id/theme_group"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/theme_title"
+        >
+        <RadioButton
+            android:id="@+id/light_theme"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Light" />
+        <RadioButton
+            android:id="@+id/dark_theme"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Dark" />
+        <RadioButton
+            android:id="@+id/system_theme"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="System" />
+    </RadioGroup>
+
+    <!-- New Email Notification -->
+    <TextView
+        android:id="@+id/new_email_notification_title"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="New email notification"
+        android:textStyle="bold"
+        android:layout_marginTop="16dp"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/theme_group"
+        />
+
+    <RadioGroup
+        android:id="@+id/email_notification_group"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/new_email_notification_title"
+        >
+        <RadioButton
+            android:id="@+id/email_notification_on"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="On" />
+        <RadioButton
+            android:id="@+id/email_notification_off"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Off" />
+    </RadioGroup>
+
+    <!-- Reminder Notification -->
+    <TextView
+        android:id="@+id/reminder_notification_title"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Reminder notification"
+        android:textStyle="bold"
+        android:layout_marginTop="16dp"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/email_notification_group"
+        />
+
+    <RadioGroup
+        android:id="@+id/reminder_notification_group"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/reminder_notification_title"
+        >
+        <RadioButton
+            android:id="@+id/reminder_notification_on"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="On" />
+        <RadioButton
+            android:id="@+id/reminder_notification_off"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Off" />
+    </RadioGroup>
+
+</androidx.constraintlayout.widget.ConstraintLayout>
