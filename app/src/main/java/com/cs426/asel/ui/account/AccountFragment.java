@@ -61,6 +61,14 @@ public class AccountFragment extends Fragment {
             }
         });
 
+        final Button settingsButton = binding.settingsButton;
+        settingsButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                openSettings();
+            }
+        });
+
         return root;
     }
 
@@ -97,6 +105,11 @@ public class AccountFragment extends Fragment {
     private void updateInfo() {
         // Jump to UpdateInfoFragment
         NavHostFragment.findNavController(AccountFragment.this).navigate(R.id.action_navigation_account_to_updateInfoFragment);
+    }
+
+    private void openSettings() {
+        // Jump to SettingsFragment
+        NavHostFragment.findNavController(AccountFragment.this).navigate(R.id.action_navigation_account_to_settingsFragment);
     }
 
     @Override

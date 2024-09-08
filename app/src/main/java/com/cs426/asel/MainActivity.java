@@ -50,6 +50,33 @@ public class MainActivity extends AppCompatActivity {
         NavController navController = navHostFragment.getNavController();
         NavigationUI.setupWithNavController(binding.navView, navController);
 
+        // Set up listener for tab selection instead of using OnDestinationChangedListener
+        navView.setOnItemSelectedListener(item -> {
+            int itemId = item.getItemId();
+
+            if (itemId == R.id.navigation_home) {
+                // Clear the back stack and navigate to Home
+                clearBackStackAndNavigate(navController, R.id.navigation_home);
+                return true; // Home tab is selected
+            } else {
+                // Clear back stack, navigate to Home first, then to the selected tab
+                clearBackStackAndNavigate(navController, R.id.navigation_home);
+                navController.navigate(itemId); // Navigate to the selected tab
+                return true; // Another tab is selected
+            }
+        });
+
+        // Initialize ViewModels (AccountViewModel, EmailsViewModel)
+        initializeViewModels();
+    }
+
+    private void clearBackStackAndNavigate(NavController navController, int destinationId) {
+        // Clear the back stack, but keep the Home fragment
+        navController.popBackStack(R.id.navigation_home, false); // False to leave Home fragment in the stack
+        navController.navigate(destinationId); // Navigate to the target fragment (e.g., Home or another tab)
+    }
+
+    private void initializeViewModels() {
         // Initialize AccountViewModel
         AccountViewModelFactory accountFactory = new AccountViewModelFactory(getApplicationContext());
         accountViewModel = new ViewModelProvider(this, accountFactory).get(AccountViewModel.class);
@@ -76,4 +103,5 @@ public class MainActivity extends AppCompatActivity {
         accountViewModel.setSignInLauncher(signInLauncher);
 
     }
+
 }
