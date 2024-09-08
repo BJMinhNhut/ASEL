@@ -7,9 +7,15 @@ import android.database.sqlite.SQLiteOpenHelper;
 public class DatabaseHelper extends SQLiteOpenHelper {
     private static final String DB_NAME = "ASEL.db";
     private static final int DB_VERSION = 0;
+    private Context mContext;
 
     public DatabaseHelper(Context context) {
         super(context, DB_NAME, null, DB_VERSION);
+        mContext = context;
+    }
+
+    public Context getContext() {
+        return mContext;
     }
 
     /**

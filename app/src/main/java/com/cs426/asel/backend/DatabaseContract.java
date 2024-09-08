@@ -19,21 +19,25 @@ public final class DatabaseContract {
     public static class Mails implements BaseColumns {
         public static final String TABLE_NAME = "MAILS";
         public static final String COLUMN_NAME_SUMMARY = "summary";
+        public static final String COLUMN_NAME_CONTENT = "content";
         public static final String COLUMN_NAME_TITLE = "title";
         public static final String COLUMN_NAME_SENDER = "sender";
         public static final String COLUMN_NAME_RECEIVER = "receiver";
         public static final String COLUMN_NAME_SEND_TIME = "send_time";
         public static final String COLUMN_NAME_EVENT_ID = "event_id";
+        public static final String COLUMN_NAME_IS_READ = "is_read";
 
         // SQL scripts
         public static final String CREATE_TABLE = "CREATE TABLE " + TABLE_NAME + " (" +
                 _ID + " TEXT PRIMARY KEY," +
                 COLUMN_NAME_SUMMARY + " TEXT," +
+                COLUMN_NAME_CONTENT + " TEXT," +
                 COLUMN_NAME_TITLE + " TEXT," +
                 COLUMN_NAME_SENDER + " TEXT," +
                 COLUMN_NAME_RECEIVER + " TEXT," +
                 COLUMN_NAME_SEND_TIME + " TEXT," +
-                COLUMN_NAME_EVENT_ID + " TEXT)";
+                COLUMN_NAME_EVENT_ID + " INTEGER," +
+                COLUMN_NAME_IS_READ + " INTEGER)";
 
         public static final String DROP_TABLE = "DROP TABLE IF EXISTS " + TABLE_NAME;
     }

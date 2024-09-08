@@ -20,7 +20,6 @@ public class EventRepository {
         dbHelper = new DatabaseHelper(context);
     }
 
-
     // NOTE: This method is not used in the app, Event will be inserted through MailRepository
     public long insertEvent(Event event) {
         Log.println(Log.WARN, "EventRepository", "Inserting event: " + event.getTitle() + " SHOULD NOT USE THIS METHOD!!!");
