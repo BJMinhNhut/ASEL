@@ -57,7 +57,7 @@ public final class DatabaseContract {
                 COLUMN_NAME_TITLE + " TEXT," +
                 COLUMN_NAME_DESCRIPTION + " TEXT," +
                 COLUMN_NAME_FROM_DATETIME + " TEXT," +
-                COLUMN_NAME_DURATION + " TEXT," +
+                COLUMN_NAME_DURATION + " INTEGER," +
                 COLUMN_NAME_PLACE + " TEXT," +
                 COLUMN_NAME_IS_REPEAT + " INTEGER," +
                 COLUMN_NAME_REPEAT_FREQUENCY + " TEXT," +
@@ -92,4 +92,5 @@ public final class DatabaseContract {
 
         public static final String DROP_TABLE = "DROP TABLE IF EXISTS " + TABLE_NAME;
     }
+
 }
