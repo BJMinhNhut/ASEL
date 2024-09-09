@@ -20,9 +20,9 @@ public class EventRepository {
         dbHelper = new DatabaseHelper(context);
     }
 
-    // NOTE: This method is not used in the app, Event will be inserted through MailRepository
+    // insert and return the id of the event
     public long insertEvent(Event event) {
-        Log.println(Log.WARN, "EventRepository", "Inserting event: " + event.getTitle() + " SHOULD NOT USE THIS METHOD!!!");
+        Log.println(Log.WARN, "EventRepository", "Inserting event: " + event.getTitle());
         SQLiteDatabase db = dbHelper.getWritableDatabase();
         ContentValues values = new ContentValues();
         values.put(DatabaseContract.Events.COLUMN_NAME_TITLE, event.getTitle());
@@ -35,6 +35,7 @@ public class EventRepository {
         values.put(DatabaseContract.Events.COLUMN_NAME_REPEAT_END, event.getRepeatEndDate().toString());
         values.put(DatabaseContract.Events.COLUMN_NAME_REMIND_TIME, event.getReminderTime().toString());
         values.put(DatabaseContract.Events.COLUMN_NAME_ALL_DAY, event.isAllDay() ? 1 : 0);
+        values.put(DatabaseContract.Events.COLUMN_NAME_PUBLISHED, event.isPublished() ? 1 : 0);
 
         return db.insert(DatabaseContract.Events.TABLE_NAME, null, values);
     }
@@ -89,8 +90,9 @@ public class EventRepository {
             Instant repeatEnd = Instant.parse(cursor.getString(cursor.getColumnIndexOrThrow(DatabaseContract.Events.COLUMN_NAME_REPEAT_END)));
             Instant remindTime = Instant.parse(cursor.getString(cursor.getColumnIndexOrThrow(DatabaseContract.Events.COLUMN_NAME_REMIND_TIME)));
             boolean allDay = cursor.getInt(cursor.getColumnIndexOrThrow(DatabaseContract.Events.COLUMN_NAME_ALL_DAY)) == 1;
+            boolean isPublished = cursor.getInt(cursor.getColumnIndexOrThrow(DatabaseContract.Events.COLUMN_NAME_PUBLISHED)) == 1;
 
-            Event event = new Event(eventId, mailId, title, fromDatetime, duration, place, isRepeat, repeatFrequency, repeatEnd, remindTime, description, allDay);
+            Event event = new Event(eventId, mailId, title, fromDatetime, duration, place, isRepeat, repeatFrequency, repeatEnd, remindTime, description, allDay, isPublished);
             events.addEvent(event);
         }
         cursor.close();

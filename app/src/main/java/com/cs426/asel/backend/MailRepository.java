@@ -16,6 +16,13 @@ public class MailRepository {
     }
 
     public long insertMail(Mail mail) {
+        EventRepository eventRepository = new EventRepository(dbHelper.getContext());
+        long eventId = eventRepository.insertEvent(mail.getEvent());
+        if (eventId == -1) {
+            Log.println(Log.ERROR, "MailRepository", "Failed to insert event for mail: " + mail.getTitle());
+            return -1;
+        }
+
         Log.println(Log.INFO, "MailRepository", "Inserting mail: " + mail.getTitle());
         SQLiteDatabase db = dbHelper.getWritableDatabase();
         ContentValues values = new ContentValues();
@@ -26,13 +33,10 @@ public class MailRepository {
         values.put(DatabaseContract.Mails.COLUMN_NAME_CONTENT, mail.getContent());
         values.put(DatabaseContract.Mails.COLUMN_NAME_SUMMARY, mail.getSummary());
         values.put(DatabaseContract.Mails.COLUMN_NAME_SEND_TIME, mail.getReceivedTime().toString());
-        values.put(DatabaseContract.Mails.COLUMN_NAME_EVENT_ID, mail.getEvent().getID());
+        values.put(DatabaseContract.Mails.COLUMN_NAME_EVENT_ID, eventId);
         values.put(DatabaseContract.Mails.COLUMN_NAME_IS_READ, mail.isRead() ? 1 : 0);
 
-        // TODO: event public or not?
-        EventRepository eventRepository = new EventRepository(dbHelper.getContext());
-        eventRepository.insertEvent(mail.getEvent());
-
+        // NOTE: the value return is row id, not the actual id of the mail
         return db.insert(DatabaseContract.Mails.TABLE_NAME, null, values);
     }
 
@@ -51,10 +55,13 @@ public class MailRepository {
         String[] projection = {
                 DatabaseContract.Mails._ID,
                 DatabaseContract.Mails.COLUMN_NAME_TITLE,
+                DatabaseContract.Mails.COLUMN_NAME_CONTENT,
+                DatabaseContract.Mails.COLUMN_NAME_SUMMARY,
                 DatabaseContract.Mails.COLUMN_NAME_SENDER,
                 DatabaseContract.Mails.COLUMN_NAME_RECEIVER,
                 DatabaseContract.Mails.COLUMN_NAME_SEND_TIME,
-                DatabaseContract.Mails.COLUMN_NAME_EVENT_ID
+                DatabaseContract.Mails.COLUMN_NAME_EVENT_ID,
+                DatabaseContract.Mails.COLUMN_NAME_IS_READ
         };
 
         Cursor cursor = db.query(
@@ -101,7 +108,8 @@ public class MailRepository {
                 DatabaseContract.Events.COLUMN_NAME_REPEAT_FREQUENCY,
                 DatabaseContract.Events.COLUMN_NAME_REPEAT_END,
                 DatabaseContract.Events.COLUMN_NAME_REMIND_TIME,
-                DatabaseContract.Events.COLUMN_NAME_ALL_DAY
+                DatabaseContract.Events.COLUMN_NAME_ALL_DAY,
+                DatabaseContract.Events.COLUMN_NAME_PUBLISHED
         };
 
         String selection = DatabaseContract.Events._ID + " = ?";
@@ -129,8 +137,9 @@ public class MailRepository {
             Instant repeatEnd = Instant.parse(cursor.getString(cursor.getColumnIndexOrThrow(DatabaseContract.Events.COLUMN_NAME_REPEAT_END)));
             Instant remindTime = Instant.parse(cursor.getString(cursor.getColumnIndexOrThrow(DatabaseContract.Events.COLUMN_NAME_REMIND_TIME)));
             boolean allDay = cursor.getInt(cursor.getColumnIndexOrThrow(DatabaseContract.Events.COLUMN_NAME_ALL_DAY)) == 1;
+            boolean isPublished = cursor.getInt(cursor.getColumnIndexOrThrow(DatabaseContract.Events.COLUMN_NAME_PUBLISHED)) == 1;
 
-            event = new Event(eventID, mailId, title, fromDatetime, duration, place, isRepeat, repeatFrequency, repeatEnd, remindTime, description, allDay);
+            event = new Event(eventID, mailId, title, fromDatetime, duration, place, isRepeat, repeatFrequency, repeatEnd, remindTime, description, allDay, isPublished);
         }
         cursor.close();
         return event;
