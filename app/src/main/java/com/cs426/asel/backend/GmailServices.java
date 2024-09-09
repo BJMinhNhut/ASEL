@@ -60,22 +60,38 @@ public class GmailServices {
     public void fetchAllEmailIDs() {
         executorService = Executors.newSingleThreadExecutor();
         executorService.submit(() -> {
-            List<Message> emailIDs = null;
+            List<Message> emailIDs = new ArrayList<>();
             try {
                 GoogleSignInAccount account = GoogleSignIn.getLastSignedInAccount(context);
                 if (account == null) {
                     Log.d("GmailServices", "Account is null. Skipping.");
+                    return;
                 }
-                else {
-                    Gmail gmailService = getGmailService(account);
-                    ListMessagesResponse messagesResponse = gmailService.users().messages().list("me").execute();
-                    List<Message> messageList = messagesResponse.getMessages();
-                    Log.d("GmailServices", "Fetched " + (messageList != null ? messageList.size() : 0) + " emails.");
 
+                Gmail gmailService = getGmailService(account);
+                String user = "me";
+                String pageToken = null;
+
+                do {
+                    ListMessagesResponse messagesResponse = gmailService.users().messages().list(user)
+                            .setMaxResults(100L)  // You can increase this value up to 500
+                            .setPageToken(pageToken)
+                            .execute();
+
+                    List<Message> messageList = messagesResponse.getMessages();
                     if (messageList != null) {
-                        emailIDs = messageList;
+                        emailIDs.addAll(messageList);
                     }
-                }
+
+                    // Get the nextPageToken to continue fetching emails
+                    pageToken = messagesResponse.getNextPageToken();
+
+                    Log.d("GmailServices", "Fetched " + emailIDs.size() + " emails so far.");
+
+                } while (pageToken != null);
+
+                Log.d("GmailServices", "Fetched " + emailIDs.size() + " emails in total.");
+
                 emailCallback.onEmailIDsFetched(emailIDs);
 
             } catch (GoogleJsonResponseException e) {
@@ -90,6 +106,7 @@ public class GmailServices {
             }
         });
     }
+
 
     public void fetchEmailByIds(List<String> ids, FetchEmailCallback callback) {
         // Create a fixed thread pool with 4 threads
