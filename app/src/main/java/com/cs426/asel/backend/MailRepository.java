@@ -93,6 +93,28 @@ public class MailRepository {
         return mailList;
     }
 
+    // TODO: implement this
+    public MailList getMailByTags() {
+        return null;
+    }
+
+    public int updateRead(String id, boolean isRead) {
+        Log.println(Log.INFO, "MailRepository", "Updating mail read status: " + id);
+        SQLiteDatabase db = dbHelper.getWritableDatabase();
+        ContentValues values = new ContentValues();
+        values.put(DatabaseContract.Mails.COLUMN_NAME_IS_READ, isRead);
+
+        String selection = DatabaseContract.Mails._ID + " = ?";
+        String[] selectionArgs = { id };
+
+        return db.update(
+                DatabaseContract.Mails.TABLE_NAME,
+                values,
+                selection,
+                selectionArgs
+        );
+    }
+
     private Event getEventByID(String mailId, int eventID) {
         Log.println(Log.INFO, "MailRepository", "Getting event by ID: " + eventID);
         SQLiteDatabase db = dbHelper.getReadableDatabase();
@@ -144,4 +166,5 @@ public class MailRepository {
         cursor.close();
         return event;
     }
+
 }
