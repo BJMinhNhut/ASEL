@@ -116,6 +116,28 @@ public class MailRepository {
         );
     }
 
+    public boolean isMailExists(String id) {
+        Log.println(Log.INFO, "MailRepository", "Checking if mail exists: " + id);
+        SQLiteDatabase db = dbHelper.getReadableDatabase();
+        String[] projection = { DatabaseContract.Mails._ID };
+        String selection = DatabaseContract.Mails._ID + " = ?";
+        String[] selectionArgs = { id };
+
+        Cursor cursor = db.query(
+                DatabaseContract.Mails.TABLE_NAME,
+                projection,
+                selection,
+                selectionArgs,
+                null,
+                null,
+                null
+        );
+
+        boolean exists = cursor.getCount() > 0;
+        cursor.close();
+        return exists;
+    }
+
     private Event getEventByID(String mailId, int eventID) {
         Log.println(Log.INFO, "MailRepository", "Getting event by ID: " + eventID);
         SQLiteDatabase db = dbHelper.getReadableDatabase();
