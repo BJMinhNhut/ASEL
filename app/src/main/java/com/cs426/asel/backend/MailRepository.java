@@ -48,7 +48,7 @@ public class MailRepository {
         return db.delete(DatabaseContract.Mails.TABLE_NAME, selection, selectionArgs);
     }
 
-    public MailList getAllMails() {
+    public MailList getAllMails(String sortBy, boolean isAscending) {
         Log.println(Log.INFO, "MailRepository", "Getting all mails");
         SQLiteDatabase db = dbHelper.getReadableDatabase();
 
@@ -64,15 +64,16 @@ public class MailRepository {
                 DatabaseContract.Mails.COLUMN_NAME_IS_READ
         };
 
-        Cursor cursor = db.query(
-                DatabaseContract.Mails.TABLE_NAME,
+        String sortOrder = null;
+        if (!sortBy.isEmpty()) sortOrder = sortBy + (isAscending ? " ASC" : " DESC");
+
+        Cursor cursor = db.query(DatabaseContract.Mails.TABLE_NAME,
                 projection,
                 null,
                 null,
                 null,
                 null,
-                null
-        );
+                sortOrder);
 
         MailList mailList = new MailList();
         while (cursor.moveToNext()) {
