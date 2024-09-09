@@ -10,4 +10,40 @@
     <color name="orange">#FFFF5722</color>
     <color name="red">#E50914</color>
     <color name="green">#1DB954</color>
+
+    <!-- Highlight -->
+    <color name="highlight_darkest">#006FFD</color>
+    <color name="highlight_dark">#2897FF</color>
+    <color name="highlight_medium">#6FB9FF</color>
+    <color name="highlight_light">#B3DAFF</color>
+    <color name="highlight_lightest">#EAF2FF</color>
+
+    <!-- Light -->
+    <color name="light_darkest">#C5C6CC</color>
+    <color name="light_dark">#D4D6DD</color>
+    <color name="light_medium">#E8E9F1</color>
+    <color name="light_light">#F8F9FE</color>
+    <color name="light_lightest">#FFFFFF</color>
+
+    <!-- Dark -->
+    <color name="dark_darkest">#1E1E1E</color>
+    <color name="dark_dark">#2F3036</color>
+    <color name="dark_medium">#494A50</color>
+    <color name="dark_light">#71727A</color>
+    <color name="dark_lightest">#8F9098</color>
+
+    <!-- Success -->
+    <color name="success_dark">#298267</color>
+    <color name="success_medium">#3AC0A0</color>
+    <color name="success_light">#E7F4E8</color>
+
+    <!-- Warning -->
+    <color name="warning_dark">#E86339</color>
+    <color name="warning_medium">#FFB37C</color>
+    <color name="warning_light">#FFF4E4</color>
+
+    <!-- Error -->
+    <color name="error_dark">#ED3241</color>
+    <color name="error_medium">#FF616D</color>
+    <color name="error_light">#FFE2E5</color>
 </resources>

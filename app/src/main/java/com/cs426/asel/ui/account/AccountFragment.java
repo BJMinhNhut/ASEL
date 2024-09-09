@@ -17,6 +17,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import com.cs426.asel.R;
 import com.cs426.asel.databinding.FragmentAccountBinding;
@@ -45,7 +46,7 @@ public class AccountFragment extends Fragment {
         // Load saved data
         loadAccountInfo();
 
-        final Button accountButton = binding.updateAccountButton;
+        final LinearLayout accountButton = binding.updateAccountButton;
         accountButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -53,7 +54,7 @@ public class AccountFragment extends Fragment {
             }
         });
 
-        final Button infoButton = binding.updateInfoButton;
+        final LinearLayout infoButton = binding.updateInfoButton;
         infoButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -61,7 +62,7 @@ public class AccountFragment extends Fragment {
             }
         });
 
-        final Button settingsButton = binding.settingsButton;
+        final LinearLayout settingsButton = binding.settingsButton;
         settingsButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
