@@ -22,6 +22,7 @@ public class Event {
     String mDescription;
 
     boolean mIsAllDay;
+    boolean mIsPublished;
 
     public Event() {
         mID = -1; // -1 for undefined ID (not in the database)
@@ -36,9 +37,10 @@ public class Event {
         mReminderTime = Instant.now();
         mDescription = "";
         mIsAllDay = false;
+        mIsPublished = false;
     }
 
-    public Event(int id, String mailID, String title, Instant startTime, int duration, String location, boolean isRepeating, String repeatFrequency, Instant repeatEndDate, Instant reminderTime, String description, boolean isAllDay) {
+    public Event(int id, String mailID, String title, Instant startTime, int duration, String location, boolean isRepeating, String repeatFrequency, Instant repeatEndDate, Instant reminderTime, String description, boolean isAllDay, boolean isPublished) {
         mID = id;
         mMailID = mailID;
         mTitle = title;
@@ -51,9 +53,10 @@ public class Event {
         mReminderTime = reminderTime;
         mDescription = description;
         mIsAllDay = isAllDay;
+        mIsPublished = isPublished;
     }
 
-    public Event(String mailID, String title, Instant startTime, int duration, String location, boolean isRepeating, String repeatFrequency, Instant repeatEndDate, Instant reminderTime, String description, boolean isAllDay) {
+    public Event(String mailID, String title, Instant startTime, int duration, String location, boolean isRepeating, String repeatFrequency, Instant repeatEndDate, Instant reminderTime, String description, boolean isAllDay, boolean isPublished) {
         mID = -1; // -1 for undefined ID (not in the database)
         mMailID = mailID;
         mTitle = title;
@@ -66,6 +69,7 @@ public class Event {
         mReminderTime = reminderTime;
         mDescription = description;
         mIsAllDay = isAllDay;
+        mIsPublished = isPublished;
     }
 
     public int getID() {
@@ -116,6 +120,10 @@ public class Event {
         return mIsAllDay;
     }
 
+    public boolean isPublished() {
+        return mIsPublished;
+    }
+
     public void setMailID(String mailID) {
         mMailID = mailID;
     }
@@ -160,6 +168,10 @@ public class Event {
 
     public void setIsAllDay(boolean isAllDay) {
         mIsAllDay = isAllDay;
+    }
+
+    public void setIsPublished(boolean isPublished) {
+        mIsPublished = isPublished;
     }
 
     @NonNull
