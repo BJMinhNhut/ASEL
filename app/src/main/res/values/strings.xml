@@ -14,4 +14,5 @@
     <string name="client_id">357295224601-rg3ceu9jif68jkqhtof2u54263lv7mbn.apps.googleusercontent.com</string>
     <string name="web_client_id">357295224601-13beukedvjhgaeg1iqai45lj12i6r9cg.apps.googleusercontent.com</string>
     <string name="exception_message">Error occurred</string>
+    <string name="extract_promt">provide a brief summary of the email below. The summary should be short and general. If there is an event, provide the fromDateTime and toDateTime, location, else put null. If there is only one time mark or deadline, put it in fromDateTime and leave toDateTime null. The DateTime should be given in the format "DD/MM/YYYY/ # hh:mm". Provide the tag of mail (Assignment, Exam, Meeting, Course Material, Other):</string>
 </resources>

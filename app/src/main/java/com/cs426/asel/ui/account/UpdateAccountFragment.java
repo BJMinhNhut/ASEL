@@ -71,14 +71,14 @@ public class UpdateAccountFragment extends Fragment {
     }
 
     private void testMail() {
-        Mail mail = new Mail(emailsViewModel.getMessages().get(0));
-//        mail.summarize();
-
-        System.out.println(mail.getEmailID());
-        System.out.println(mail.getTitle());
-        System.out.println(mail.getSender());
-        System.out.println(mail.getSummary());
-        System.out.println(mail.getContent());
+//        Mail mail = new Mail(emailsViewModel.getMessages().get(0));
+////        mail.summarize();
+//
+//        System.out.println(mail.getEmailID());
+//        System.out.println(mail.getTitle());
+//        System.out.println(mail.getSender());
+//        System.out.println(mail.getSummary());
+//        System.out.println(mail.getContent());
 
     }
 

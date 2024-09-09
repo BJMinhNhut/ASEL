@@ -50,6 +50,16 @@
         app:icon="@drawable/ic_filter_black_24dp"
         app:iconPadding="0dp"/>
 
+    <TextView
+        android:id="@+id/loading_indicator"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+
+        android:gravity="center"
+        android:text="Loading..."
+        android:layout_below="@id/filter_button"
+        android:layout_alignParentBottom="true"/>
+
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/email_list_recycler_view"
         android:layout_below="@id/filter_button"
