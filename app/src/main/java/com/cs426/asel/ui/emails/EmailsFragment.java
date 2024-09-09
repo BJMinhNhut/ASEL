@@ -2,13 +2,16 @@ package com.cs426.asel.ui.emails;
 
 import android.app.AlertDialog;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.navigation.fragment.NavHostFragment;
 import androidx.recyclerview.widget.ItemTouchHelper;
@@ -16,13 +19,21 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.cs426.asel.MainActivity;
 import com.cs426.asel.R;
+import com.cs426.asel.backend.Mail;
+import com.cs426.asel.backend.MailList;
 import com.cs426.asel.databinding.FragmentEmailsBinding;
+import com.cs426.asel.databinding.NewEmailItemBinding;
 import com.google.android.material.snackbar.Snackbar;
 
 public class EmailsFragment extends Fragment {
+    private MailList unread;
+    private MailList read;
     private FragmentEmailsBinding binding;
     private RecyclerView emailListRecyclerView;
     private EmailsViewModel emailsViewModel; // Reference to the shared ViewModel
+
+    private int removedIndex = -1;
+    private Mail removedMail;
 
     @Nullable
     @Override
@@ -32,8 +43,56 @@ public class EmailsFragment extends Fragment {
         binding = FragmentEmailsBinding.inflate(inflater, container, false);
 
         emailsViewModel.fetchEmails();
+        unread = emailsViewModel.getMailList();
+        read = new MailList(); // TODO: Initialize read emails
+
+        binding.mailsRadioGroup.setOnCheckedChangeListener((group, checkedId) -> {
+            if (checkedId == R.id.new_mail_radio_button) {
+                EmailListAdapter adapter = new EmailListAdapter();
+                adapter.setMailList(unread);
+                adapter.notifyDataSetChanged();
+            } else {
+                EmailListAdapter adapter = new EmailListAdapter();
+                adapter.setMailList(read);
+                adapter.notifyDataSetChanged();
+            }
+        });
+
+        binding.filterButton.setOnClickListener(v -> {
+            // TODO: Implement filter logic
+        });
+
+        final Observer<Boolean> loadObserver = new Observer<Boolean>() {
+            @Override
+            public void onChanged(Boolean aBoolean) {
+                if (aBoolean) {
+                    showLoadIndicator();
+                } else {
+                    Log.d("EmailsFragment", "Hiding load");
+
+                    unread = emailsViewModel.getMailList();
+                    EmailListAdapter adapter = new EmailListAdapter();
+                    adapter.setMailList(unread);
+                    emailListRecyclerView.setAdapter(adapter);
+
+                    hideLoadIndicator();
+                }
+            }
+        };
+
+        emailsViewModel.getIsLoading().observe(getViewLifecycleOwner(), loadObserver);
 
         return binding.getRoot();
+    }
+
+    private void hideLoadIndicator() {
+        binding.loadingIndicator.setVisibility(View.GONE);
+        binding.emailListRecyclerView.setVisibility(View.VISIBLE);
+    }
+
+    private void showLoadIndicator() {
+        binding.loadingIndicator.setVisibility(View.VISIBLE);
+        binding.emailListRecyclerView.setVisibility(View.GONE);
     }
 
     @Override
@@ -60,8 +119,15 @@ public class EmailsFragment extends Fragment {
 
                             dialog.setButton(AlertDialog.BUTTON_POSITIVE, "Yes", (dialog1, which) -> {
                                 // Delete email (implement the delete logic here)
+                                Mail mail = read.getMail(viewHolder.getAdapterPosition());
+                                unread.addMail(mail);
+                                read.addMail(mail);
+
+                                removedIndex = viewHolder.getAdapterPosition();
+                                removedMail = mail;
 
                                 adapter.notifyItemRemoved(viewHolder.getAdapterPosition());
+                                dialog.dismiss();
                             });
 
                             dialog.setButton(AlertDialog.BUTTON_NEGATIVE, "No", (dialog12, which) -> {
@@ -89,7 +155,37 @@ public class EmailsFragment extends Fragment {
         itemTouchHelper.attachToRecyclerView(emailListRecyclerView);
     }
 
+    public void updateEmailList(MailList mailList) {
+        if (binding.mailsRadioGroup.getCheckedRadioButtonId() == R.id.new_mail_radio_button) {
+            unread.append(mailList);
+            EmailListAdapter adapter = new EmailListAdapter();
+            adapter.setMailList(unread);
+            emailListRecyclerView.setAdapter(adapter);
+        } else {
+            read.append(mailList);
+            EmailListAdapter adapter = new EmailListAdapter();
+            adapter.setMailList(read);
+            emailListRecyclerView.setAdapter(adapter);
+        }
+    }
+
     class EmailListAdapter extends RecyclerView.Adapter<EmailListAdapter.EmailViewHolder> {
+        private MailList mailList;
+
+        public EmailListAdapter() {
+            mailList = new MailList();
+        }
+
+        public void setMailList(MailList mailList) {
+            this.mailList = mailList;
+            notifyDataSetChanged();
+        }
+
+        public void appendList(MailList mailList) {
+            this.mailList.append(mailList);
+            notifyDataSetChanged();
+        }
+
         @NonNull
         @Override
         public EmailViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
@@ -107,18 +203,35 @@ public class EmailsFragment extends Fragment {
                 NavHostFragment.findNavController(EmailsFragment.this)
                         .navigate(R.id.navigation_email_detail, bundle);
             });
+
+            holder.senderName.setText(mailList.getMail(position).getSender());
+//            holder.receiverName.setText(mailList.getMail(position).getReceiver());
+            holder.title.setText(mailList.getMail(position).getTitle());
+            holder.time.setText(mailList.getMail(position).getSendTime());
+            holder.place.setText(mailList.getMail(position).getLocation());
         }
 
         @Override
         public int getItemCount() {
             // Update to reflect actual number of emails from ViewModel or LiveData
-            return 5;
+            return mailList.size();
         }
 
         class EmailViewHolder extends RecyclerView.ViewHolder {
+            TextView senderName;
+            TextView receiverName;
+            TextView title;
+            TextView time;
+            TextView place;
 
             public EmailViewHolder(@NonNull View itemView) {
                 super(itemView);
+                senderName = itemView.findViewById(R.id.sender_name);
+                receiverName = itemView.findViewById(R.id.receiver_name);
+                title = itemView.findViewById(R.id.title);
+                time = itemView.findViewById(R.id.time);
+                place = itemView.findViewById(R.id.place);
+
             }
         }
     }

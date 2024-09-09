@@ -39,12 +39,17 @@ public class ChatGPTUtils {
 
     static {
         GenerationConfig.Builder builder = new GenerationConfig.Builder();
-        builder.temperature = 0.1f;
+        builder.temperature = 0.45f;
+        builder.topP = 0.95f;
+        builder.topK = 64;
+        builder.maxOutputTokens = 8192;
+        builder.responseMimeType = "application/json";
+
         CONFIG = builder.build();
     }
 
     public static ListenableFuture<GenerateContentResponse> getResponse(String prompt) {
-        GenerativeModel gm = new GenerativeModel(MODEL, getAPIKey());
+        GenerativeModel gm = new GenerativeModel(MODEL, getAPIKey(), CONFIG);
         GenerativeModelFutures model = GenerativeModelFutures.from(gm);
         Content content = new Content.Builder().addText(prompt).build();
 

@@ -14,14 +14,6 @@ public class MailList {
         mailList = new ArrayList<>();
     }
 
-    public void updateEmails(Context context, List<Message> messages) {
-        // Fetch Messages from Gmail into a List and add to database
-
-
-        // Fet  ch existing Mail from Database to fill up displaying list
-
-    }
-
     public Mail getMail(int index) {
         return mailList.get(index);
     }
@@ -33,6 +25,10 @@ public class MailList {
             }
         }
         return null;
+    }
+
+    public void append(MailList mailList) {
+        this.mailList.addAll(mailList.mailList);
     }
 
     public void addMail(Mail mail) {
