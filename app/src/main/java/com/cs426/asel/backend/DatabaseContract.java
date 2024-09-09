@@ -54,6 +54,7 @@ public final class DatabaseContract {
         public static final String COLUMN_NAME_REPEAT_END = "repeat_end";
         public static final String COLUMN_NAME_REMIND_TIME = "remind_time";
         public static final String COLUMN_NAME_ALL_DAY = "all_day";
+        public static final String COLUMN_NAME_PUBLISHED = "published";
 
         // SQL scripts
         public static final String CREATE_TABLE = "CREATE TABLE " + TABLE_NAME + " (" +
@@ -67,7 +68,8 @@ public final class DatabaseContract {
                 COLUMN_NAME_REPEAT_FREQUENCY + " TEXT," +
                 COLUMN_NAME_REPEAT_END + " TEXT," +
                 COLUMN_NAME_REMIND_TIME + " TEXT," +
-                COLUMN_NAME_ALL_DAY + " INTEGER)";
+                COLUMN_NAME_ALL_DAY + " INTEGER," +
+                COLUMN_NAME_PUBLISHED + " INTEGER)";
 
         public static final String DROP_TABLE = "DROP TABLE IF EXISTS " + TABLE_NAME;
     }
