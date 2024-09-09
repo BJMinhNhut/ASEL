@@ -9,12 +9,12 @@ import android.view.ViewGroup;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentTransaction;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.navigation.fragment.NavHostFragment;
 import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.cs426.asel.MainActivity;
 import com.cs426.asel.R;
 import com.cs426.asel.databinding.FragmentEmailsBinding;
 import com.google.android.material.snackbar.Snackbar;
@@ -93,7 +93,7 @@ public class EmailsFragment extends Fragment {
         @NonNull
         @Override
         public EmailViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-            View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.new_email_item, parent, false);
+            View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_new_email, parent, false);
             return new EmailViewHolder(view);
         }
 
@@ -104,8 +104,10 @@ public class EmailsFragment extends Fragment {
                 Bundle bundle = new Bundle();
                 bundle.putInt("emailId", 1); // Replace 1 with the actual email ID you want to pass
 
-                NavHostFragment.findNavController(EmailsFragment.this)
-                        .navigate(R.id.navigation_email_detail, bundle);
+                FragmentTransaction ft = requireActivity().getSupportFragmentManager().beginTransaction();
+                EmailDetailFragment fragment = new EmailDetailFragment();
+                fragment.setArguments(bundle);
+                ft.replace(R.id.emailsContainer, fragment).addToBackStack(null).commit();
             });
         }
 

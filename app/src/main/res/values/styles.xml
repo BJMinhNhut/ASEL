@@ -64,4 +64,8 @@
         <item name="android:textSize">10sp</item>
     </style>
 
+    <!-- Bottom navigation -->
+    <style name="custom_indicator" parent="Widget.Material3.BottomNavigationView.ActiveIndicator">
+        <item name="android:color">@color/highlight_medium</item>
+    </style>
 </resources>
