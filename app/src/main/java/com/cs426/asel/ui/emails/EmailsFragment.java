@@ -47,6 +47,7 @@ public class EmailsFragment extends Fragment {
         adapter = new EmailListAdapter();
 
         emailsViewModel.fetchAllEmailsID();
+        unread = new MailList();
         read = new MailRepository(requireContext()).getMailByRead(true, "send_time", false);
 
         binding.mailsRadioGroup.setOnCheckedChangeListener((group, checkedId) -> {
@@ -70,9 +71,8 @@ public class EmailsFragment extends Fragment {
                     showLoadIndicator();
                 } else {
                     Log.d("EmailsFragment", "Hiding load");
-
-                    unread = emailsViewModel.getMailList();
-                    adapter.setMailList(unread);
+                    adapter.appendList(emailsViewModel.getMailList());
+                    unread.append(emailsViewModel.getMailList());
                     hideLoadIndicator();
                 }
             }
@@ -83,16 +83,6 @@ public class EmailsFragment extends Fragment {
         return binding.getRoot();
     }
 
-    private void hideLoadIndicator() {
-        binding.loadingIndicator.setVisibility(View.GONE);
-        binding.emailListRecyclerView.setVisibility(View.VISIBLE);
-    }
-
-    private void showLoadIndicator() {
-        binding.loadingIndicator.setVisibility(View.VISIBLE);
-        binding.emailListRecyclerView.setVisibility(View.GONE);
-    }
-
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
@@ -100,6 +90,16 @@ public class EmailsFragment extends Fragment {
         View root = binding.getRoot();
         emailListRecyclerView = root.findViewById(R.id.email_list_recycler_view);
         emailListRecyclerView.setAdapter(adapter);
+        emailListRecyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
+            @Override
+            public void onScrollStateChanged(@NonNull RecyclerView recyclerView, int newState) {
+                super.onScrollStateChanged(recyclerView, newState);
+
+                if (!recyclerView.canScrollVertically(1)) {
+                    emailsViewModel.loadMoreEmails();
+                }
+            }
+        });
 
         // Swipe to delete or quick add
         swipeCallback =
@@ -171,17 +171,14 @@ public class EmailsFragment extends Fragment {
         itemTouchHelper.attachToRecyclerView(emailListRecyclerView);
     }
 
-    public void appendList(MailList mailList) {
-        EmailListAdapter adapter = new EmailListAdapter();
-        adapter.appendList(mailList);
-        emailListRecyclerView.setAdapter(adapter);
-        adapter.notifyDataSetChanged();
+    private void hideLoadIndicator() {
+        binding.loadingIndicator.setVisibility(View.GONE);
+        binding.emailListRecyclerView.setVisibility(View.VISIBLE);
+    }
 
-        if (binding.mailsRadioGroup.getCheckedRadioButtonId() == R.id.new_mail_radio_button) {
-            unread.append(mailList);
-        } else {
-            read.append(mailList);
-        }
+    private void showLoadIndicator() {
+        binding.loadingIndicator.setVisibility(View.VISIBLE);
+        binding.emailListRecyclerView.setVisibility(View.GONE);
     }
 
     class EmailListAdapter extends RecyclerView.Adapter<EmailListAdapter.EmailViewHolder> {
@@ -197,8 +194,9 @@ public class EmailsFragment extends Fragment {
         }
 
         public void appendList(MailList mailList) {
+            int position = this.mailList.size();
             this.mailList.append(mailList);
-            notifyDataSetChanged();
+            notifyItemRangeChanged(position, mailList.size());
         }
 
         public void removeMail(int position) {

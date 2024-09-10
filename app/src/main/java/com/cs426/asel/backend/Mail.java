@@ -101,12 +101,13 @@ public class Mail {
                 mReceiver = h.getValue();
             } else if (h.getName().equals("Date")) {
                 String sentTime = trimTimeZone(h.getValue());
-                mReceivedTime = parseToInstant(sentTime, "EEE, dd MMM yyyy HH:mm:ss");
+                mReceivedTime = parseToInstant(sentTime, "EEE, d MMM yyyy HH:mm:ss");
             }
         }
 
         mContent = getDecodedBody(message);
 
+        Log.d("Mail", "Mail title: " + mTitle);
     }
 
     public static String extractEmailAddress(String input) {
@@ -123,7 +124,8 @@ public class Mail {
     }
 
     private static String trimTimeZone(String dateString) {
-        return dateString.substring(0, 25);
+        String res = dateString.substring(0, 25);
+        return res.trim();
     }
 
     private static String getDecodedBody(Message message) {

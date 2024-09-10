@@ -52,6 +52,7 @@ public class EmailsViewModel extends ViewModel implements GmailServices.EmailCal
     private ScheduledExecutorService scheduledExecutor;
 
     private MailRepository mailRepository;
+    private MailList mailList;
     private Context context;
 
     public EmailsViewModel(Context context) {
@@ -124,27 +125,42 @@ public class EmailsViewModel extends ViewModel implements GmailServices.EmailCal
         processEmails();
     }
 
+    public void loadMoreEmails() {
+        if (isLoading.getValue()) {
+            return;
+        }
+        isLoading.postValue(true);
+        ExecutorService executor = Executors.newSingleThreadExecutor();
+        executor.submit(() -> {
+            processEmails();
+        });
+    }
+
     private void processEmails() {
-        int processSize = min(currentIndex + EMAIL_PER_FETCH, messageCache.size());
-        Log.d("EmailsViewModel", "Processing " + processSize + " emails.");
+        int processLimit = min(currentIndex + EMAIL_PER_FETCH, messageCache.size());
+        int processSize = processLimit - currentIndex;
+
         List<ListenableFuture<GenerateContentResponse>> futures = new ArrayList<>();
         CountDownLatch latch = new CountDownLatch(processSize);
+        Log.d("EmailsViewModel", "Processing emails from index " + currentIndex + " to " + processLimit);
 
+        mailList = new MailList();
         retryCounts = new HashMap<>();
         executorService = MoreExecutors.listeningDecorator(Executors.newFixedThreadPool(processSize));
         scheduledExecutor = Executors.newScheduledThreadPool(1);
 
-        List<Message> messages = getMessages();
-        for (int i = currentIndex; i < processSize; i++) {
-            Message message = messages.get(i);
-            String curId = message.getId();
+        List<String> ids = getEmailsID();
 
+        for (int i = currentIndex; i < processLimit; i++) {
+            String curId = ids.get(i);
             if (isProcessed(curId)) {
                 Log.d("EmailsViewModel", "Email ID " + curId + " is already processed. Skipping.");
+                mailList.addMail(new MailRepository(context).getMailById(curId));
                 latch.countDown();
                 continue;
             }
 
+            Message message = getMessage(curId);
             if (message == null) {
                 Log.d("EmailsViewModel", "Email ID " + curId + " is null. Skipping.");
                 continue;
@@ -158,7 +174,7 @@ public class EmailsViewModel extends ViewModel implements GmailServices.EmailCal
             attemptProcessWithRetry(mail, future, latch);
         }
 
-        currentIndex = processSize;
+        currentIndex = processLimit;
 
         try {
             latch.await();
@@ -183,6 +199,7 @@ public class EmailsViewModel extends ViewModel implements GmailServices.EmailCal
                         Log.d("EmailsViewModel", "Email ID " + mail.getId() + " processed.");
                         mail.extractInfo(result.getText());
                         mailRepository.insertMail(mail);
+                        mailList.addMail(mail);
                     }
 
                     @Override
@@ -254,7 +271,6 @@ public class EmailsViewModel extends ViewModel implements GmailServices.EmailCal
     }
 
     public MailList getMailList() {
-        MailList mailList = mailRepository.getMailByRead(false, "send_time", false);
         return mailList;
     }
 }
