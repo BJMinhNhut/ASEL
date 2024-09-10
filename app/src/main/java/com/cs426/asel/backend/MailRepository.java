@@ -15,6 +15,18 @@ public class MailRepository {
         dbHelper = new DatabaseHelper(context);
     }
 
+    public final String[] mailProjection = {
+        DatabaseContract.Mails._ID,
+        DatabaseContract.Mails.COLUMN_NAME_TITLE,
+        DatabaseContract.Mails.COLUMN_NAME_SENDER,
+        DatabaseContract.Mails.COLUMN_NAME_RECEIVER,
+        DatabaseContract.Mails.COLUMN_NAME_CONTENT,
+        DatabaseContract.Mails.COLUMN_NAME_SUMMARY,
+        DatabaseContract.Mails.COLUMN_NAME_SEND_TIME,
+        DatabaseContract.Mails.COLUMN_NAME_EVENT_ID,
+        DatabaseContract.Mails.COLUMN_NAME_IS_READ
+    };
+
     public long insertMail(Mail mail) {
         EventRepository eventRepository = new EventRepository(dbHelper.getContext());
         long eventId = eventRepository.insertEvent(mail.getEvent());
@@ -52,23 +64,11 @@ public class MailRepository {
         Log.println(Log.INFO, "MailRepository", "Getting all mails");
         SQLiteDatabase db = dbHelper.getReadableDatabase();
 
-        String[] projection = {
-                DatabaseContract.Mails._ID,
-                DatabaseContract.Mails.COLUMN_NAME_TITLE,
-                DatabaseContract.Mails.COLUMN_NAME_CONTENT,
-                DatabaseContract.Mails.COLUMN_NAME_SUMMARY,
-                DatabaseContract.Mails.COLUMN_NAME_SENDER,
-                DatabaseContract.Mails.COLUMN_NAME_RECEIVER,
-                DatabaseContract.Mails.COLUMN_NAME_SEND_TIME,
-                DatabaseContract.Mails.COLUMN_NAME_EVENT_ID,
-                DatabaseContract.Mails.COLUMN_NAME_IS_READ
-        };
-
         String sortOrder = null;
         if (!sortBy.isEmpty()) sortOrder = sortBy + (isAscending ? " ASC" : " DESC");
 
         Cursor cursor = db.query(DatabaseContract.Mails.TABLE_NAME,
-                projection,
+                mailProjection,
                 null,
                 null,
                 null,
@@ -77,18 +77,7 @@ public class MailRepository {
 
         MailList mailList = new MailList();
         while (cursor.moveToNext()) {
-            String id = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseContract.Mails._ID));
-            String title = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseContract.Mails.COLUMN_NAME_TITLE));
-            String content = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseContract.Mails.COLUMN_NAME_CONTENT));
-            String summary = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseContract.Mails.COLUMN_NAME_SUMMARY));
-            String sender = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseContract.Mails.COLUMN_NAME_SENDER));
-            String receiver = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseContract.Mails.COLUMN_NAME_RECEIVER));
-            Instant sendTime = Instant.parse(cursor.getString(cursor.getColumnIndexOrThrow(DatabaseContract.Mails.COLUMN_NAME_SEND_TIME)));
-            int eventID = cursor.getInt(cursor.getColumnIndexOrThrow(DatabaseContract.Mails.COLUMN_NAME_EVENT_ID));
-            boolean isRead = cursor.getInt(cursor.getColumnIndexOrThrow(DatabaseContract.Mails.COLUMN_NAME_IS_READ)) == 1;
-
-            Event event = getEventByID(id, eventID);
-            mailList.addMail(new Mail(id, title, sender, receiver, content, summary, event, sendTime, isRead));
+            mailList.addMail(getMailByCursor(cursor));
         }
         cursor.close();
         return mailList;
@@ -97,6 +86,56 @@ public class MailRepository {
     // TODO: implement this
     public MailList getMailByTags() {
         return null;
+    }
+
+    public Mail getMailById(String id) {
+        Log.println(Log.INFO, "MailRepository", "Getting mail by ID: " + id);
+        SQLiteDatabase db = dbHelper.getReadableDatabase();
+
+        String selection = DatabaseContract.Mails._ID + " = ?";
+        String[] selectionArgs = { id };
+
+        Cursor cursor = db.query(
+                DatabaseContract.Mails.TABLE_NAME,
+                mailProjection,
+                selection,
+                selectionArgs,
+                null,
+                null,
+                null
+        );
+
+        Mail mail = null;
+        if (cursor.moveToNext()) {
+            mail = getMailByCursor(cursor);
+        }
+        cursor.close();
+        return mail;
+    }
+
+    public MailList getMailByRead(boolean isRead) {
+        Log.println(Log.INFO, "MailRepository", "Getting mail by read status: " + isRead);
+        SQLiteDatabase db = dbHelper.getReadableDatabase();
+
+        String selection = DatabaseContract.Mails.COLUMN_NAME_IS_READ + " = ?";
+        String[] selectionArgs = { isRead ? "1" : "0" };
+
+        Cursor cursor = db.query(
+                DatabaseContract.Mails.TABLE_NAME,
+                mailProjection,
+                selection,
+                selectionArgs,
+                null,
+                null,
+                null
+        );
+
+        MailList mailList = new MailList();
+        while (cursor.moveToNext()) {
+            mailList.addMail(getMailByCursor(cursor));
+        }
+        cursor.close();
+        return mailList;
     }
 
     public int updateRead(String id, boolean isRead) {
@@ -136,6 +175,21 @@ public class MailRepository {
         boolean exists = cursor.getCount() > 0;
         cursor.close();
         return exists;
+    }
+
+    private Mail getMailByCursor(Cursor cursor) {
+        String id = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseContract.Mails._ID));
+        String title = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseContract.Mails.COLUMN_NAME_TITLE));
+        String content = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseContract.Mails.COLUMN_NAME_CONTENT));
+        String summary = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseContract.Mails.COLUMN_NAME_SUMMARY));
+        String sender = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseContract.Mails.COLUMN_NAME_SENDER));
+        String receiver = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseContract.Mails.COLUMN_NAME_RECEIVER));
+        Instant sendTime = Instant.parse(cursor.getString(cursor.getColumnIndexOrThrow(DatabaseContract.Mails.COLUMN_NAME_SEND_TIME)));
+        int eventID = cursor.getInt(cursor.getColumnIndexOrThrow(DatabaseContract.Mails.COLUMN_NAME_EVENT_ID));
+        boolean isRead = cursor.getInt(cursor.getColumnIndexOrThrow(DatabaseContract.Mails.COLUMN_NAME_IS_READ)) == 1;
+
+        Event event = getEventByID(id, eventID);
+        return new Mail(id, title, sender, receiver, content, summary, event, sendTime, isRead);
     }
 
     private Event getEventByID(String mailId, int eventID) {
@@ -189,5 +243,4 @@ public class MailRepository {
         cursor.close();
         return event;
     }
-
 }
