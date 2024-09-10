@@ -16,8 +16,10 @@ public class EventRepository {
     private final DatabaseHelper dbHelper;
     private final SQLiteQueryBuilder queryBuilder = new SQLiteQueryBuilder();
 
-    public EventRepository(Context context) {
-        dbHelper = new DatabaseHelper(context);
+    // How to use this class:
+    // EventRepository eventRepository = new EventRepository(getApplicationContext(), accountViewModel.getUserEmail());
+    public EventRepository(Context context, String userEmail) {
+        dbHelper = new DatabaseHelper(context, userEmail);
     }
 
     // insert and return the id of the event

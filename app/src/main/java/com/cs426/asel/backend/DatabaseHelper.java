@@ -3,14 +3,19 @@ package com.cs426.asel.backend;
 import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
+import android.util.Log;
 
 public class DatabaseHelper extends SQLiteOpenHelper {
-    private static final String DB_NAME = "ASEL.db";
+    private static final String DB_NAME = "_db_asel.db";
     private static final int DB_VERSION = 0;
     private Context mContext;
 
-    public DatabaseHelper(Context context) {
-        super(context, DB_NAME, null, DB_VERSION);
+
+    // How to use this class:
+    // DatabaseHelper dbHelper = new DatabaseHelper(getApplicationContext(), accountViewModel.getUserEmail());
+    public DatabaseHelper(Context context, String userEmail) {
+        super(context, userEmail + DB_NAME, null, DB_VERSION);
+        Log.println(Log.INFO, "DatabaseHelper", "Loading database for user: " + userEmail);
         mContext = context;
     }
 
