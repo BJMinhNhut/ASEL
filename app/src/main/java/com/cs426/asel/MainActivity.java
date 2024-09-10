@@ -2,15 +2,14 @@ package com.cs426.asel;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.SparseArray;
 import android.widget.Toast;
 
 import com.cs426.asel.ui.account.AccountContainer;
-import com.cs426.asel.ui.account.AccountFragment;
 import com.cs426.asel.ui.account.AccountViewModel;
 import com.cs426.asel.ui.account.AccountViewModelFactory;
 import com.cs426.asel.ui.emails.EmailsContainer;
 import com.cs426.asel.ui.events.EventsFragment;
-import com.cs426.asel.ui.emails.EmailsFragment;
 import com.cs426.asel.ui.emails.EmailsViewModel;
 import com.cs426.asel.ui.emails.EmailsViewModelFactory;
 import com.cs426.asel.ui.home.HomeFragment;
@@ -27,10 +26,6 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentActivity;
 import androidx.lifecycle.ViewModelProvider;
-import androidx.navigation.NavController;
-import androidx.navigation.fragment.NavHostFragment;
-import androidx.navigation.ui.AppBarConfiguration;
-import androidx.navigation.ui.NavigationUI;
 import androidx.viewpager2.adapter.FragmentStateAdapter;
 import androidx.viewpager2.widget.ViewPager2;
 
@@ -52,6 +47,7 @@ public class MainActivity extends AppCompatActivity {
         BottomNavigationView navView = binding.navView;
         ViewPager2 viewPager = binding.viewPager;
 
+        viewPager.setOffscreenPageLimit(5);
         viewPager.setAdapter(new ScreenSlidePagerAdapter(this));
         navView.setOnItemSelectedListener(item -> {
             int id = item.getItemId();
@@ -104,6 +100,8 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private static class ScreenSlidePagerAdapter extends FragmentStateAdapter {
+        private final SparseArray<Fragment> fragmentCache = new SparseArray<>();
+
         public ScreenSlidePagerAdapter(FragmentActivity fragmentActivity) {
             super(fragmentActivity);
         }

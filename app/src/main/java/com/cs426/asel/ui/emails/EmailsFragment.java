@@ -12,13 +12,13 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentTransaction;
 import androidx.lifecycle.ViewModelProvider;
-import androidx.navigation.fragment.NavHostFragment;
 import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.cs426.asel.R;
 import com.cs426.asel.databinding.FragmentEmailsBinding;
+import com.cs426.asel.ui.decoration.SpaceItemDecoration;
 import com.google.android.material.snackbar.Snackbar;
 
 public class EmailsFragment extends Fragment {
@@ -91,19 +91,6 @@ public class EmailsFragment extends Fragment {
 
         ItemTouchHelper itemTouchHelper = new ItemTouchHelper(swipeCallback);
         itemTouchHelper.attachToRecyclerView(emailListRecyclerView);
-    }
-
-    public static class SpaceItemDecoration extends RecyclerView.ItemDecoration {
-        private final int verticalSpaceHeight;
-
-        public SpaceItemDecoration(int verticalSpaceHeight) {
-            this.verticalSpaceHeight = verticalSpaceHeight;
-        }
-
-        @Override
-        public void getItemOffsets(@NonNull Rect outRect, @NonNull View view, @NonNull RecyclerView parent, @NonNull RecyclerView.State state) {
-            outRect.bottom = verticalSpaceHeight;
-        }
     }
 
     class EmailListAdapter extends RecyclerView.Adapter<EmailListAdapter.EmailViewHolder> {

@@ -15,6 +15,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.cs426.asel.R;
 import com.cs426.asel.backend.Event;
 import com.cs426.asel.backend.EventList;
+import com.cs426.asel.ui.decoration.SpaceItemDecoration;
 
 import java.time.Instant;
 import java.time.LocalDateTime;
@@ -61,19 +62,6 @@ public class EventsListFragment extends Fragment {
         eventRecyclerView.setAdapter(eventAdapter);
 
         return view;
-    }
-
-    public static class SpaceItemDecoration extends RecyclerView.ItemDecoration {
-        private final int verticalSpaceHeight;
-
-        public SpaceItemDecoration(int verticalSpaceHeight) {
-            this.verticalSpaceHeight = verticalSpaceHeight;
-        }
-
-        @Override
-        public void getItemOffsets(@NonNull Rect outRect, @NonNull View view, @NonNull RecyclerView parent, @NonNull RecyclerView.State state) {
-            outRect.bottom = verticalSpaceHeight;
-        }
     }
 
     public static class EventAdapter extends RecyclerView.Adapter<EventAdapter.EventViewHolder> {

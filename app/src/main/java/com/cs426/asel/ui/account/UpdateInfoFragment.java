@@ -5,6 +5,7 @@ import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.cardview.widget.CardView;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentManager;
+import androidx.fragment.app.FragmentTransaction;
 import androidx.lifecycle.ViewModelProvider;
 import android.app.DatePickerDialog;
 import android.content.Context;
@@ -26,6 +27,7 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 import com.cs426.asel.R;
@@ -44,6 +46,7 @@ public class UpdateInfoFragment extends Fragment {
     private TextInputEditText editTextFullName, editTextStudentId, editTextSchool, editTextFaculty, editTextDegree;
     private TextInputEditText textViewBirthday;
     private ImageButton imageButtonAvatar;
+    private ImageView buttonBack;
     private MaterialButton buttonSave;
     private Calendar calendar;
 
@@ -68,6 +71,7 @@ public class UpdateInfoFragment extends Fragment {
         editTextSchool = view.findViewById(R.id.editTextSchool);
         editTextFaculty = view.findViewById(R.id.editTextFaculty);
         editTextDegree = view.findViewById(R.id.editTextDegree);
+        buttonBack = view.findViewById(R.id.buttonBack);
         buttonSave = view.findViewById(R.id.buttonSave);
 
         // Initialize Calendar for date picker
@@ -95,6 +99,12 @@ public class UpdateInfoFragment extends Fragment {
 
         // Load saved data
         loadStudentInfo();
+
+        // Set onClick listener for back button
+        buttonBack.setOnClickListener(v -> {
+            FragmentManager fm = getParentFragmentManager();
+            fm.popBackStack();
+        });
 
         // Set onClick listener for save button
         buttonSave.setOnClickListener(v -> {
