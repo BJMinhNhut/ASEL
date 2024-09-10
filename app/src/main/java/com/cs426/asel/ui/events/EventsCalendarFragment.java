@@ -1,4 +1,4 @@
-package com.cs426.asel.ui.dashboard;
+package com.cs426.asel.ui.events;
 
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -10,10 +10,10 @@ import androidx.fragment.app.Fragment;
 
 import com.cs426.asel.R;
 
-public class DashboardCalendarFragment extends Fragment {
+public class EventsCalendarFragment extends Fragment {
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.fragment_dashboard_calendar, container, false);
+        View view = inflater.inflate(R.layout.fragment_events_calendar, container, false);
 
         return view;
     }

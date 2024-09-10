@@ -1,11 +1,9 @@
-package com.cs426.asel.ui.dashboard;
+package com.cs426.asel.ui.events;
 
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
@@ -14,30 +12,29 @@ import androidx.fragment.app.FragmentTransaction;
 import androidx.lifecycle.ViewModelProvider;
 
 import com.cs426.asel.R;
-import com.cs426.asel.databinding.FragmentDashboardBinding;
+import com.cs426.asel.databinding.FragmentEventsBinding;
 import com.google.android.material.tabs.TabLayout;
 
-public class DashboardFragment extends Fragment {
-    private FragmentDashboardBinding binding;
+public class EventsFragment extends Fragment {
+    private FragmentEventsBinding binding;
     private Fragment calendarFragment, listFragment;
 
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        DashboardViewModel dashboardViewModel =
-                new ViewModelProvider(this).get(DashboardViewModel.class);
+        EventsViewModel eventsViewModel =
+                new ViewModelProvider(this).get(EventsViewModel.class);
 
-        binding = FragmentDashboardBinding.inflate(inflater, container, false);
+        binding = FragmentEventsBinding.inflate(inflater, container, false);
         View root = binding.getRoot();
 
         TabLayout tabLayout = binding.dashboardTab;
 
-        calendarFragment = new DashboardCalendarFragment();
-        listFragment = new DashboardListFragment();
+        calendarFragment = new EventsCalendarFragment();
+        listFragment = new EventsListFragment();
 
         tabLayout.addOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
             @Override
             public void onTabSelected(TabLayout.Tab tab) {
-                FragmentManager fm = getChildFragmentManager();
-                FragmentTransaction ft = fm.beginTransaction();
+                FragmentTransaction ft = getChildFragmentManager().beginTransaction();
                 switch (tab.getPosition()) {
                     case 0:
                         ft.show(calendarFragment).hide(listFragment);

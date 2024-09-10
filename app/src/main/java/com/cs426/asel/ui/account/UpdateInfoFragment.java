@@ -2,6 +2,7 @@ package com.cs426.asel.ui.account;
 
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
+import androidx.fragment.app.FragmentManager;
 import androidx.lifecycle.ViewModelProvider;
 import android.app.DatePickerDialog;
 import android.content.Context;
@@ -94,7 +95,8 @@ public class UpdateInfoFragment extends Fragment {
         buttonSave.setOnClickListener(v -> {
             saveStudentInfo();
             Toast.makeText(requireContext(), "Info saved successfully", Toast.LENGTH_SHORT).show();
-            NavHostFragment.findNavController(UpdateInfoFragment.this).popBackStack();
+            FragmentManager fm = getParentFragmentManager();
+            fm.popBackStack();
         });
     }
 

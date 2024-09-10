@@ -1,4 +1,4 @@
-package com.cs426.asel.ui.dashboard;
+package com.cs426.asel.ui.events;
 
 import android.graphics.Rect;
 import android.os.Bundle;
@@ -15,7 +15,6 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.cs426.asel.R;
 import com.cs426.asel.backend.Event;
 import com.cs426.asel.backend.EventList;
-import com.google.api.client.util.DateTime;
 
 import java.time.Instant;
 import java.time.LocalDateTime;
@@ -23,14 +22,14 @@ import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.Random;
 
-public class DashboardListFragment extends Fragment {
+public class EventsListFragment extends Fragment {
     private RecyclerView eventRecyclerView;
     private EventAdapter eventAdapter;
     private EventList eventList;
 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.fragment_dashboard_list, container, false);
+        View view = inflater.inflate(R.layout.fragment_events_list, container, false);
 
         eventRecyclerView = view.findViewById(R.id.eventRecyclerView);
         eventRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));

@@ -1,6 +1,7 @@
 package com.cs426.asel.ui.account;
 
 import androidx.fragment.app.FragmentManager;
+import androidx.fragment.app.FragmentTransaction;
 import androidx.lifecycle.ViewModelProvider;
 import android.content.Context;
 import android.content.SharedPreferences;
@@ -11,6 +12,9 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.navigation.fragment.NavHostFragment;
+
+import android.os.Handler;
+import android.os.Looper;
 import android.util.Base64;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -74,19 +78,24 @@ public class AccountFragment extends Fragment {
     }
 
     private void loadAccountInfo() {
-        SharedPreferences sharedPreferences = requireContext().getSharedPreferences("StudentInfo", Context.MODE_PRIVATE);
+        Handler mainHandler = new Handler(Looper.getMainLooper());
+        new Thread(() -> {
+            SharedPreferences sharedPreferences = requireContext().getSharedPreferences("StudentInfo", Context.MODE_PRIVATE);
 
-        // Load the saved full name
-        String fullName = sharedPreferences.getString("full_name", "Account Name");
-        accountNameView.setText(fullName);
+            // Load the saved full name
+            String fullName = sharedPreferences.getString("full_name", "Account Name");
+            accountNameView.setText(fullName);
 
-        // Load the saved avatar image
-        Bitmap avatar = loadImageFromPreferences(sharedPreferences);
-        if (avatar != null) {
-            accountAvatarView.setImageBitmap(avatar);
-        } else {
-            accountAvatarView.setImageResource(R.drawable.profile_image_default); // Set default avatar
-        }
+            mainHandler.post(() -> {
+                // Load the saved avatar image
+                Bitmap avatar = loadImageFromPreferences(sharedPreferences);
+                if (avatar != null) {
+                    accountAvatarView.setImageBitmap(avatar);
+                } else {
+                    accountAvatarView.setImageResource(R.drawable.profile_image_default); // Set default avatar
+                }
+            });
+        }).start();
     }
 
     private Bitmap loadImageFromPreferences(SharedPreferences sharedPreferences) {
@@ -99,18 +108,18 @@ public class AccountFragment extends Fragment {
     }
 
     private void updateAccount() {
-        // Jump to UpdateAccountFragment
-        NavHostFragment.findNavController(AccountFragment.this).navigate(R.id.action_navigation_account_to_updateAccountFragment);
+        FragmentTransaction ft = requireActivity().getSupportFragmentManager().beginTransaction();
+        ft.replace(R.id.accountContainer, new UpdateAccountFragment()).addToBackStack(null).commit();
     }
 
     private void updateInfo() {
-        // Jump to UpdateInfoFragment
-        NavHostFragment.findNavController(AccountFragment.this).navigate(R.id.action_navigation_account_to_updateInfoFragment);
+        FragmentTransaction ft = requireActivity().getSupportFragmentManager().beginTransaction();
+        ft.replace(R.id.accountContainer, new UpdateInfoFragment()).addToBackStack(null).commit();
     }
 
     private void openSettings() {
-        // Jump to SettingsFragment
-        NavHostFragment.findNavController(AccountFragment.this).navigate(R.id.action_navigation_account_to_settingsFragment);
+        FragmentTransaction ft = requireActivity().getSupportFragmentManager().beginTransaction();
+        ft.replace(R.id.accountContainer, new SettingsFragment()).addToBackStack(null).commit();
     }
 
     @Override
