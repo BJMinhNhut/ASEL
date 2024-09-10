@@ -113,12 +113,15 @@ public class MailRepository {
         return mail;
     }
 
-    public MailList getMailByRead(boolean isRead) {
+    public MailList getMailByRead(boolean isRead, String sortBy, boolean isAscending) {
         Log.println(Log.INFO, "MailRepository", "Getting mail by read status: " + isRead);
         SQLiteDatabase db = dbHelper.getReadableDatabase();
 
         String selection = DatabaseContract.Mails.COLUMN_NAME_IS_READ + " = ?";
         String[] selectionArgs = { isRead ? "1" : "0" };
+
+        String sortOrder = null;
+        if (!sortBy.isEmpty()) sortOrder = sortBy + (isAscending ? " ASC" : " DESC");
 
         Cursor cursor = db.query(
                 DatabaseContract.Mails.TABLE_NAME,
@@ -127,7 +130,7 @@ public class MailRepository {
                 selectionArgs,
                 null,
                 null,
-                null
+                sortOrder
         );
 
         MailList mailList = new MailList();
