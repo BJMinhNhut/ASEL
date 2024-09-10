@@ -131,8 +131,8 @@ public class EventsListFragment extends Fragment {
             holder.endMonth.setText("");
 
             String time;
-            if (event.isAllDay()) { // All-day event
-                time = "All day";
+            if (event.isAllDay()) { // All-day
+                time = "All-day";
             } else if (duration > 0) { // Event
                 LocalDateTime endDateTime = startDateTime.plusMinutes(event.getDuration());
 
@@ -140,13 +140,17 @@ public class EventsListFragment extends Fragment {
                 String endDay = dayFormatter.format(endDateTime);
                 String endMonth = monthFormatter.format(endDateTime);
 
-                time = "(" + startMonth + " " + startDay + ") " + startTime + " - (" + endMonth + " " + endDay + ") " + endTime;
+                if (startDateTime.getDayOfYear() == endDateTime.getDayOfYear() && startDateTime.getYear() == endDateTime.getYear()) { // Same day
+                    time = startTime + " - " + endTime;
+                } else {
+                    time = startMonth + " " + startDay + ", " + startTime + " - " + endMonth + " " + endDay + ", " + endTime;
 
-                holder.toDate.setText("-");
-                holder.endDay.setText(endDay);
-                holder.endMonth.setText(endMonth);
+                    holder.toDate.setText("-");
+                    holder.endDay.setText(endDay);
+                    holder.endMonth.setText(endMonth);
+                }
             } else { // Task
-                time = "(" + startMonth + " " + startDay + ") " + startTime;
+                time = startTime;
             }
 
             holder.title.setText(event.getTitle());

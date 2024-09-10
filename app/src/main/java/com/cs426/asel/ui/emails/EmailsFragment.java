@@ -1,6 +1,7 @@
 package com.cs426.asel.ui.emails;
 
 import android.app.AlertDialog;
+import android.graphics.Rect;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -13,6 +14,7 @@ import androidx.fragment.app.FragmentTransaction;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.navigation.fragment.NavHostFragment;
 import androidx.recyclerview.widget.ItemTouchHelper;
+import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.cs426.asel.R;
@@ -43,6 +45,8 @@ public class EmailsFragment extends Fragment {
         View root = binding.getRoot();
         EmailListAdapter adapter = new EmailListAdapter();
         emailListRecyclerView = root.findViewById(R.id.email_list_recycler_view);
+        emailListRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
+        emailListRecyclerView.addItemDecoration(new SpaceItemDecoration(20));
         emailListRecyclerView.setAdapter(adapter);
 
         // Swipe to delete or quick add
@@ -89,11 +93,24 @@ public class EmailsFragment extends Fragment {
         itemTouchHelper.attachToRecyclerView(emailListRecyclerView);
     }
 
+    public static class SpaceItemDecoration extends RecyclerView.ItemDecoration {
+        private final int verticalSpaceHeight;
+
+        public SpaceItemDecoration(int verticalSpaceHeight) {
+            this.verticalSpaceHeight = verticalSpaceHeight;
+        }
+
+        @Override
+        public void getItemOffsets(@NonNull Rect outRect, @NonNull View view, @NonNull RecyclerView parent, @NonNull RecyclerView.State state) {
+            outRect.bottom = verticalSpaceHeight;
+        }
+    }
+
     class EmailListAdapter extends RecyclerView.Adapter<EmailListAdapter.EmailViewHolder> {
         @NonNull
         @Override
         public EmailViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-            View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_new_email, parent, false);
+            View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_email, parent, false);
             return new EmailViewHolder(view);
         }
 
