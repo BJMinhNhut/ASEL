@@ -10,9 +10,13 @@ import java.time.Instant;
 
 public class MailRepository {
     private final DatabaseHelper dbHelper;
+    private final String mUserMail;
 
-    public MailRepository(Context context) {
-        dbHelper = new DatabaseHelper(context);
+    // How to use this class:
+    // MailRepository mailRepository = new MailRepository(getApplicationContext(), accountViewModel.getUserEmail());
+    public MailRepository(Context context, String userMail) {
+        dbHelper = new DatabaseHelper(context, userMail);
+        mUserMail = userMail;
     }
 
     public final String[] mailProjection = {
@@ -28,7 +32,7 @@ public class MailRepository {
     };
 
     public long insertMail(Mail mail) {
-        EventRepository eventRepository = new EventRepository(dbHelper.getContext());
+        EventRepository eventRepository = new EventRepository(dbHelper.getContext(), mUserMail);
         long eventId = eventRepository.insertEvent(mail.getEvent());
         if (eventId == -1) {
             Log.println(Log.ERROR, "MailRepository", "Failed to insert event for mail: " + mail.getTitle());
