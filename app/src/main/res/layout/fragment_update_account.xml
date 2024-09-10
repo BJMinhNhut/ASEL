@@ -4,6 +4,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:orientation="vertical"
     tools:context=".ui.account.UpdateAccountFragment">
 
     <TextView
@@ -73,5 +74,4 @@
         android:layout_margin="50sp"
         app:layout_constraintTop_toBottomOf="@+id/test_mail"
         />
-
 </androidx.constraintlayout.widget.ConstraintLayout>

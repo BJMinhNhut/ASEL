@@ -4,17 +4,14 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:backgroundTint="@color/light_medium"
-    app:cardCornerRadius="20dp"
+    app:cardCornerRadius="15dp"
     app:cardElevation="0dp">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:orientation="horizontal"
-        android:layout_marginTop="10dp"
-        android:layout_marginBottom="10dp"
-        android:layout_marginStart="10dp"
-        android:layout_marginEnd="10dp">
+        android:layout_margin="10dp"
+        android:orientation="horizontal">
 
         <LinearLayout
             android:layout_width="0dp"
@@ -53,7 +50,7 @@
                 android:layout_marginEnd="3dp"
                 android:text="-"
                 android:textAppearance="@style/heading_m"
-                android:textColor="@color/highlight_darkest"/>
+                android:textColor="@color/dark_darkest"/>
 
             <LinearLayout
                 android:layout_width="wrap_content"
@@ -67,7 +64,7 @@
                     android:layout_height="wrap_content"
                     android:text="31"
                     android:textAppearance="@style/heading_s"
-                    android:textColor="@color/highlight_darkest"/>
+                    android:textColor="@color/dark_darkest"/>
 
                 <TextView
                     android:id="@+id/endMonth"
@@ -75,7 +72,7 @@
                     android:layout_height="wrap_content"
                     android:text="Dec"
                     android:textAppearance="@style/heading_xs"
-                    android:textColor="@color/highlight_darkest"/>
+                    android:textColor="@color/dark_darkest"/>
             </LinearLayout>
         </LinearLayout>
         
@@ -98,9 +95,9 @@
                 android:id="@+id/title"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Event title"
+                android:text="Title"
                 android:textAppearance="@style/heading_l"
-                android:textColor="@color/dark_darkest"/>
+                android:textColor="@color/highlight_darkest"/>
 
             <LinearLayout
                 android:layout_width="wrap_content"
@@ -120,7 +117,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginStart="5dp"
                     android:drawablePadding="10dp"
-                    android:text="(Jan 01) 00:00 - (Dec 31) 23:59"
+                    android:text="Jan 01, 00:00 - Dec 31, 23:59"
                     android:textAppearance="@style/body_m"
                     android:textColor="@color/dark_darkest"/>
             </LinearLayout>
@@ -135,7 +132,7 @@
                     android:layout_width="20dp"
                     android:layout_height="20dp"
                     android:layout_gravity="center"
-                    android:src="@drawable/ic_location_outlined"/>
+                    android:src="@drawable/ic_location"/>
 
                 <TextView
                     android:id="@+id/location"
@@ -143,7 +140,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginStart="5dp"
                     android:drawablePadding="10dp"
-                    android:text="A cool location"
+                    android:text="Location"
                     android:textAppearance="@style/body_m"
                     android:textColor="@color/dark_darkest"/>
             </LinearLayout>
@@ -167,7 +164,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginStart="5dp"
                     android:drawablePadding="10dp"
-                    android:text="Short description"
+                    android:text="Description"
                     android:textAppearance="@style/body_m"
                     android:textColor="@color/dark_darkest"/>
             </LinearLayout>

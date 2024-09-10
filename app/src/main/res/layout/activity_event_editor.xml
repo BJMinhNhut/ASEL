@@ -187,7 +187,7 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="@dimen/activity_vertical_margin"
         android:layout_marginHorizontal="@dimen/activity_horizontal_margin"
-        app:startIconDrawable="@drawable/ic_location_outlined"
+        app:startIconDrawable="@drawable/ic_location"
         android:hint="Location"
         >
 

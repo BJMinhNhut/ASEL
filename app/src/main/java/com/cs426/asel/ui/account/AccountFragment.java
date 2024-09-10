@@ -19,14 +19,11 @@ import android.util.Base64;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import com.cs426.asel.R;
 import com.cs426.asel.databinding.FragmentAccountBinding;
-
-import java.util.Objects;
 
 public class AccountFragment extends Fragment {
 
@@ -92,7 +89,7 @@ public class AccountFragment extends Fragment {
                 if (avatar != null) {
                     accountAvatarView.setImageBitmap(avatar);
                 } else {
-                    accountAvatarView.setImageResource(R.drawable.profile_image_default); // Set default avatar
+                    accountAvatarView.setImageResource(R.drawable.avatar_default); // Set default avatar
                 }
             });
         }).start();
