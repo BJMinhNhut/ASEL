@@ -89,7 +89,7 @@ public class AccountFragment extends Fragment {
                 if (avatar != null) {
                     accountAvatarView.setImageBitmap(avatar);
                 } else {
-                    accountAvatarView.setImageResource(R.drawable.profile_image_default); // Set default avatar
+                    accountAvatarView.setImageResource(R.drawable.avatar_default); // Set default avatar
                 }
             });
         }).start();
