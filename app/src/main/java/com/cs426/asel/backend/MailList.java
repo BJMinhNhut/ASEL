@@ -35,6 +35,10 @@ public class MailList {
         mailList.add(mail);
     }
 
+    public void insertMailAt(Mail mail, int index) {
+        mailList.add(index, mail);
+    }
+
     public void removeMail(int index) {
         mailList.remove(index);
     }

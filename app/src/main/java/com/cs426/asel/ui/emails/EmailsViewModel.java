@@ -40,10 +40,11 @@ public class EmailsViewModel extends ViewModel implements GmailServices.EmailCal
     private static final int RETRY_DELAY_MS = 1000;
     private static final int EMAIL_PER_FETCH = 15;
 
+    private static int currentIndex = 0;
+
     public MutableLiveData<Boolean> isLoading = new MutableLiveData<>(true);
 
     private GmailServices gmailServices;
-//    private List<String> processedIDs;
     private Map<String, Message> messageCache;
     private Map<ListenableFuture<GenerateContentResponse>, Integer> retryCounts;
 
@@ -64,10 +65,6 @@ public class EmailsViewModel extends ViewModel implements GmailServices.EmailCal
         return isLoading;
     }
 
-    public void fetchEmails() {
-        fetchAllEmailsID(); // Step 1: Fetch all email IDs
-    }
-
     public void fetchAllEmailsID() {
         gmailServices.fetchAllEmailIDs();
     }
@@ -75,7 +72,7 @@ public class EmailsViewModel extends ViewModel implements GmailServices.EmailCal
     private List<String> getUnfetchedID() {
         List<String> unfetchedID = new ArrayList<>();
         for (Map.Entry<String, Message> entry: messageCache.entrySet()) {
-            if (entry.getValue() == null || !mailRepository.isMailExists(entry.getKey())) {
+            if (!mailRepository.isMailExists(entry.getKey())) {
                 unfetchedID.add(entry.getKey());
             }
         }
@@ -85,8 +82,6 @@ public class EmailsViewModel extends ViewModel implements GmailServices.EmailCal
     private void fetchAllEmailsContent() {
         ExecutorService executor = Executors.newFixedThreadPool(4); // Adjust the pool size as needed
         List<Callable<Void>> tasks = new ArrayList<>();
-        final CountDownLatch latch = new CountDownLatch(min(EMAIL_PER_FETCH, messageCache.size()));
-
 
         List<String> unfetchedID = getUnfetchedID();
         fetchEmailContent(unfetchedID);
@@ -130,7 +125,7 @@ public class EmailsViewModel extends ViewModel implements GmailServices.EmailCal
     }
 
     private void processEmails() {
-        int processSize = min(EMAIL_PER_FETCH, messageCache.size());
+        int processSize = min(currentIndex + EMAIL_PER_FETCH, messageCache.size());
         Log.d("EmailsViewModel", "Processing " + processSize + " emails.");
         List<ListenableFuture<GenerateContentResponse>> futures = new ArrayList<>();
         CountDownLatch latch = new CountDownLatch(processSize);
@@ -140,7 +135,7 @@ public class EmailsViewModel extends ViewModel implements GmailServices.EmailCal
         scheduledExecutor = Executors.newScheduledThreadPool(1);
 
         List<Message> messages = getMessages();
-        for (int i = 0; i < processSize; i++) {
+        for (int i = currentIndex; i < processSize; i++) {
             Message message = messages.get(i);
             String curId = message.getId();
 
@@ -162,6 +157,8 @@ public class EmailsViewModel extends ViewModel implements GmailServices.EmailCal
             futures.add(future);
             attemptProcessWithRetry(mail, future, latch);
         }
+
+        currentIndex = processSize;
 
         try {
             latch.await();
@@ -257,7 +254,7 @@ public class EmailsViewModel extends ViewModel implements GmailServices.EmailCal
     }
 
     public MailList getMailList() {
-        MailList mailList = mailRepository.getAllMails("send_time", false);
+        MailList mailList = mailRepository.getMailByRead(false, "send_time", false);
         return mailList;
     }
 }

@@ -21,6 +21,7 @@ import com.cs426.asel.MainActivity;
 import com.cs426.asel.R;
 import com.cs426.asel.backend.Mail;
 import com.cs426.asel.backend.MailList;
+import com.cs426.asel.backend.MailRepository;
 import com.cs426.asel.databinding.FragmentEmailsBinding;
 import com.cs426.asel.databinding.NewEmailItemBinding;
 import com.google.android.material.snackbar.Snackbar;
@@ -31,6 +32,8 @@ public class EmailsFragment extends Fragment {
     private FragmentEmailsBinding binding;
     private RecyclerView emailListRecyclerView;
     private EmailsViewModel emailsViewModel; // Reference to the shared ViewModel
+    private EmailListAdapter adapter;
+    private SwipeCallback swipeCallback;
 
     private int removedIndex = -1;
     private Mail removedMail;
@@ -39,21 +42,20 @@ public class EmailsFragment extends Fragment {
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         // Obtain EmailsViewModel from the activity's ViewModelProvider
-        emailsViewModel = new ViewModelProvider(requireActivity()).get(EmailsViewModel.class);
         binding = FragmentEmailsBinding.inflate(inflater, container, false);
+        emailsViewModel = new ViewModelProvider(requireActivity()).get(EmailsViewModel.class);
+        adapter = new EmailListAdapter();
 
-        emailsViewModel.fetchEmails();
-        read = new MailList(); // TODO: Initialize read emails
+        emailsViewModel.fetchAllEmailsID();
+        read = new MailRepository(requireContext()).getMailByRead(true, "send_time", false);
 
         binding.mailsRadioGroup.setOnCheckedChangeListener((group, checkedId) -> {
             if (checkedId == R.id.new_mail_radio_button) {
-                EmailListAdapter adapter = new EmailListAdapter();
                 adapter.setMailList(unread);
-                adapter.notifyDataSetChanged();
+                swipeCallback.setSwipeEnabled(true);
             } else {
-                EmailListAdapter adapter = new EmailListAdapter();
                 adapter.setMailList(read);
-                adapter.notifyDataSetChanged();
+                swipeCallback.setSwipeEnabled(false);
             }
         });
 
@@ -70,10 +72,7 @@ public class EmailsFragment extends Fragment {
                     Log.d("EmailsFragment", "Hiding load");
 
                     unread = emailsViewModel.getMailList();
-                    EmailListAdapter adapter = new EmailListAdapter();
                     adapter.setMailList(unread);
-                    emailListRecyclerView.setAdapter(adapter);
-
                     hideLoadIndicator();
                 }
             }
@@ -99,16 +98,19 @@ public class EmailsFragment extends Fragment {
         super.onViewCreated(view, savedInstanceState);
 
         View root = binding.getRoot();
-        EmailListAdapter adapter = new EmailListAdapter();
         emailListRecyclerView = root.findViewById(R.id.email_list_recycler_view);
         emailListRecyclerView.setAdapter(adapter);
 
         // Swipe to delete or quick add
-        SwipeCallback swipeCallback =
+        swipeCallback =
                 new SwipeCallback(0, ItemTouchHelper.LEFT | ItemTouchHelper.RIGHT) {
 
                     @Override
                     public void onSwiped(@NonNull RecyclerView.ViewHolder viewHolder, int direction) {
+                        if (!swipeCallback.isSwipeEnabled()) {
+                            return;
+                        }
+
                         if (direction == ItemTouchHelper.LEFT) {
                             // Left swipe to delete
                             AlertDialog dialog = new AlertDialog.Builder(getContext())
@@ -118,14 +120,17 @@ public class EmailsFragment extends Fragment {
 
                             dialog.setButton(AlertDialog.BUTTON_POSITIVE, "Yes", (dialog1, which) -> {
                                 // Delete email (implement the delete logic here)
-                                Mail mail = read.getMail(viewHolder.getAdapterPosition());
-                                unread.addMail(mail);
-                                read.addMail(mail);
+                                Mail mail = unread.getMail(viewHolder.getAdapterPosition());
 
                                 removedIndex = viewHolder.getAdapterPosition();
                                 removedMail = mail;
 
-                                adapter.notifyItemRemoved(viewHolder.getAdapterPosition());
+                                unread.removeMail(removedIndex);
+                                adapter.removeMail(removedIndex);
+                                read.addMail(mail);
+                                MailRepository mailRepo = new MailRepository(requireContext());
+                                mailRepo.updateRead(removedMail.getId(), true);
+
                                 dialog.dismiss();
                             });
 
@@ -138,13 +143,25 @@ public class EmailsFragment extends Fragment {
                             dialog.show();
                         } else if (direction == ItemTouchHelper.RIGHT) {
                             // Right swipe to quick add
+                            removedMail = unread.getMail(viewHolder.getAdapterPosition());
+                            removedIndex = viewHolder.getAdapterPosition();
 
-                            adapter.notifyItemRemoved(viewHolder.getAdapterPosition());
+                            unread.removeMail(removedIndex);
+                            adapter.removeMail(removedIndex);
+                            read.addMail(removedMail);
+                            MailRepository mailRepo = new MailRepository(requireContext());
+                            mailRepo.updateRead(removedMail.getId(), true);
+
+                            //TODO: publish event of mail
 
                             Snackbar.make(emailListRecyclerView, "Event of email added to calendar", Snackbar.LENGTH_LONG)
                                     .setAction("Undo", v -> {
                                         // Undo the action (implement undo logic here)
-                                        adapter.notifyItemInserted(viewHolder.getAdapterPosition());
+                                        adapter.insertMail(removedMail, removedIndex);
+                                        unread.insertMailAt(removedMail, removedIndex);
+                                        mailRepo.updateRead(removedMail.getId(), false);
+
+                                        // TODO: unpublish event of mail
                                     }).show();
                         }
                     }
@@ -154,17 +171,16 @@ public class EmailsFragment extends Fragment {
         itemTouchHelper.attachToRecyclerView(emailListRecyclerView);
     }
 
-    public void updateEmailList(MailList mailList) {
+    public void appendList(MailList mailList) {
+        EmailListAdapter adapter = new EmailListAdapter();
+        adapter.appendList(mailList);
+        emailListRecyclerView.setAdapter(adapter);
+        adapter.notifyDataSetChanged();
+
         if (binding.mailsRadioGroup.getCheckedRadioButtonId() == R.id.new_mail_radio_button) {
             unread.append(mailList);
-            EmailListAdapter adapter = new EmailListAdapter();
-            adapter.setMailList(unread);
-            emailListRecyclerView.setAdapter(adapter);
         } else {
             read.append(mailList);
-            EmailListAdapter adapter = new EmailListAdapter();
-            adapter.setMailList(read);
-            emailListRecyclerView.setAdapter(adapter);
         }
     }
 
@@ -185,6 +201,16 @@ public class EmailsFragment extends Fragment {
             notifyDataSetChanged();
         }
 
+        public void removeMail(int position) {
+            mailList.removeMail(position);
+            notifyItemRemoved(position);
+        }
+
+        public void insertMail(Mail mail, int position) {
+            mailList.insertMailAt(mail, position);
+            notifyItemInserted(position);
+        }
+
         @NonNull
         @Override
         public EmailViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
@@ -197,7 +223,7 @@ public class EmailsFragment extends Fragment {
             holder.itemView.setOnClickListener(v -> {
                 // TODO: Pass email ID to the fragment
                 Bundle bundle = new Bundle();
-                bundle.putInt("emailId", 1); // Replace 1 with the actual email ID you want to pass
+                bundle.putString("emailId", mailList.getMail(position).getId()); // Replace 1 with the actual email ID you want to pass
 
                 NavHostFragment.findNavController(EmailsFragment.this)
                         .navigate(R.id.navigation_email_detail, bundle);

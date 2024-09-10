@@ -12,6 +12,7 @@ import com.cs426.asel.R;
 
 public class SwipeCallback extends ItemTouchHelper.SimpleCallback {
     private final float swipeThreshold = 0.4f;
+    private boolean isSwipeEnabled = true;
     private Drawable icon;
     private GradientDrawable backgroundColor;
 
@@ -20,9 +21,25 @@ public class SwipeCallback extends ItemTouchHelper.SimpleCallback {
         backgroundColor = new GradientDrawable();
     }
 
+    public void setSwipeEnabled(boolean enabled) {
+        isSwipeEnabled = enabled;
+    }
+
+    public boolean isSwipeEnabled() {
+        return isSwipeEnabled;
+    }
+
+    @Override
+    public int getSwipeDirs(@NonNull RecyclerView recyclerView, @NonNull RecyclerView.ViewHolder viewHolder) {
+        return isSwipeEnabled ? super.getSwipeDirs(recyclerView, viewHolder) : 0;
+    }
+
     @Override
     public void onChildDraw(@NonNull Canvas c, @NonNull RecyclerView recyclerView, @NonNull RecyclerView.ViewHolder viewHolder, float dX, float dY, int actionState, boolean isCurrentlyActive) {
-
+        if (!isSwipeEnabled) {
+            super.onChildDraw(c, recyclerView, viewHolder, dX, dY, actionState, isCurrentlyActive);
+            return;
+        }
         float translationX = dX;
 
 

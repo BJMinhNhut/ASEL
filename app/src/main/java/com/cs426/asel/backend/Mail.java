@@ -203,6 +203,7 @@ public class Mail {
         }
 
         mSummary = mailInfo.summary;
+        mTag = mailInfo.tag;
 
         int duration = 0;
         if (mailInfo.toDateTime != null && mailInfo.fromDateTime != null) {
