@@ -88,7 +88,7 @@ public class MailRepository {
             boolean isRead = cursor.getInt(cursor.getColumnIndexOrThrow(DatabaseContract.Mails.COLUMN_NAME_IS_READ)) == 1;
 
             Event event = getEventByID(id, eventID);
-            mailList.addMail(new Mail(id, title, sender, receiver, content, summary, event, sendTime, isRead));
+            mailList.addMail(new Mail(id, title, sender, receiver, content, summary, event, sendTime, isRead, "None"));
         }
         cursor.close();
         return mailList;

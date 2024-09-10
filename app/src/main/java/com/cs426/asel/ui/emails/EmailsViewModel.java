@@ -11,6 +11,7 @@ import androidx.lifecycle.ViewModel;
 import com.cs426.asel.backend.GmailServices;
 import com.cs426.asel.backend.Mail;
 import com.cs426.asel.backend.MailList;
+import com.cs426.asel.backend.MailRepository;
 import com.google.ai.client.generativeai.type.GenerateContentResponse;
 import com.google.api.services.gmail.model.Message;
 import com.google.common.util.concurrent.FutureCallback;
@@ -37,26 +38,26 @@ import java.util.concurrent.TimeUnit;
 public class EmailsViewModel extends ViewModel implements GmailServices.EmailCallback {
     private static final int MAX_RETRY_COUNT = 5;
     private static final int RETRY_DELAY_MS = 1000;
-    private static final int EMAIL_PER_FETCH = 5;
+    private static final int EMAIL_PER_FETCH = 15;
 
     public MutableLiveData<Boolean> isLoading = new MutableLiveData<>(true);
 
     private GmailServices gmailServices;
-    private List<String> processedIDs;
+//    private List<String> processedIDs;
     private Map<String, Message> messageCache;
     private Map<ListenableFuture<GenerateContentResponse>, Integer> retryCounts;
 
     private ListeningExecutorService executorService;
     private ScheduledExecutorService scheduledExecutor;
 
-    private MailList mailList;
+    private MailRepository mailRepository;
     private Context context;
 
     public EmailsViewModel(Context context) {
         this.context = context;
         gmailServices = new GmailServices(context, this); // Initialize GmailServices for email operations
-        mailList = new MailList();
-        processedIDs = new ArrayList<>();
+        mailRepository = new MailRepository(context);
+//        processedIDs = new ArrayList<>();
     }
 
     public MutableLiveData<Boolean> getIsLoading() {
@@ -74,7 +75,7 @@ public class EmailsViewModel extends ViewModel implements GmailServices.EmailCal
     private List<String> getUnfetchedID() {
         List<String> unfetchedID = new ArrayList<>();
         for (Map.Entry<String, Message> entry: messageCache.entrySet()) {
-            if (entry.getValue() == null) {
+            if (entry.getValue() == null || !mailRepository.isMailExists(entry.getKey())) {
                 unfetchedID.add(entry.getKey());
             }
         }
@@ -145,12 +146,10 @@ public class EmailsViewModel extends ViewModel implements GmailServices.EmailCal
 
             if (isProcessed(curId)) {
                 Log.d("EmailsViewModel", "Email ID " + curId + " is already processed. Skipping.");
-                // TODO: fetch from db, add to mail list
                 latch.countDown();
                 continue;
             }
 
-            processedIDs.add(curId);
             if (message == null) {
                 Log.d("EmailsViewModel", "Email ID " + curId + " is null. Skipping.");
                 continue;
@@ -159,12 +158,9 @@ public class EmailsViewModel extends ViewModel implements GmailServices.EmailCal
             Mail mail = new Mail(message);
             ListenableFuture<GenerateContentResponse> future = mail.summarize();
 
-            mailList.addMail(mail);
             retryCounts.put(future, 0);
             futures.add(future);
             attemptProcessWithRetry(mail, future, latch);
-
-            processedIDs.add(curId);
         }
 
         try {
@@ -189,6 +185,7 @@ public class EmailsViewModel extends ViewModel implements GmailServices.EmailCal
                         latch.countDown();
                         Log.d("EmailsViewModel", "Email ID " + mail.getId() + " processed.");
                         mail.extractInfo(result.getText());
+                        mailRepository.insertMail(mail);
                     }
 
                     @Override
@@ -256,10 +253,11 @@ public class EmailsViewModel extends ViewModel implements GmailServices.EmailCal
     }
 
     private boolean isProcessed(String id) {
-        return processedIDs.contains(id);
+        return mailRepository.isMailExists(id);
     }
 
     public MailList getMailList() {
+        MailList mailList = mailRepository.getAllMails("send_time", false);
         return mailList;
     }
 }

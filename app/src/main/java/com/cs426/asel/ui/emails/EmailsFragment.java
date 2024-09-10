@@ -43,7 +43,6 @@ public class EmailsFragment extends Fragment {
         binding = FragmentEmailsBinding.inflate(inflater, container, false);
 
         emailsViewModel.fetchEmails();
-        unread = emailsViewModel.getMailList();
         read = new MailList(); // TODO: Initialize read emails
 
         binding.mailsRadioGroup.setOnCheckedChangeListener((group, checkedId) -> {

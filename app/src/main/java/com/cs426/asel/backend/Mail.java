@@ -30,6 +30,8 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import javax.mail.BodyPart;
 import javax.mail.Multipart;
@@ -45,7 +47,6 @@ public class Mail {
     private String mReceiver;
     private String mContent;
     private String mSummary;
-    private String mSentTime;
     private String mTag;
     private Event mEvent;
     private Instant mReceivedTime;
@@ -60,7 +61,6 @@ public class Mail {
         mSummary = "";
         mEvent = new Event();
         mIsRead = false;
-        mSentTime = "";
         mReceivedTime = Instant.now();
     }
 
@@ -85,7 +85,6 @@ public class Mail {
         mSummary = "";
         mEvent = new Event();
         mIsRead = false;
-        mSentTime = "";
         mReceivedTime = Instant.now();
 
         mId = message.getId();
@@ -96,19 +95,35 @@ public class Mail {
             if (h.getName().equals("Subject")) {
                 mTitle = h.getValue();
             } else if (h.getName().equals("From")) {
-                mSender = h.getValue();
+                String fullSender = h.getValue();
+                mSender = extractEmailAddress(fullSender);
             } else if (h.getName().equals("To")) {
                 mReceiver = h.getValue();
             } else if (h.getName().equals("Date")) {
-                mSentTime = h.getValue();
+                String sentTime = trimTimeZone(h.getValue());
+                mReceivedTime = parseToInstant(sentTime, "EEE, dd MMM yyyy HH:mm:ss");
             }
         }
 
         mContent = getDecodedBody(message);
 
-        if (mId.equals("1916d9c8aa7f530d")) {
-            Log.d("Mail", "Retarded mail content: " + mContent) ;
+    }
+
+    public static String extractEmailAddress(String input) {
+        String emailPattern = "<?([a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,})>?";
+        Pattern pattern = Pattern.compile(emailPattern);
+        Matcher matcher = pattern.matcher(input);
+
+        if (matcher.find()) {
+            // Extract the email address
+            return matcher.group(1);
+        } else {
+            return "No valid email found.";
         }
+    }
+
+    private static String trimTimeZone(String dateString) {
+        return dateString.substring(0, 25);
     }
 
     private static String getDecodedBody(Message message) {
@@ -117,8 +132,6 @@ public class Mail {
         List<MessagePart> parts = message.getPayload().getParts();
         if (parts == null) {
             body = htmlToPlainText(StringUtils.newStringUtf8(Base64.decodeBase64(message.getPayload().getBody().getData())));
-            Log.d("Mail", "Snippet: " + message.getSnippet());
-            Log.d("Mail", "Body: " + body);
             return body;
         }
         for (MessagePart part : parts) {
@@ -163,6 +176,15 @@ public class Mail {
         return doc.text();
     }
 
+    private static Instant parseToInstant(String dateTime, String pattern) {
+        return LocalDateTime.parse(
+                dateTime,
+                DateTimeFormatter.ofPattern(pattern)
+        ).atZone(
+                ZoneId.of("Asia/Ho_Chi_Minh")
+        ).toInstant();
+    }
+
     public ListenableFuture<GenerateContentResponse> summarize() {
         String prompt = "Please provide a brief summary of the email below  with this schema: { \"summary\": str, \"fromDateTime\": str, \"toDateTime\": str, \"location\": str, \"tag\": str}. Provide a short and general summary of the content. If there is an event, provide the fromDateTime, toDateTime, and location of the event, else put null. If there is only one time mark or deadline, put it in fromDateTime and leave toDateTime null. The DateTime should be given in the format \"DD/MM/YYYY/, hh:mm\", if there is date but no specific hour or minute, put 00:00 for hh:mm. Provide the tag of mail (Assignment, Exam, Meeting, Course Material, Other):";
 
@@ -183,7 +205,7 @@ public class Mail {
         mSummary = mailInfo.summary;
 
         int duration = 0;
-        if (mailInfo.toDateTime != null) {
+        if (mailInfo.toDateTime != null && mailInfo.fromDateTime != null) {
             duration = (int) java.time.Duration.between(mailInfo.fromDateTime, mailInfo.toDateTime).toMinutes();
         }
 
@@ -199,6 +221,7 @@ public class Mail {
                     mailInfo.toDateTime,
                     mailInfo.fromDateTime.minusSeconds(60 * 5),
                     mSummary,
+                    false,
                     false
             );
         } else {
@@ -234,12 +257,24 @@ public class Mail {
         return mEvent;
     }
 
-    public Instant getReceivedTime() {
-        return mReceivedTime;
+    public String getSentTime() {
+        return mReceivedTime.atZone(ZoneId.of("Asia/Ho_Chi_Minh")).format(DateTimeFormatter.ofPattern("EEE, dd/MM/yyyy HH:mm"));
     }
 
-    public String getSentTime() {
-        return mSentTime;
+    public Instant getEventStartTime() {
+        return mEvent.getStartTime();
+    }
+
+    public int getEventDuration() {
+        return mEvent.getDuration();
+    }
+
+    public String getEventLocation() {
+        return mEvent.getLocation();
+    }
+
+    public Instant getReceivedTime() {
+        return mReceivedTime;
     }
 
     public boolean isRead() {
@@ -297,12 +332,7 @@ public class Mail {
                 return;
             }
 
-            this.fromDateTime = LocalDateTime.parse(
-                    fromDateTime,
-                    DateTimeFormatter.ofPattern("dd/MM/yyyy, HH:mm")
-            ).atZone(
-                    ZoneId.of("Asia/Ho_Chi_Minh")
-            ).toInstant();
+            this.fromDateTime = parseToInstant(fromDateTime, "dd/MM/yyyy, HH:mm");
         }
 
         @JsonProperty("toDateTime")
@@ -312,12 +342,7 @@ public class Mail {
                 return;
             }
 
-            this.toDateTime = LocalDateTime.parse(
-                    toDateTime,
-                    DateTimeFormatter.ofPattern("dd/MM/yyyy, HH:mm")
-            ).atZone(
-                    ZoneId.of("Asia/Ho_Chi_Minh")
-            ).toInstant();
+            this.toDateTime = parseToInstant(toDateTime, "dd/MM/yyyy, HH:mm");
         }
     }
 }
