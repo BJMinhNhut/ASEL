@@ -207,7 +207,7 @@ public class EmailsFragment extends Fragment {
             holder.senderName.setText(mailList.getMail(position).getSender());
 //            holder.receiverName.setText(mailList.getMail(position).getReceiver());
             holder.title.setText(mailList.getMail(position).getTitle());
-            holder.time.setText(mailList.getMail(position).getSendTime());
+            holder.time.setText(mailList.getMail(position).getSentTime());
             holder.place.setText(mailList.getMail(position).getLocation());
         }
 

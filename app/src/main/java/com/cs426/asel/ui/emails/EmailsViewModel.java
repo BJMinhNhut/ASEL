@@ -37,12 +37,11 @@ import java.util.concurrent.TimeUnit;
 public class EmailsViewModel extends ViewModel implements GmailServices.EmailCallback {
     private static final int MAX_RETRY_COUNT = 5;
     private static final int RETRY_DELAY_MS = 1000;
-    private static final int EMAIL_PER_FETCH = 15;
+    private static final int EMAIL_PER_FETCH = 5;
 
     public MutableLiveData<Boolean> isLoading = new MutableLiveData<>(true);
 
     private GmailServices gmailServices;
-    private List<String> idList;
     private List<String> processedIDs;
     private Map<String, Message> messageCache;
     private Map<ListenableFuture<GenerateContentResponse>, Integer> retryCounts;
@@ -55,7 +54,6 @@ public class EmailsViewModel extends ViewModel implements GmailServices.EmailCal
 
     public EmailsViewModel(Context context) {
         this.context = context;
-        idList = new ArrayList<>();
         gmailServices = new GmailServices(context, this); // Initialize GmailServices for email operations
         mailList = new MailList();
         processedIDs = new ArrayList<>();
@@ -86,7 +84,7 @@ public class EmailsViewModel extends ViewModel implements GmailServices.EmailCal
     private void fetchAllEmailsContent() {
         ExecutorService executor = Executors.newFixedThreadPool(4); // Adjust the pool size as needed
         List<Callable<Void>> tasks = new ArrayList<>();
-        final CountDownLatch latch = new CountDownLatch(min(EMAIL_PER_FETCH, idList.size()));
+        final CountDownLatch latch = new CountDownLatch(min(EMAIL_PER_FETCH, messageCache.size()));
 
 
         List<String> unfetchedID = getUnfetchedID();
@@ -99,9 +97,8 @@ public class EmailsViewModel extends ViewModel implements GmailServices.EmailCal
             public void onEmailFetched(List<Message> messages) {
                 for (Message message: messages) {
                     storeMessage(message.getId(), message);
-                    Log.d("EmailsViewModel", "Fetched " + message.getId() + ": " + message.getSnippet());
                 }
-                processEmails();
+                onEmailContentFetched();
             }
 
             @Override
@@ -128,7 +125,7 @@ public class EmailsViewModel extends ViewModel implements GmailServices.EmailCal
     public void onEmailContentFetched() {
         // Process emails or perform other actions after all content is fetched
         Log.d("EmailsViewModel", "All email content fetched.");
-        //processEmails();
+        processEmails();
     }
 
     private void processEmails() {
@@ -141,16 +138,19 @@ public class EmailsViewModel extends ViewModel implements GmailServices.EmailCal
         executorService = MoreExecutors.listeningDecorator(Executors.newFixedThreadPool(processSize));
         scheduledExecutor = Executors.newScheduledThreadPool(1);
 
+        List<Message> messages = getMessages();
         for (int i = 0; i < processSize; i++) {
-            String curId = idList.get(i);
+            Message message = messages.get(i);
+            String curId = message.getId();
+
             if (isProcessed(curId)) {
+                Log.d("EmailsViewModel", "Email ID " + curId + " is already processed. Skipping.");
                 // TODO: fetch from db, add to mail list
                 latch.countDown();
                 continue;
             }
 
-            processedIDs.add(idList.get(i));
-            Message message = getMessage(curId);
+            processedIDs.add(curId);
             if (message == null) {
                 Log.d("EmailsViewModel", "Email ID " + curId + " is null. Skipping.");
                 continue;
@@ -226,6 +226,7 @@ public class EmailsViewModel extends ViewModel implements GmailServices.EmailCal
 
     public ArrayList<Message> getMessages() {
         return new ArrayList<>(messageCache.values());
+    }
 
     public List<String> getEmailsID() {
         return new ArrayList<>(messageCache.keySet());

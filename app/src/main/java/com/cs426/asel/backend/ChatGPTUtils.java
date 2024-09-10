@@ -16,6 +16,7 @@ import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executor;
@@ -26,6 +27,7 @@ import com.google.ai.client.generativeai.java.GenerativeModelFutures;
 import com.google.ai.client.generativeai.type.Content;
 import com.google.ai.client.generativeai.type.GenerateContentResponse;
 import com.google.ai.client.generativeai.type.GenerationConfig;
+import com.google.ai.client.generativeai.type.Schema;
 import com.google.common.util.concurrent.FutureCallback;
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
@@ -38,11 +40,12 @@ public class ChatGPTUtils {
     private static int currentKeyIndex = 0;
 
     static {
+
         GenerationConfig.Builder builder = new GenerationConfig.Builder();
-        builder.temperature = 0.45f;
+        builder.temperature = 0.40f;
+        builder.maxOutputTokens = 8192;
         builder.topP = 0.95f;
         builder.topK = 64;
-        builder.maxOutputTokens = 8192;
         builder.responseMimeType = "application/json";
 
         CONFIG = builder.build();

@@ -8,7 +8,7 @@ public class Event {
     String mMailID;
     String mTitle;
     Instant mStartTime;
-    int mDuration; // duration = 0 if the event is a task
+    int mDuration; // in minutes, duration = 0 if the event is a task
     String mLocation;
 
     // Repeat information
@@ -36,7 +36,7 @@ public class Event {
         mIsAllDay = false;
     }
 
-    public Event(String mailID, String title, Instant startTime, int duration, String location, boolean isRepeating, String repeatFrequency, Instant repeatEndDate, Instant reminderTime, String description, boolean isAllDay) {
+    public  Event(String mailID, String title, Instant startTime, int duration, String location, boolean isRepeating, String repeatFrequency, Instant repeatEndDate, Instant reminderTime, String description, boolean isAllDay) {
         mMailID = mailID;
         mTitle = title;
         mStartTime = startTime;

@@ -108,7 +108,6 @@ public class GmailServices {
                 for (String id : ids) {
                     futures.add(executorService.submit(() -> {
                         Message message = gmailService.users().messages().get("me", id).execute();
-                        Log.d("GmailServices", "Fetched email with ID: " + id);
                         return message;
                     }));
                 }

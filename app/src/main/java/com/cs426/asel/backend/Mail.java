@@ -22,6 +22,9 @@ import org.w3c.dom.Text;
 
 import java.time.Instant;
 import java.io.ByteArrayInputStream;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -42,11 +45,11 @@ public class Mail {
     private String mReceiver;
     private String mContent;
     private String mSummary;
+    private String mSentTime;
+    private String mTag;
     private Event mEvent;
     private Instant mReceivedTime;
     private boolean mIsRead;
-
-    private MailInfo mailInfo;
 
     public Mail() {
         mId = "";
@@ -57,10 +60,11 @@ public class Mail {
         mSummary = "";
         mEvent = new Event();
         mIsRead = false;
+        mSentTime = "";
         mReceivedTime = Instant.now();
     }
 
-    public Mail(String id, String title, String sender, String receiver, String content, String summary, Event event, Instant receivedTime, boolean isRead) {
+    public Mail(String id, String title, String sender, String receiver, String content, String summary, Event event, Instant receivedTime, boolean isRead, String tag) {
         mId = id;
         mTitle = title;
         mSender = sender;
@@ -70,6 +74,7 @@ public class Mail {
         mEvent = event;
         mReceivedTime = receivedTime;
         mIsRead = isRead;
+        mTag = tag;
     }
 
     public Mail(Message message) {
@@ -78,6 +83,10 @@ public class Mail {
         mReceiver = "";
         mContent = "";
         mSummary = "";
+        mEvent = new Event();
+        mIsRead = false;
+        mSentTime = "";
+        mReceivedTime = Instant.now();
 
         mId = message.getId();
         List<MessagePartHeader> header = message.getPayload().getHeaders();
@@ -91,20 +100,26 @@ public class Mail {
             } else if (h.getName().equals("To")) {
                 mReceiver = h.getValue();
             } else if (h.getName().equals("Date")) {
-//                sendTime = h.getValue();
+                mSentTime = h.getValue();
             }
         }
 
         mContent = getDecodedBody(message);
+
+        if (mId.equals("1916d9c8aa7f530d")) {
+            Log.d("Mail", "Retarded mail content: " + mContent) ;
+        }
     }
 
-    private String getDecodedBody(Message message) {
+    private static String getDecodedBody(Message message) {
         String body = "";
 
         List<MessagePart> parts = message.getPayload().getParts();
         if (parts == null) {
+            body = htmlToPlainText(StringUtils.newStringUtf8(Base64.decodeBase64(message.getPayload().getBody().getData())));
             Log.d("Mail", "Snippet: " + message.getSnippet());
-            return message.getSnippet();
+            Log.d("Mail", "Body: " + body);
+            return body;
         }
         for (MessagePart part : parts) {
             try {
@@ -149,18 +164,45 @@ public class Mail {
     }
 
     public ListenableFuture<GenerateContentResponse> summarize() {
-        String prompt = "Provide a brief summary of the email below. The summary should be short and general. If there is an event, provide the fromDateTime and toDateTime, location, else put null. If there is only one time mark or deadline, put it in fromDateTime and leave toDateTime null. The DateTime should be given in the format \"DD/MM/YYYY/ # hh:mm\". Provide the tag of mail (Assignment, Exam, Meeting, Course Material, Other):";
+        String prompt = "Please provide a brief summary of the email below  with this schema: { \"summary\": str, \"fromDateTime\": str, \"toDateTime\": str, \"location\": str, \"tag\": str}. Provide a short and general summary of the content. If there is an event, provide the fromDateTime, toDateTime, and location of the event, else put null. If there is only one time mark or deadline, put it in fromDateTime and leave toDateTime null. The DateTime should be given in the format \"DD/MM/YYYY/, hh:mm\", if there is date but no specific hour or minute, put 00:00 for hh:mm. Provide the tag of mail (Assignment, Exam, Meeting, Course Material, Other):";
+
         return ChatGPTUtils.getResponse(prompt + mContent);
     }
 
     public void extractInfo(String content) {
         Log.d("Mail", "Extracting info from content: " + content);
+        MailInfo mailInfo;
         try {
             mailInfo = new ObjectMapper().readValue(content, MailInfo.class);
         } catch (Exception e) {
             Log.e("Mail", "Error parsing JSON");
             e.printStackTrace();
             mailInfo = new MailInfo();
+        }
+
+        mSummary = mailInfo.summary;
+
+        int duration = 0;
+        if (mailInfo.toDateTime != null) {
+            duration = (int) java.time.Duration.between(mailInfo.fromDateTime, mailInfo.toDateTime).toMinutes();
+        }
+
+        if (mailInfo.fromDateTime != null) {
+            mEvent = new Event(
+                    mId,
+                    mTitle,
+                    mailInfo.fromDateTime,
+                    duration,
+                    mailInfo.location,
+                    false,
+                    "None",
+                    mailInfo.toDateTime,
+                    mailInfo.fromDateTime.minusSeconds(60 * 5),
+                    mSummary,
+                    false
+            );
+        } else {
+            mEvent = new Event();
         }
     }
 
@@ -181,7 +223,7 @@ public class Mail {
     }
 
     public String getSummary() {
-        return mailInfo.summary;
+        return mSummary;
     }
 
     public String getContent() {
@@ -196,6 +238,10 @@ public class Mail {
         return mReceivedTime;
     }
 
+    public String getSentTime() {
+        return mSentTime;
+    }
+
     public boolean isRead() {
         return mIsRead;
     }
@@ -204,72 +250,17 @@ public class Mail {
         mIsRead = isRead;
     }
 
-    public void setSummary(String mSummary) {
-        mSummary = mSummary;
+    public void setSummary(String summary) {
+        mSummary = summary;
     }
 
     public void setEvent(Event event) {
         mEvent = event;
-    public String getSendTime() {
-        return sendTime;
     }
-
     public String getLocation() {
-        return mailInfo.location;
+        return mEvent.getLocation();
     }
 
-    public String getFromDate() {
-        return mailInfo.fromDate;
-    }
-
-    public String getToDate() {
-        return mailInfo.toDate;
-    }
-
-    public String getFromTime() {
-        return mailInfo.fromTime;
-    }
-
-    public String getToTime() {
-        return mailInfo.toTime;
-    }
-
-    @JsonIgnoreProperties(ignoreUnknown = true)
-    public static class MailInfo {
-        private String location = "nothing to show";
-        private String fromDate = "nothing to show";
-        private String toDate = "nothing to show";
-        private String fromTime = "nothing to show";
-        private String toTime = "nothing to show";
-        private String summary = "nothing to show";
-        private String tag = "nothing to show" ;
-
-        @SuppressWarnings("unchecked")
-        @JsonProperty("fromDateTime")
-        public void unpackFromDateTime(String fromDateTime) {
-            if (fromDateTime == null) {
-                fromDate = "none";
-                fromTime = "none";
-                return;
-            }
-            // Separate string by '#'
-            String[] parts = fromDateTime.split(" # ");
-            fromDate = parts[0];
-            fromTime = parts[1];
-        }
-
-        @JsonProperty("toDateTime")
-        public void unpackToDateTime(String toDateTime) {
-            if (toDateTime == null) {
-                toDate = "none";
-                toTime = "none";
-                return;
-            }
-
-            String[] parts = toDateTime.split(" # ");
-            toDate = parts[0];
-            toTime = parts[1];
-        }
     public void setContent(String content) {
         mContent = content;
     }
@@ -288,5 +279,45 @@ public class Mail {
 
     public void setReceivedTime(Instant receivedTime) {
         mReceivedTime = receivedTime;
+    }
+
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    public static class MailInfo {
+        private String location = "nothing to show";
+        private Instant fromDateTime;
+        private Instant toDateTime;
+        private String toTime = "nothing to show";
+        private String summary = "nothing to show";
+        private String tag = "nothing to show";
+
+        @JsonProperty("fromDateTime")
+        public void unpackFromDateTime(String fromDateTime) {
+            if (fromDateTime == null || fromDateTime.equals("null")) {
+                this.fromDateTime = null;
+                return;
+            }
+
+            this.fromDateTime = LocalDateTime.parse(
+                    fromDateTime,
+                    DateTimeFormatter.ofPattern("dd/MM/yyyy, HH:mm")
+            ).atZone(
+                    ZoneId.of("Asia/Ho_Chi_Minh")
+            ).toInstant();
+        }
+
+        @JsonProperty("toDateTime")
+        public void unpackToDateTime(String toDateTime) {
+            if (toDateTime == null || toDateTime.equals("null")) {
+                this.toDateTime = this.fromDateTime;
+                return;
+            }
+
+            this.toDateTime = LocalDateTime.parse(
+                    toDateTime,
+                    DateTimeFormatter.ofPattern("dd/MM/yyyy, HH:mm")
+            ).atZone(
+                    ZoneId.of("Asia/Ho_Chi_Minh")
+            ).toInstant();
+        }
     }
 }

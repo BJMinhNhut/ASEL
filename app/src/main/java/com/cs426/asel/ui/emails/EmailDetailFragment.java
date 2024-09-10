@@ -10,12 +10,13 @@ import android.widget.Button;
 import androidx.fragment.app.Fragment;
 
 import com.cs426.asel.R;
+import com.cs426.asel.backend.Mail;
 import com.cs426.asel.ui.events.EventEditorActivity;
 
 public class EmailDetailFragment extends Fragment {
     private static int emailId;
 
-    public static EmailDetailFragment newInstance(int emailId) {
+    public static EmailDetailFragment newInstance(Mail mail) {
         Bundle args = new Bundle();
         args.putInt("emailId", emailId);
 
