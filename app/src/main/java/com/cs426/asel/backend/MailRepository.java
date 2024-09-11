@@ -13,7 +13,7 @@ public class MailRepository {
     private final String mUserMail;
 
     // How to use this class:
-    // MailRepository mailRepository = new MailRepository(getApplicationContext(), accountViewModel.getUserEmail());
+    // MailRepository mailRepository = new MailRepository(getApplicationContext(), Utility.getUserEmail(context));
     public MailRepository(Context context, String userMail) {
         dbHelper = new DatabaseHelper(context, userMail);
         mUserMail = userMail;
