@@ -3,7 +3,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:backgroundTint="@color/light_medium"
+    android:backgroundTint="@color/light_lightest"
     app:cardCornerRadius="15dp"
     app:cardElevation="0dp">
 
@@ -18,77 +18,24 @@
             android:layout_height="wrap_content"
             android:orientation="horizontal">
 
-            <LinearLayout
+            <TextView
+                android:id="@+id/sender_name"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:orientation="vertical">
-
-                <TextView
-                    android:id="@+id/sender_name"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:text="sender"
-                    android:textAppearance="@style/heading_m"
-                    android:textColor="@color/highlight_darkest"/>
-
-                <TextView
-                    android:id="@+id/sender_domain"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:text="\@exmaple.domain"
-                    android:textAppearance="@style/body_s"
-                    android:textColor="@color/dark_darkest"/>
-            </LinearLayout>
-
-            <View
-                android:layout_width="0dp"
-                android:layout_height="10dp"
-                android:layout_weight="1"
-                android:layout_marginStart="10dp"
                 android:layout_gravity="center"
-                android:background="@drawable/dashed_line"
-                android:backgroundTint="@color/dark_darkest"/>
+                android:text="sender"
+                android:textAppearance="@style/heading_m"
+                android:textColor="@color/highlight_darkest"
+                android:textAlignment="center"/>
 
-            <ImageView
-                android:layout_width="20dp"
-                android:layout_height="20dp"
-                android:layout_gravity="center"
-                android:background="@drawable/ic_send"
-                android:backgroundTint="@color/dark_darkest"
-                android:adjustViewBounds="false"/>
-
-            <View
-                android:layout_width="0dp"
-                android:layout_height="10dp"
-                android:layout_weight="1"
-                android:layout_marginEnd="10dp"
-                android:layout_gravity="center"
-                android:background="@drawable/dashed_line"
-                android:backgroundTint="@color/dark_darkest"/>
-
-            <LinearLayout
+            <TextView
+                android:id="@+id/sender_domain"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:orientation="vertical">
-
-                <TextView
-                    android:id="@+id/receiver_name"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:text="receiver"
-                    android:textAppearance="@style/heading_m"
-                    android:textColor="@color/highlight_darkest"
-                    android:textAlignment="textEnd"/>
-
-                <TextView
-                    android:id="@+id/receiver_domain"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:text="\@example.domain"
-                    android:textAppearance="@style/body_s"
-                    android:textColor="@color/dark_darkest"
-                    android:textAlignment="textEnd"/>
-            </LinearLayout>
+                android:layout_gravity="center"
+                android:text="\@exmaple.domain"
+                android:textAppearance="@style/body_s"
+                android:textColor="@color/dark_darkest"/>
         </LinearLayout>
 
         <LinearLayout
@@ -101,6 +48,7 @@
                 android:layout_width="0dp"
                 android:layout_height="1dp"
                 android:layout_weight="1"
+                android:layout_marginEnd="10dp"
                 android:layout_gravity="center"
                 android:background="@color/dark_medium"/>
 
@@ -108,17 +56,9 @@
                 android:id="@+id/send_time"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginHorizontal="10dp"
                 android:text="Send time"
                 android:textAppearance="@style/body_s"
                 android:textColor="@color/dark_darkest"/>
-
-            <View
-                android:layout_width="0dp"
-                android:layout_height="1dp"
-                android:layout_weight="1"
-                android:layout_gravity="center"
-                android:background="@color/dark_medium"/>
         </LinearLayout>
 
         <TextView
@@ -127,6 +67,14 @@
             android:layout_height="wrap_content"
             android:text="Subject"
             android:textAppearance="@style/heading_l"
+            android:textColor="@color/highlight_darkest"/>
+
+        <TextView
+            android:id="@+id/tag"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Tag"
+            android:textAppearance="@style/heading_s"
             android:textColor="@color/highlight_darkest"/>
 
         <TextView

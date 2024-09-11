@@ -2,7 +2,6 @@ package com.cs426.asel;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.util.SparseArray;
 import android.widget.Toast;
 
 import com.cs426.asel.ui.account.AccountContainer;
@@ -100,8 +99,6 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private static class ScreenSlidePagerAdapter extends FragmentStateAdapter {
-        private final SparseArray<Fragment> fragmentCache = new SparseArray<>();
-
         public ScreenSlidePagerAdapter(FragmentActivity fragmentActivity) {
             super(fragmentActivity);
         }
@@ -156,7 +153,5 @@ public class MainActivity extends AppCompatActivity {
 
         // Pass the launcher to the AccountViewModel
         accountViewModel.setSignInLauncher(signInLauncher);
-
     }
-
 }
