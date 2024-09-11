@@ -8,11 +8,17 @@ import android.util.Log;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
+
+import com.cs426.asel.MainActivity;
 import com.cs426.asel.backend.GmailServices;
+import com.cs426.asel.backend.GoogleAccountServices;
 import com.cs426.asel.backend.Mail;
 import com.cs426.asel.backend.MailList;
 import com.cs426.asel.backend.MailRepository;
+import com.cs426.asel.backend.Utility;
 import com.google.ai.client.generativeai.type.GenerateContentResponse;
+import com.google.android.gms.auth.api.signin.GoogleSignIn;
+import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
 import com.google.api.services.gmail.model.Message;
 import com.google.common.util.concurrent.FutureCallback;
 import com.google.common.util.concurrent.Futures;
@@ -53,12 +59,15 @@ public class EmailsViewModel extends ViewModel implements GmailServices.EmailCal
 
     private MailRepository mailRepository;
     private MailList mailList;
+    private String userEmail;
     private Context context;
 
     public EmailsViewModel(Context context) {
         this.context = context;
         gmailServices = new GmailServices(context, this); // Initialize GmailServices for email operations
-        mailRepository = new MailRepository(context);
+        userEmail = Utility.getUserEmail(context);
+        mailRepository = new MailRepository(context, userEmail);
+
 //        processedIDs = new ArrayList<>();
     }
 
@@ -103,6 +112,10 @@ public class EmailsViewModel extends ViewModel implements GmailServices.EmailCal
                 Log.e("EmailsViewModel", errorMessage);
             }
         });
+    }
+
+    public void setUserEmailAddress() {
+
     }
 
     @Override
@@ -155,7 +168,9 @@ public class EmailsViewModel extends ViewModel implements GmailServices.EmailCal
             String curId = ids.get(i);
             if (isProcessed(curId)) {
                 Log.d("EmailsViewModel", "Email ID " + curId + " is already processed. Skipping.");
-                mailList.addMail(new MailRepository(context).getMailById(curId));
+                Mail mail = mailRepository.getMailById(curId);
+                if (!mail.isRead())
+                    mailList.addMail(mailRepository.getMailById(curId));
                 latch.countDown();
                 continue;
             }
@@ -271,6 +286,6 @@ public class EmailsViewModel extends ViewModel implements GmailServices.EmailCal
     }
 
     public MailList getMailList() {
-        return mailList;
+        return mailRepository.getMailByRead(false, "send_time", false);
     }
 }

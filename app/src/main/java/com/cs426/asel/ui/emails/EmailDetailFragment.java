@@ -9,11 +9,14 @@ import android.view.ViewGroup;
 import android.widget.Button;
 
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.ViewModelProvider;
 
 import com.cs426.asel.R;
 import com.cs426.asel.backend.Mail;
 import com.cs426.asel.backend.MailRepository;
+import com.cs426.asel.backend.Utility;
 import com.cs426.asel.databinding.FragmentEmailDetailBinding;
+import com.cs426.asel.ui.account.AccountViewModel;
 import com.cs426.asel.ui.events.EventEditorActivity;
 
 public class EmailDetailFragment extends Fragment {
@@ -34,10 +37,11 @@ public class EmailDetailFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_email_detail, container, false);
-        binding = FragmentEmailDetailBinding.bind(view);
+        AccountViewModel accountViewModel = new ViewModelProvider(requireActivity()).get(AccountViewModel.class);
 
+        binding = FragmentEmailDetailBinding.bind(view);
         emailId = getArguments().getString("emailId");
-        mail = new MailRepository(requireContext()).getMailById(emailId);
+        mail = new MailRepository(requireContext(), Utility.getUserEmail(requireContext())).getMailById(emailId);
 
         binding.emailTitle.setText(mail.getTitle());
         binding.emailSender.setText(mail.getSender());

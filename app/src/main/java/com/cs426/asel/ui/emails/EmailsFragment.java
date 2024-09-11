@@ -22,8 +22,10 @@ import com.cs426.asel.R;
 import com.cs426.asel.backend.Mail;
 import com.cs426.asel.backend.MailList;
 import com.cs426.asel.backend.MailRepository;
+import com.cs426.asel.backend.Utility;
 import com.cs426.asel.databinding.FragmentEmailsBinding;
 import com.cs426.asel.databinding.NewEmailItemBinding;
+import com.cs426.asel.ui.account.AccountViewModel;
 import com.google.android.material.snackbar.Snackbar;
 
 public class EmailsFragment extends Fragment {
@@ -34,6 +36,7 @@ public class EmailsFragment extends Fragment {
     private EmailsViewModel emailsViewModel; // Reference to the shared ViewModel
     private EmailListAdapter adapter;
     private SwipeCallback swipeCallback;
+    private String userEmail;
 
     private int removedIndex = -1;
     private Mail removedMail;
@@ -43,12 +46,12 @@ public class EmailsFragment extends Fragment {
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         // Obtain EmailsViewModel from the activity's ViewModelProvider
         binding = FragmentEmailsBinding.inflate(inflater, container, false);
+        userEmail = Utility.getUserEmail(requireContext());
         emailsViewModel = new ViewModelProvider(requireActivity()).get(EmailsViewModel.class);
-        adapter = new EmailListAdapter();
-
         emailsViewModel.fetchAllEmailsID();
+        adapter = new EmailListAdapter();
         unread = new MailList();
-        read = new MailRepository(requireContext()).getMailByRead(true, "send_time", false);
+        read = new MailRepository(requireContext(), userEmail).getMailByRead(true, "send_time", false);
 
         binding.mailsRadioGroup.setOnCheckedChangeListener((group, checkedId) -> {
             if (checkedId == R.id.new_mail_radio_button) {
@@ -128,7 +131,8 @@ public class EmailsFragment extends Fragment {
                                 unread.removeMail(removedIndex);
                                 adapter.removeMail(removedIndex);
                                 read.addMail(mail);
-                                MailRepository mailRepo = new MailRepository(requireContext());
+
+                                MailRepository mailRepo = new MailRepository(requireContext(), userEmail);
                                 mailRepo.updateRead(removedMail.getId(), true);
 
                                 dialog.dismiss();
@@ -137,7 +141,6 @@ public class EmailsFragment extends Fragment {
                             dialog.setButton(AlertDialog.BUTTON_NEGATIVE, "No", (dialog12, which) -> {
                                 dialog.dismiss();
                                 adapter.notifyItemChanged(viewHolder.getAdapterPosition());
-
                             });
 
                             dialog.show();
@@ -149,7 +152,7 @@ public class EmailsFragment extends Fragment {
                             unread.removeMail(removedIndex);
                             adapter.removeMail(removedIndex);
                             read.addMail(removedMail);
-                            MailRepository mailRepo = new MailRepository(requireContext());
+                            MailRepository mailRepo = new MailRepository(requireContext(), userEmail);
                             mailRepo.updateRead(removedMail.getId(), true);
 
                             //TODO: publish event of mail
