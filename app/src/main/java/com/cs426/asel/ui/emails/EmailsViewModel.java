@@ -8,11 +8,16 @@ import android.util.Log;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
+
+import com.cs426.asel.MainActivity;
 import com.cs426.asel.backend.GmailServices;
 import com.cs426.asel.backend.GoogleAccountServices;
 import com.cs426.asel.backend.Mail;
 import com.cs426.asel.backend.MailList;
+import com.cs426.asel.backend.MailRepository;
+import com.cs426.asel.backend.Utility;
 import com.google.ai.client.generativeai.type.GenerateContentResponse;
+import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
 import com.google.api.services.gmail.model.Message;
 import com.google.common.util.concurrent.FutureCallback;
@@ -23,6 +28,7 @@ import com.google.common.util.concurrent.MoreExecutors;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Callable;
@@ -38,7 +44,11 @@ import java.util.concurrent.TimeUnit;
 public class EmailsViewModel extends ViewModel implements GmailServices.EmailCallback {
     private static final int MAX_RETRY_COUNT = 5;
     private static final int RETRY_DELAY_MS = 1000;
-    private static final int EMAIL_PER_FETCH = 20;
+    private static final int EMAIL_PER_FETCH = 15;
+
+    private static int currentIndex = 0;
+
+    public MutableLiveData<Boolean> isLoading = new MutableLiveData<>(true);
 
     private GmailServices gmailServices;
     private Map<String, Message> messageCache;
@@ -47,18 +57,22 @@ public class EmailsViewModel extends ViewModel implements GmailServices.EmailCal
     private ListeningExecutorService executorService;
     private ScheduledExecutorService scheduledExecutor;
 
+    private MailRepository mailRepository;
     private MailList mailList;
+    private String userEmail;
     private Context context;
 
     public EmailsViewModel(Context context) {
         this.context = context;
-        messageCache = new HashMap<>();
         gmailServices = new GmailServices(context, this); // Initialize GmailServices for email operations
-        mailList = new MailList();
+        userEmail = Utility.getUserEmail(context);
+        mailRepository = new MailRepository(context, userEmail);
+
+//        processedIDs = new ArrayList<>();
     }
 
-    public void fetchEmails() {
-        fetchAllEmailsID(); // Step 1: Fetch all email IDs
+    public MutableLiveData<Boolean> getIsLoading() {
+        return isLoading;
     }
 
     public void fetchAllEmailsID() {
@@ -68,7 +82,7 @@ public class EmailsViewModel extends ViewModel implements GmailServices.EmailCal
     private List<String> getUnfetchedID() {
         List<String> unfetchedID = new ArrayList<>();
         for (Map.Entry<String, Message> entry: messageCache.entrySet()) {
-            if (entry.getValue() == null) {
+            if (!mailRepository.isMailExists(entry.getKey())) {
                 unfetchedID.add(entry.getKey());
             }
         }
@@ -78,7 +92,6 @@ public class EmailsViewModel extends ViewModel implements GmailServices.EmailCal
     private void fetchAllEmailsContent() {
         ExecutorService executor = Executors.newFixedThreadPool(4); // Adjust the pool size as needed
         List<Callable<Void>> tasks = new ArrayList<>();
-
 
         List<String> unfetchedID = getUnfetchedID();
         fetchEmailContent(unfetchedID);
@@ -90,9 +103,8 @@ public class EmailsViewModel extends ViewModel implements GmailServices.EmailCal
             public void onEmailFetched(List<Message> messages) {
                 for (Message message: messages) {
                     storeMessage(message.getId(), message);
-                    Log.d("EmailsViewModel", "Fetched " + message.getId() + ": " + message.getSnippet());
                 }
-                processEmails();
+                onEmailContentFetched();
             }
 
             @Override
@@ -100,6 +112,10 @@ public class EmailsViewModel extends ViewModel implements GmailServices.EmailCal
                 Log.e("EmailsViewModel", errorMessage);
             }
         });
+    }
+
+    public void setUserEmailAddress() {
+
     }
 
     @Override
@@ -110,6 +126,7 @@ public class EmailsViewModel extends ViewModel implements GmailServices.EmailCal
                 String id = message.getId();
                 storeID(message.getId());
             }
+
             fetchAllEmailsContent(); // Step 2: Fetch all emails content after IDs are fetched
         }
     }
@@ -118,77 +135,99 @@ public class EmailsViewModel extends ViewModel implements GmailServices.EmailCal
     public void onEmailContentFetched() {
         // Process emails or perform other actions after all content is fetched
         Log.d("EmailsViewModel", "All email content fetched.");
-        //processEmails();
+        processEmails();
+    }
+
+    public void loadMoreEmails() {
+        if (isLoading.getValue()) {
+            return;
+        }
+        isLoading.postValue(true);
+        ExecutorService executor = Executors.newSingleThreadExecutor();
+        executor.submit(() -> {
+            processEmails();
+        });
     }
 
     private void processEmails() {
-        int processSize = min(EMAIL_PER_FETCH, messageCache.size());
-        Log.d("EmailsViewModel", "Processing " + processSize + " emails.");
+        int processLimit = min(currentIndex + EMAIL_PER_FETCH, messageCache.size());
+        int processSize = processLimit - currentIndex;
+
         List<ListenableFuture<GenerateContentResponse>> futures = new ArrayList<>();
+        CountDownLatch latch = new CountDownLatch(processSize);
+        Log.d("EmailsViewModel", "Processing emails from index " + currentIndex + " to " + processLimit);
+
+        mailList = new MailList();
         retryCounts = new HashMap<>();
         executorService = MoreExecutors.listeningDecorator(Executors.newFixedThreadPool(processSize));
         scheduledExecutor = Executors.newScheduledThreadPool(1);
 
-        for (int i = 0; i < processSize; i++) {
-            Map.Entry<String, Message> entry = messageCache.entrySet().iterator().next();
-            if (entry.getValue() == null) {
-                Log.d("EmailsViewModel", "Email ID " + entry.getKey() + " is null. Skipping.");
+        List<String> ids = getEmailsID();
+
+        for (int i = currentIndex; i < processLimit; i++) {
+            String curId = ids.get(i);
+            if (isProcessed(curId)) {
+                Log.d("EmailsViewModel", "Email ID " + curId + " is already processed. Skipping.");
+                Mail mail = mailRepository.getMailById(curId);
+                if (!mail.isRead())
+                    mailList.addMail(mailRepository.getMailById(curId));
+                latch.countDown();
                 continue;
             }
 
-            Mail mail = new Mail(entry.getValue());
+            Message message = getMessage(curId);
+            if (message == null) {
+                Log.d("EmailsViewModel", "Email ID " + curId + " is null. Skipping.");
+                continue;
+            }
+
+            Mail mail = new Mail(message);
             ListenableFuture<GenerateContentResponse> future = mail.summarize();
 
-            mailList.addMail(mail);
             retryCounts.put(future, 0);
             futures.add(future);
-            attemptProcessWithRetry(mail, future, 0);
+            attemptProcessWithRetry(mail, future, latch);
         }
 
-        ListenableFuture<List<GenerateContentResponse>> allFutures = Futures.allAsList(futures);
-        Futures.addCallback(allFutures,
-                new FutureCallback<List<GenerateContentResponse>>() {
-                    @Override
-                    public void onSuccess(List<GenerateContentResponse> result) {
-                        Log.d("EmailsViewModel", "All emails processed successfully.");
-                    }
+        currentIndex = processLimit;
 
-                    @Override
-                    public void onFailure(Throwable t) {
-                        Log.d("EmailsViewModel", "Error processing all emails.");
-                        int count = 0;
-                        for (Map.Entry<ListenableFuture<GenerateContentResponse>, Integer> entry : retryCounts.entrySet()) {
-                            if (entry.getValue() >= MAX_RETRY_COUNT) {
-                                count++;
-                            }
-                        }
-
-                        Log.d("EmailsViewModel", "Failed to process " + count + " emails.");
-                    }
-                }, executorService);
+        try {
+            latch.await();
+            Log.d("EmailsViewModel", "All emails processed.");
+            executorService.shutdown();
+            scheduledExecutor.shutdown();
+            isLoading.postValue(false);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
     }
 
     private void attemptProcessWithRetry(Mail mail,
                                          ListenableFuture<GenerateContentResponse> future,
-                                         int retryCount) {
+                                         CountDownLatch latch) {
         Futures.addCallback(
                 future,
                 new FutureCallback<GenerateContentResponse>() {
                     @Override
                     public void onSuccess(GenerateContentResponse result) {
-                        mail.setSummary(result.getText());
-                        Log.d("EmailsViewModel", mail.getSummary());
+                        latch.countDown();
+                        Log.d("EmailsViewModel", "Email ID " + mail.getId() + " processed.");
+                        mail.extractInfo(result.getText());
+                        mailRepository.insertMail(mail);
+                        mailList.addMail(mail);
                     }
 
                     @Override
                     public void onFailure(Throwable t) {
-                        Log.e("EmailsViewModel", "Error processing email ID " + mail.getEmailID(), t);
+                        Log.e("EmailsViewModel", "Error processing email ID " + mail.getId(), t);
+                        int retryCount = retryCounts.getOrDefault(future, 0);
                         if (retryCount < MAX_RETRY_COUNT) {
                             int newRetryCount = retryCount + 1;
                             retryCounts.put(future, newRetryCount);
-                            scheduleRetry(mail, newRetryCount);
+                            scheduleRetry(mail, newRetryCount, latch);
                         } else {
-                            Log.e("EmailsViewModel", "Max retry count reached for email ID " + mail.getEmailID());
+                            Log.e("EmailsViewModel", "Max retry count reached for email ID " + mail.getId());
+                            latch.countDown();
                         }
                     }
                 },
@@ -196,11 +235,11 @@ public class EmailsViewModel extends ViewModel implements GmailServices.EmailCal
         );
     }
 
-    private void scheduleRetry(Mail mail, int newRetryCount) {
+    private void scheduleRetry(Mail mail, int newRetryCount, CountDownLatch latch) {
         scheduledExecutor.schedule(() -> {
             ListenableFuture<GenerateContentResponse> newFuture = mail.summarize();
             retryCounts.put(newFuture, newRetryCount);
-            attemptProcessWithRetry(mail, newFuture, newRetryCount);
+            attemptProcessWithRetry(mail, newFuture, latch);
         }, RETRY_DELAY_MS, TimeUnit.MILLISECONDS);
     }
 
@@ -215,8 +254,16 @@ public class EmailsViewModel extends ViewModel implements GmailServices.EmailCal
         return new ArrayList<>(messageCache.values());
     }
 
+    public List<String> getEmailsID() {
+        return new ArrayList<>(messageCache.keySet());
+    }
+
     public void reset() {
-        messageCache.clear();
+        if (messageCache != null) {
+            messageCache.clear();
+        } else {
+            messageCache = new LinkedHashMap<>();
+        }
     }
 
     public void storeID(String id) {
@@ -232,5 +279,13 @@ public class EmailsViewModel extends ViewModel implements GmailServices.EmailCal
         else {
             Log.d("EmailsViewModel", "Found no id " + id + " in message cache");
         }
+    }
+
+    private boolean isProcessed(String id) {
+        return mailRepository.isMailExists(id);
+    }
+
+    public MailList getMailList() {
+        return mailRepository.getMailByRead(false, "send_time", false);
     }
 }

@@ -2,22 +2,31 @@ package com.cs426.asel.ui.emails;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.renderscript.ScriptGroup;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.ViewModelProvider;
 
 import com.cs426.asel.R;
+import com.cs426.asel.backend.Mail;
+import com.cs426.asel.backend.MailRepository;
+import com.cs426.asel.backend.Utility;
+import com.cs426.asel.databinding.FragmentEmailDetailBinding;
+import com.cs426.asel.ui.account.AccountViewModel;
 import com.cs426.asel.ui.events.EventEditorActivity;
 
 public class EmailDetailFragment extends Fragment {
-    private static int emailId;
+    private static String emailId;
+    private Mail mail;
+    private FragmentEmailDetailBinding binding;
 
-    public static EmailDetailFragment newInstance(int emailId) {
+    public static EmailDetailFragment newInstance(Mail mail) {
         Bundle args = new Bundle();
-        args.putInt("emailId", emailId);
+        args.putString("emailId", emailId);
 
         EmailDetailFragment fragment = new EmailDetailFragment();
         fragment.setArguments(args);
@@ -28,12 +37,16 @@ public class EmailDetailFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_email_detail, container, false);
+        AccountViewModel accountViewModel = new ViewModelProvider(requireActivity()).get(AccountViewModel.class);
 
-        emailId = getArguments().getInt("emailId");
+        binding = FragmentEmailDetailBinding.bind(view);
+        emailId = getArguments().getString("emailId");
+        mail = new MailRepository(requireContext(), Utility.getUserEmail(requireContext())).getMailById(emailId);
 
-        // TODO: Set email details in the view
-
-        // Bind onClick
+        binding.emailTitle.setText(mail.getTitle());
+        binding.emailSender.setText(mail.getSender());
+        binding.emailBody.setText(mail.getContent());
+        binding.emailDatetime.setText(mail.getSentTime());
 
         return view;
     }
