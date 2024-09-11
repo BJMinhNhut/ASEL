@@ -104,13 +104,4 @@ public class AccountViewModel extends ViewModel implements GoogleAccountServices
     public void changeAccount(GoogleSignInAccount account) {
         signInResult.setValue(account);
     }
-
-    public String getUserEmail() {
-        GoogleSignInAccount account = signInResult.getValue();
-        if (account != null) {
-            return account.getEmail();
-        } else {
-            return null;
-        }
-    }
 }
