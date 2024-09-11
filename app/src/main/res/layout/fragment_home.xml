@@ -177,11 +177,6 @@
                 android:src="@drawable/barcode_default"
                 android:scaleType="fitXY"
                 android:adjustViewBounds="true"/>
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="Student Name"
-                android:textAppearance="@style/heading_m"/>
         </LinearLayout>
     </androidx.cardview.widget.CardView>
 

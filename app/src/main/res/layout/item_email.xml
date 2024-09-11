@@ -61,21 +61,41 @@
                 android:textColor="@color/dark_darkest"/>
         </LinearLayout>
 
-        <TextView
-            android:id="@+id/subject"
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Subject"
-            android:textAppearance="@style/heading_l"
-            android:textColor="@color/highlight_darkest"/>
+            android:orientation="horizontal">
 
-        <TextView
-            android:id="@+id/tag"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Tag"
-            android:textAppearance="@style/heading_s"
-            android:textColor="@color/highlight_darkest"/>
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="["
+                android:textAppearance="@style/heading_l"
+                android:textColor="@color/highlight_darkest"/>
+
+            <TextView
+                android:id="@+id/tag"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Tag"
+                android:textAppearance="@style/heading_l"
+                android:textColor="@color/highlight_darkest"/>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="] "
+                android:textAppearance="@style/heading_l"
+                android:textColor="@color/highlight_darkest"/>
+
+            <TextView
+                android:id="@+id/subject"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Subject"
+                android:textAppearance="@style/heading_l"
+                android:textColor="@color/highlight_darkest"/>
+        </LinearLayout>
 
         <TextView
             android:id="@+id/summary"

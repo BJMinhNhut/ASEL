@@ -89,6 +89,8 @@ dependencies {
     implementation("com.google.apis:google-api-services-gmail:v1-rev110-1.25.0")
     implementation("com.google.http-client:google-http-client-jackson2:1.41.5")
     implementation("androidx.viewpager2:viewpager2:1.1.0")
+    implementation("com.google.zxing:core:3.4.1")
+    implementation("com.journeyapps:zxing-android-embedded:4.3.0")
     implementation(libs.jsoup)
     implementation(libs.generativeai)
     testImplementation(libs.junit)

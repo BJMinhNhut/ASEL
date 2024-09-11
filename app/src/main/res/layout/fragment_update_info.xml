@@ -18,7 +18,6 @@
             android:layout_width="25dp"
             android:layout_height="25dp"
             android:layout_gravity="center|start"
-            android:layout_marginEnd="20dp"
             android:src="@drawable/ic_chevron_left"
             app:tint="@color/highlight_darkest"
             android:background="?android:attr/selectableItemBackground"/>
@@ -244,13 +243,15 @@
     <com.google.android.material.button.MaterialButton
         android:id="@+id/buttonSave"
         android:layout_width="match_parent"
-        android:layout_height="40dp"
+        android:layout_height="50dp"
         android:layout_margin="20dp"
         android:insetTop="0dp"
         android:insetBottom="0dp"
         app:cornerRadius="15dp"
+        app:elevation="10dp"
+        android:elevation="10dp"
         android:text="Save changes"
-        android:textAppearance="@style/action_m"
+        android:textAppearance="@style/action_l"
         android:textColor="@color/light_lightest"
         android:backgroundTint="@color/highlight_darkest"/>
 </LinearLayout>
