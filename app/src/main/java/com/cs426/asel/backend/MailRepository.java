@@ -48,6 +48,7 @@ public class MailRepository {
         values.put(DatabaseContract.Mails.COLUMN_NAME_RECEIVER, mail.getReceiver());
         values.put(DatabaseContract.Mails.COLUMN_NAME_CONTENT, mail.getContent());
         values.put(DatabaseContract.Mails.COLUMN_NAME_SUMMARY, mail.getSummary());
+        assert mail.getReceivedTime() != null : "Mail received time is null";
         values.put(DatabaseContract.Mails.COLUMN_NAME_SEND_TIME, mail.getReceivedTime().toString());
         values.put(DatabaseContract.Mails.COLUMN_NAME_EVENT_ID, eventId);
         values.put(DatabaseContract.Mails.COLUMN_NAME_IS_READ, mail.isRead() ? 1 : 0);

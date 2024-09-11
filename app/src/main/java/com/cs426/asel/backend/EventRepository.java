@@ -29,13 +29,19 @@ public class EventRepository {
         ContentValues values = new ContentValues();
         values.put(DatabaseContract.Events.COLUMN_NAME_TITLE, event.getTitle());
         values.put(DatabaseContract.Events.COLUMN_NAME_DESCRIPTION, event.getDescription());
-        values.put(DatabaseContract.Events.COLUMN_NAME_FROM_DATETIME, event.getStartTime().toString());
+        if (event.getStartTime() != null) {
+            values.put(DatabaseContract.Events.COLUMN_NAME_FROM_DATETIME, event.getStartTime().toString());
+        }
         values.put(DatabaseContract.Events.COLUMN_NAME_DURATION, event.getDuration());
         values.put(DatabaseContract.Events.COLUMN_NAME_PLACE, event.getLocation());
         values.put(DatabaseContract.Events.COLUMN_NAME_IS_REPEAT, event.isRepeating() ? 1 : 0);
         values.put(DatabaseContract.Events.COLUMN_NAME_REPEAT_FREQUENCY, event.getRepeatFrequency());
-        values.put(DatabaseContract.Events.COLUMN_NAME_REPEAT_END, event.getRepeatEndDate().toString());
-        values.put(DatabaseContract.Events.COLUMN_NAME_REMIND_TIME, event.getReminderTime().toString());
+        if (event.getRepeatEndDate() != null) {
+            values.put(DatabaseContract.Events.COLUMN_NAME_REPEAT_END, event.getRepeatEndDate().toString());
+        }
+        if (event.getReminderTime() != null) {
+            values.put(DatabaseContract.Events.COLUMN_NAME_REMIND_TIME, event.getReminderTime().toString());
+        }
         values.put(DatabaseContract.Events.COLUMN_NAME_ALL_DAY, event.isAllDay() ? 1 : 0);
         values.put(DatabaseContract.Events.COLUMN_NAME_PUBLISHED, event.isPublished() ? 1 : 0);
 
