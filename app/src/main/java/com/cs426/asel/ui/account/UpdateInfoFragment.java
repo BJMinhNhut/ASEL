@@ -2,6 +2,9 @@ package com.cs426.asel.ui.account;
 
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
+import androidx.cardview.widget.CardView;
+import androidx.fragment.app.FragmentManager;
+import androidx.fragment.app.FragmentManager;
 import androidx.lifecycle.ViewModelProvider;
 import android.app.DatePickerDialog;
 import android.content.Context;
@@ -26,6 +29,9 @@ import android.widget.ImageButton;
 import android.widget.TextView;
 import android.widget.Toast;
 import com.cs426.asel.R;
+import com.google.android.material.button.MaterialButton;
+import com.google.android.material.textfield.TextInputEditText;
+
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.text.SimpleDateFormat;
@@ -35,10 +41,10 @@ import java.util.Locale;
 public class UpdateInfoFragment extends Fragment {
 
     private AccountViewModel mViewModel;
-    private EditText editTextFullName, editTextStudentId, editTextSchool, editTextFaculty, editTextDegree;
-    private TextView textViewBirthday;
+    private TextInputEditText editTextFullName, editTextStudentId, editTextSchool, editTextFaculty, editTextDegree;
+    private TextInputEditText textViewBirthday;
     private ImageButton imageButtonAvatar;
-    private Button buttonSave;
+    private MaterialButton buttonSave;
     private Calendar calendar;
 
     private ActivityResultLauncher<Intent> imagePickerLauncher;
@@ -55,10 +61,10 @@ public class UpdateInfoFragment extends Fragment {
         mViewModel = new ViewModelProvider(requireActivity()).get(AccountViewModel.class);
 
         // Initialize UI components
+        imageButtonAvatar = view.findViewById(R.id.imageButtonAvatar);
         editTextFullName = view.findViewById(R.id.editTextFullName);
         editTextStudentId = view.findViewById(R.id.editTextStudentId);
         textViewBirthday = view.findViewById(R.id.textViewBirthday);
-        imageButtonAvatar = view.findViewById(R.id.imageButtonAvatar);
         editTextSchool = view.findViewById(R.id.editTextSchool);
         editTextFaculty = view.findViewById(R.id.editTextFaculty);
         editTextDegree = view.findViewById(R.id.editTextDegree);
@@ -94,7 +100,8 @@ public class UpdateInfoFragment extends Fragment {
         buttonSave.setOnClickListener(v -> {
             saveStudentInfo();
             Toast.makeText(requireContext(), "Info saved successfully", Toast.LENGTH_SHORT).show();
-            NavHostFragment.findNavController(UpdateInfoFragment.this).popBackStack();
+            FragmentManager fm = getParentFragmentManager();
+            fm.popBackStack();
         });
     }
 
@@ -173,7 +180,7 @@ public class UpdateInfoFragment extends Fragment {
         if (avatar != null) {
             imageButtonAvatar.setImageBitmap(avatar);
         } else {
-            imageButtonAvatar.setImageResource(R.drawable.profile_image_default); // Set default avatar
+            imageButtonAvatar.setImageResource(R.drawable.avatar_default); // Set default avatar
         }
     }
 

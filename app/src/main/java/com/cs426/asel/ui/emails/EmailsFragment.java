@@ -1,6 +1,7 @@
 package com.cs426.asel.ui.emails;
 
 import android.app.AlertDialog;
+import android.graphics.Rect;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -12,12 +13,13 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.Observer;
+import androidx.fragment.app.FragmentTransaction;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.navigation.fragment.NavHostFragment;
 import androidx.recyclerview.widget.ItemTouchHelper;
+import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.cs426.asel.MainActivity;
 import com.cs426.asel.R;
 import com.cs426.asel.backend.Mail;
 import com.cs426.asel.backend.MailList;
@@ -92,6 +94,8 @@ public class EmailsFragment extends Fragment {
 
         View root = binding.getRoot();
         emailListRecyclerView = root.findViewById(R.id.email_list_recycler_view);
+        emailListRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
+        emailListRecyclerView.addItemDecoration(new SpaceItemDecoration(20));
         emailListRecyclerView.setAdapter(adapter);
         emailListRecyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
             @Override
@@ -184,6 +188,19 @@ public class EmailsFragment extends Fragment {
         binding.emailListRecyclerView.setVisibility(View.GONE);
     }
 
+    public static class SpaceItemDecoration extends RecyclerView.ItemDecoration {
+        private final int verticalSpaceHeight;
+
+        public SpaceItemDecoration(int verticalSpaceHeight) {
+            this.verticalSpaceHeight = verticalSpaceHeight;
+        }
+
+        @Override
+        public void getItemOffsets(@NonNull Rect outRect, @NonNull View view, @NonNull RecyclerView parent, @NonNull RecyclerView.State state) {
+            outRect.bottom = verticalSpaceHeight;
+        }
+    }
+
     class EmailListAdapter extends RecyclerView.Adapter<EmailListAdapter.EmailViewHolder> {
         private MailList mailList;
 
@@ -215,7 +232,7 @@ public class EmailsFragment extends Fragment {
         @NonNull
         @Override
         public EmailViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-            View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.new_email_item, parent, false);
+            View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_email, parent, false);
             return new EmailViewHolder(view);
         }
 
@@ -226,8 +243,10 @@ public class EmailsFragment extends Fragment {
                 Bundle bundle = new Bundle();
                 bundle.putString("emailId", mailList.getMail(position).getId()); // Replace 1 with the actual email ID you want to pass
 
-                NavHostFragment.findNavController(EmailsFragment.this)
-                        .navigate(R.id.navigation_email_detail, bundle);
+                FragmentTransaction ft = requireActivity().getSupportFragmentManager().beginTransaction();
+                EmailDetailFragment fragment = new EmailDetailFragment();
+                fragment.setArguments(bundle);
+                ft.replace(R.id.emailsContainer, fragment).addToBackStack(null).commit();
             });
 
             holder.senderName.setText(mailList.getMail(position).getSender());

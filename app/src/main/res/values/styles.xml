@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Heading -->
+    <style name="heading_xl">
+        <item name="android:fontFamily">@font/inter_extrabold</item>
+        <item name="android:textSize">24sp</item>
+    </style>
+    <style name="heading_l">
+        <item name="android:fontFamily">@font/inter_extrabold</item>
+        <item name="android:textSize">18sp</item>
+    </style>
+    <style name="heading_m">
+        <item name="android:fontFamily">@font/inter_extrabold</item>
+        <item name="android:textSize">16sp</item>
+    </style>
+    <style name="heading_s">
+        <item name="android:fontFamily">@font/inter_bold</item>
+        <item name="android:textSize">14sp</item>
+    </style>
+    <style name="heading_xs">
+        <item name="android:fontFamily">@font/inter_bold</item>
+        <item name="android:textSize">12sp</item>
+    </style>
+
+    <!-- Body -->
+    <style name="body_xl">
+        <item name="android:fontFamily">@font/inter_regular</item>
+        <item name="android:textSize">18sp</item>
+    </style>
+    <style name="body_l">
+        <item name="android:fontFamily">@font/inter_regular</item>
+        <item name="android:textSize">16sp</item>
+    </style>
+    <style name="body_m">
+        <item name="android:fontFamily">@font/inter_regular</item>
+        <item name="android:textSize">14sp</item>
+    </style>
+    <style name="body_s">
+        <item name="android:fontFamily">@font/inter_regular</item>
+        <item name="android:textSize">12sp</item>
+    </style>
+    <style name="body_xs">
+        <item name="android:fontFamily">@font/inter_regular</item>
+        <item name="android:textSize">10sp</item>
+    </style>
+
+    <!-- Action -->
+    <style name="action_l">
+        <item name="android:fontFamily">@font/inter_semibold</item>
+        <item name="android:textSize">14sp</item>
+    </style>
+    <style name="action_m">
+        <item name="android:fontFamily">@font/inter_semibold</item>
+        <item name="android:textSize">12sp</item>
+    </style>
+    <style name="action_s">
+        <item name="android:fontFamily">@font/inter_semibold</item>
+        <item name="android:textSize">10sp</item>
+    </style>
+
+    <!-- Caption -->
+    <style name="caption_m">
+        <item name="android:fontFamily">@font/inter_semibold</item>
+        <item name="android:textSize">10sp</item>
+    </style>
+
+    <!-- Bottom navigation -->
+    <style name="custom_indicator" parent="Widget.Material3.BottomNavigationView.ActiveIndicator">
+        <item name="android:color">@color/highlight_medium</item>
+    </style>
+</resources>
