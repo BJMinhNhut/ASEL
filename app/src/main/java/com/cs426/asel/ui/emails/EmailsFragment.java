@@ -26,7 +26,6 @@ import com.cs426.asel.backend.MailList;
 import com.cs426.asel.backend.MailRepository;
 import com.cs426.asel.backend.Utility;
 import com.cs426.asel.databinding.FragmentEmailsBinding;
-import com.cs426.asel.databinding.NewEmailItemBinding;
 import com.cs426.asel.ui.account.AccountViewModel;
 import com.google.android.material.snackbar.Snackbar;
 
@@ -275,7 +274,7 @@ public class EmailsFragment extends Fragment {
                 receiverName = itemView.findViewById(R.id.receiver_name);
                 title = itemView.findViewById(R.id.title);
                 time = itemView.findViewById(R.id.time);
-                place = itemView.findViewById(R.id.place);
+                place = itemView.findViewById(R.id.location);
 
             }
         }
