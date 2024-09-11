@@ -272,7 +272,7 @@ public class EmailsFragment extends Fragment {
                 super(itemView);
                 senderName = itemView.findViewById(R.id.sender_name);
                 receiverName = itemView.findViewById(R.id.receiver_name);
-                title = itemView.findViewById(R.id.title);
+                title = itemView.findViewById(R.id.subject);
                 time = itemView.findViewById(R.id.time);
                 place = itemView.findViewById(R.id.location);
 
