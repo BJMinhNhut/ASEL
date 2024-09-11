@@ -1,5 +1,6 @@
 package com.cs426.asel.ui.emails;
 
+import static java.lang.Math.max;
 import static java.lang.Math.min;
 
 import android.content.Context;
@@ -58,7 +59,6 @@ public class EmailsViewModel extends ViewModel implements GmailServices.EmailCal
     private ScheduledExecutorService scheduledExecutor;
 
     private MailRepository mailRepository;
-    private MailList mailList;
     private String userEmail;
     private Context context;
 
@@ -157,7 +157,6 @@ public class EmailsViewModel extends ViewModel implements GmailServices.EmailCal
         CountDownLatch latch = new CountDownLatch(processSize);
         Log.d("EmailsViewModel", "Processing emails from index " + currentIndex + " to " + processLimit);
 
-        mailList = new MailList();
         retryCounts = new HashMap<>();
         executorService = MoreExecutors.listeningDecorator(Executors.newFixedThreadPool(processSize));
         scheduledExecutor = Executors.newScheduledThreadPool(1);
@@ -169,8 +168,6 @@ public class EmailsViewModel extends ViewModel implements GmailServices.EmailCal
             if (isProcessed(curId)) {
                 Log.d("EmailsViewModel", "Email ID " + curId + " is already processed. Skipping.");
                 Mail mail = mailRepository.getMailById(curId);
-                if (!mail.isRead())
-                    mailList.addMail(mailRepository.getMailById(curId));
                 latch.countDown();
                 continue;
             }
@@ -214,7 +211,6 @@ public class EmailsViewModel extends ViewModel implements GmailServices.EmailCal
                         Log.d("EmailsViewModel", "Email ID " + mail.getId() + " processed.");
                         mail.extractInfo(result.getText());
                         mailRepository.insertMail(mail);
-                        mailList.addMail(mail);
                     }
 
                     @Override
@@ -287,5 +283,15 @@ public class EmailsViewModel extends ViewModel implements GmailServices.EmailCal
 
     public MailList getMailList() {
         return mailRepository.getMailByRead(false, "send_time", false);
+    }
+
+    public MailList getMailListFrom(int index) {
+        MailList list = mailRepository.getMailByRead(false, "send_time", false);
+        MailList res = new MailList();
+
+        for (int i = index; i < min(list.size(), index + EMAIL_PER_FETCH); i++) {
+            res.addMail(list.getMail(i));
+        }
+        return res;
     }
 }

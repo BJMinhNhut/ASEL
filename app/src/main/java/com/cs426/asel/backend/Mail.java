@@ -198,21 +198,20 @@ public class Mail {
         MailInfo mailInfo;
         try {
             mailInfo = new ObjectMapper().readValue(content, MailInfo.class);
+            Log.d("Mail", "Mail event: " + mailInfo.location);
         } catch (Exception e) {
             Log.e("Mail", "Error parsing JSON");
             e.printStackTrace();
             mailInfo = new MailInfo();
         }
 
+
         mSummary = mailInfo.summary;
         mTag = mailInfo.tag;
 
-        int duration = 0;
         if (mailInfo.toDateTime != null && mailInfo.fromDateTime != null) {
-            duration = (int) java.time.Duration.between(mailInfo.fromDateTime, mailInfo.toDateTime).toMinutes();
-        }
+            int duration = (int) java.time.Duration.between(mailInfo.fromDateTime, mailInfo.toDateTime).toMinutes();
 
-        if (mailInfo.fromDateTime != null) {
             mEvent = new Event(
                     mId,
                     mTitle,
@@ -321,11 +320,17 @@ public class Mail {
 
     @JsonIgnoreProperties(ignoreUnknown = true)
     public static class MailInfo {
+        @JsonProperty("location")
         private String location = "nothing to show";
+
+
         private Instant fromDateTime;
         private Instant toDateTime;
-        private String toTime = "nothing to show";
+
+        @JsonProperty("summary")
         private String summary = "nothing to show";
+
+        @JsonProperty("tag")
         private String tag = "nothing to show";
 
         @JsonProperty("fromDateTime")
@@ -346,6 +351,10 @@ public class Mail {
             }
 
             this.toDateTime = parseToInstant(toDateTime, "dd/MM/yyyy, HH:mm");
+
+            if (this.fromDateTime == null) {
+                this.fromDateTime = this.toDateTime;
+            }
         }
     }
 }

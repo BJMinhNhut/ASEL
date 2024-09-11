@@ -28,13 +28,13 @@ public class Event {
         mID = -1; // -1 for undefined ID (not in the database)
         mMailID = "";
         mTitle = "";
-        mStartTime = Instant.now();
+        mStartTime = null;
         mDuration = 0;
         mLocation = "";
         mIsRepeating = false;
         mRepeatFrequency = "";
-        mRepeatEndDate = Instant.now();
-        mReminderTime = Instant.now();
+        mRepeatEndDate = null;
+        mReminderTime = null;
         mDescription = "";
         mIsAllDay = false;
         mIsPublished = false;
