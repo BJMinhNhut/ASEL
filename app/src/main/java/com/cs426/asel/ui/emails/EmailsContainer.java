@@ -15,7 +15,7 @@ public class EmailsContainer extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.container_emails, container, false);
         // why? https://stackoverflow.com/questions/7508044/android-fragment-no-view-found-for-id
-        FragmentTransaction ft = getChildFragmentManager().beginTransaction();
+        FragmentTransaction ft = requireActivity().getSupportFragmentManager().beginTransaction();
         ft.add(R.id.emailsContainer, new EmailsFragment()).commit();
 
         return view;
