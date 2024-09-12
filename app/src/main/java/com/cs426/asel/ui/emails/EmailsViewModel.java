@@ -66,6 +66,7 @@ public class EmailsViewModel extends ViewModel implements GmailServices.EmailCal
         this.context = context;
         gmailServices = new GmailServices(context, this); // Initialize GmailServices for email operations
         userEmail = Utility.getUserEmail(context);
+        Log.d("EmailsViewModel", "Init emails view model with User email: " + userEmail);
         mailRepository = new MailRepository(context, userEmail);
 
 //        processedIDs = new ArrayList<>();
@@ -208,9 +209,9 @@ public class EmailsViewModel extends ViewModel implements GmailServices.EmailCal
                     @Override
                     public void onSuccess(GenerateContentResponse result) {
                         latch.countDown();
-                        Log.d("EmailsViewModel", "Email ID " + mail.getId() + " processed.");
                         mail.extractInfo(result.getText());
                         mailRepository.insertMail(mail);
+                        Log.d("EmailsViewModel", "Email ID: " + mail.getId() + ", is in db?: " + mailRepository.isMailExists(mail.getId()));
                     }
 
                     @Override
@@ -290,6 +291,8 @@ public class EmailsViewModel extends ViewModel implements GmailServices.EmailCal
         MailList res = new MailList();
 
         for (int i = index; i < min(list.size(), index + EMAIL_PER_FETCH); i++) {
+            Mail mail = list.getMail(i);
+            Log.d("EmailsViewModel", "Adding mail " + mail.getId() + " to mail list");
             res.addMail(list.getMail(i));
         }
         return res;

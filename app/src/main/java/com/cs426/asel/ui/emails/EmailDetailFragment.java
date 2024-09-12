@@ -3,6 +3,7 @@ package com.cs426.asel.ui.emails;
 import android.content.Intent;
 import android.os.Bundle;
 import android.renderscript.ScriptGroup;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -23,6 +24,7 @@ public class EmailDetailFragment extends Fragment {
     private static String emailId;
     private Mail mail;
     private FragmentEmailDetailBinding binding;
+    private MailRepository mailRepository;
 
     public static EmailDetailFragment newInstance(Mail mail) {
         Bundle args = new Bundle();
@@ -40,8 +42,11 @@ public class EmailDetailFragment extends Fragment {
         AccountViewModel accountViewModel = new ViewModelProvider(requireActivity()).get(AccountViewModel.class);
 
         binding = FragmentEmailDetailBinding.bind(view);
+        mailRepository = new MailRepository(requireContext(), Utility.getUserEmail(requireContext()));
         emailId = getArguments().getString("emailId");
-        mail = new MailRepository(requireContext(), Utility.getUserEmail(requireContext())).getMailById(emailId);
+        Log.d("EmailDetailFragment", "emailId: " + emailId + ", userEmail: " + Utility.getUserEmail(requireContext()));
+        Log.d("EmailDetailFragment", "is mail in db: " + mailRepository.isMailExists(emailId));
+        mail = mailRepository.getMailById(emailId);
 
         binding.emailTitle.setText(mail.getTitle());
         binding.emailSender.setText(mail.getSender());

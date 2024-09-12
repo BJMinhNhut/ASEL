@@ -15,7 +15,7 @@ public class AccountContainer extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.container_account, container, false);
         // why? https://stackoverflow.com/questions/7508044/android-fragment-no-view-found-for-id
-        FragmentTransaction ft = requireActivity().getSupportFragmentManager().beginTransaction();
+        FragmentTransaction ft = getChildFragmentManager().beginTransaction();
         ft.add(R.id.accountContainer, new AccountFragment()).commit();
 
         return view;
