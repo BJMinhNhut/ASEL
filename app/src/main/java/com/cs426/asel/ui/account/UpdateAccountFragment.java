@@ -1,5 +1,7 @@
 package com.cs426.asel.ui.account;
 
+import androidx.activity.OnBackPressedCallback;
+import androidx.fragment.app.FragmentManager;
 import androidx.lifecycle.ViewModelProvider;
 
 import android.os.Bundle;
@@ -59,6 +61,14 @@ public class UpdateAccountFragment extends Fragment {
 
         Button logOut = view.findViewById(R.id.log_out);
         logOut.setOnClickListener(v -> logOut());
+
+        requireActivity().getOnBackPressedDispatcher().addCallback(getViewLifecycleOwner(), new OnBackPressedCallback(true) {
+            @Override
+            public void handleOnBackPressed() {
+                FragmentManager fm = getParentFragmentManager();
+                fm.popBackStack();
+            }
+        });
     }
 
     private void logOut() {
