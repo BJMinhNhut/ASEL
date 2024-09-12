@@ -29,9 +29,14 @@ import com.cs426.asel.databinding.FragmentEmailsBinding;
 import com.cs426.asel.ui.account.AccountViewModel;
 import com.google.android.material.snackbar.Snackbar;
 
+import java.time.Instant;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
+
 public class EmailsFragment extends Fragment {
     private MailList unread;
     private MailList read;
+    private MailRepository mailRepository;
     private FragmentEmailsBinding binding;
     private RecyclerView emailListRecyclerView;
     private EmailsViewModel emailsViewModel; // Reference to the shared ViewModel
@@ -48,11 +53,12 @@ public class EmailsFragment extends Fragment {
         // Obtain EmailsViewModel from the activity's ViewModelProvider
         binding = FragmentEmailsBinding.inflate(inflater, container, false);
         userEmail = Utility.getUserEmail(requireContext());
+        mailRepository = new MailRepository(requireContext(), userEmail);
         emailsViewModel = new ViewModelProvider(requireActivity()).get(EmailsViewModel.class);
         emailsViewModel.fetchAllEmailsID();
         adapter = new EmailListAdapter();
         unread = new MailList();
-        read = new MailRepository(requireContext(), userEmail).getMailByRead(true, "send_time", false);
+        read = mailRepository.getMailByRead(true, "send_time", false);
 
         binding.mailsRadioGroup.setOnCheckedChangeListener((group, checkedId) -> {
             if (checkedId == R.id.new_mail_radio_button) {
@@ -75,8 +81,9 @@ public class EmailsFragment extends Fragment {
                     showLoadIndicator();
                 } else {
                     Log.d("EmailsFragment", "Hiding load");
-                    adapter.appendList(emailsViewModel.getMailList());
-                    unread.append(emailsViewModel.getMailList());
+                    MailList newMails = emailsViewModel.getMailListFrom(unread.size());
+                    adapter.appendList(newMails);
+                    unread.append(newMails);
                     hideLoadIndicator();
                 }
             }
@@ -101,7 +108,8 @@ public class EmailsFragment extends Fragment {
             public void onScrollStateChanged(@NonNull RecyclerView recyclerView, int newState) {
                 super.onScrollStateChanged(recyclerView, newState);
 
-                if (!recyclerView.canScrollVertically(1)) {
+                if (!recyclerView.canScrollVertically(1)
+                        && binding.mailsRadioGroup.getCheckedRadioButtonId() == R.id.new_mail_radio_button) {
                     emailsViewModel.loadMoreEmails();
                 }
             }
@@ -135,8 +143,7 @@ public class EmailsFragment extends Fragment {
                                 adapter.removeMail(removedIndex);
                                 read.addMail(mail);
 
-                                MailRepository mailRepo = new MailRepository(requireContext(), userEmail);
-                                mailRepo.updateRead(removedMail.getId(), true);
+                                mailRepository.updateRead(removedMail.getId(), true);
 
                                 dialog.dismiss();
                             });
@@ -149,14 +156,7 @@ public class EmailsFragment extends Fragment {
                             dialog.show();
                         } else if (direction == ItemTouchHelper.RIGHT) {
                             // Right swipe to quick add
-                            removedMail = unread.getMail(viewHolder.getAdapterPosition());
-                            removedIndex = viewHolder.getAdapterPosition();
-
-                            unread.removeMail(removedIndex);
-                            adapter.removeMail(removedIndex);
-                            read.addMail(removedMail);
-                            MailRepository mailRepo = new MailRepository(requireContext(), userEmail);
-                            mailRepo.updateRead(removedMail.getId(), true);
+                            moveMailToRead(viewHolder.getBindingAdapterPosition(), unread.getMail(viewHolder.getBindingAdapterPosition()));
 
                             //TODO: publish event of mail
 
@@ -165,7 +165,8 @@ public class EmailsFragment extends Fragment {
                                         // Undo the action (implement undo logic here)
                                         adapter.insertMail(removedMail, removedIndex);
                                         unread.insertMailAt(removedMail, removedIndex);
-                                        mailRepo.updateRead(removedMail.getId(), false);
+                                        read.removeMail(read.size() - 1);
+                                        mailRepository.updateRead(removedMail.getId(), false);
 
                                         // TODO: unpublish event of mail
                                     }).show();
@@ -185,6 +186,16 @@ public class EmailsFragment extends Fragment {
     private void showLoadIndicator() {
         binding.loadingIndicator.setVisibility(View.VISIBLE);
         binding.emailListRecyclerView.setVisibility(View.GONE);
+    }
+
+    private void moveMailToRead(int index, Mail mail) {
+        removedMail = mail;
+        removedIndex = index;
+
+        unread.removeMail(removedIndex);
+        adapter.removeMail(removedIndex);
+        read.addMail(removedMail);
+        mailRepository.updateRead(removedMail.getId(), true);
     }
 
     public static class SpaceItemDecoration extends RecyclerView.ItemDecoration {
@@ -212,10 +223,13 @@ public class EmailsFragment extends Fragment {
             notifyDataSetChanged();
         }
 
-        public void appendList(MailList mailList) {
+        public void appendList(MailList newMailList) {
             int position = this.mailList.size();
-            this.mailList.append(mailList);
-            notifyItemRangeChanged(position, mailList.size());
+            this.mailList.append(newMailList);
+
+            Log.d("EmailListAdapter", "Appending list from" + position + " to " + (position + newMailList.size()));
+
+            notifyItemRangeChanged(position, position + newMailList.size());
         }
 
         public void removeMail(int position) {
@@ -242,17 +256,53 @@ public class EmailsFragment extends Fragment {
                 Bundle bundle = new Bundle();
                 bundle.putString("emailId", mailList.getMail(position).getId()); // Replace 1 with the actual email ID you want to pass
 
-                FragmentTransaction ft = requireActivity().getSupportFragmentManager().beginTransaction();
+                FragmentTransaction ft = getParentFragmentManager().beginTransaction();
                 EmailDetailFragment fragment = new EmailDetailFragment();
                 fragment.setArguments(bundle);
                 ft.replace(R.id.emailsContainer, fragment).addToBackStack(null).commit();
             });
 
-            holder.senderName.setText(mailList.getMail(position).getSender());
-//            holder.receiverName.setText(mailList.getMail(position).getReceiver());
+            String sender = mailList.getMail(position).getSender();
+            String senderName = sender.substring(0, sender.indexOf("@"));
+            String senderDomain = sender.substring(sender.indexOf("@"));
+
+            Instant eventStartTime = mailList.getMail(position).getEventStartTime();
+            int eventDuration = mailList.getMail(position).getEventDuration();
+            if (eventStartTime != null) {
+                String eventTime = eventStartTime.atZone(ZoneId.of("Asia/Ho_Chi_Minh")).format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm"));
+                if (eventDuration != 0) {
+                    Instant eventEndTime = eventStartTime.plusSeconds(eventDuration * 60);
+                    eventTime += " - " + eventEndTime.atZone(ZoneId.of("Asia/Ho_Chi_Minh")).format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm"));
+                }
+
+                holder.eventTime.setText(eventTime);
+                holder.eventTime.setVisibility(View.VISIBLE);
+                holder.itemView.findViewById(R.id.time_icon).setVisibility(View.VISIBLE);
+                holder.itemView.findViewById(R.id.divider).setVisibility(View.VISIBLE);
+
+
+                if (mailList.getMail(position).getLocation() != null) {
+                    holder.place.setText(mailList.getMail(position).getLocation());
+                    holder.place.setVisibility(View.VISIBLE);
+                    holder.itemView.findViewById(R.id.location_icon).setVisibility(View.VISIBLE);
+                } else {
+                    holder.place.setVisibility(View.GONE);
+                    holder.itemView.findViewById(R.id.location_icon).setVisibility(View.GONE);
+                }
+            } else {
+                holder.itemView.findViewById(R.id.divider).setVisibility(View.GONE);
+                holder.eventTime.setVisibility(View.GONE);
+                holder.place.setVisibility(View.GONE);
+                holder.itemView.findViewById(R.id.location_icon).setVisibility(View.GONE);
+                holder.itemView.findViewById(R.id.time_icon).setVisibility(View.GONE);
+            }
+
+            holder.senderName.setText(senderName);
+            holder.senderDomain.setText(senderDomain);
             holder.title.setText(mailList.getMail(position).getTitle());
-            holder.time.setText(mailList.getMail(position).getSentTime());
-            holder.place.setText(mailList.getMail(position).getLocation());
+            holder.sendTime.setText(mailList.getMail(position).getSentTime());
+            holder.title.setText(mailList.getMail(position).getTitle());
+            holder.summary.setText(mailList.getMail(position).getSummary());
         }
 
         @Override
@@ -263,19 +313,22 @@ public class EmailsFragment extends Fragment {
 
         class EmailViewHolder extends RecyclerView.ViewHolder {
             TextView senderName;
-            TextView receiverName;
+            TextView senderDomain;
             TextView title;
-            TextView time;
+            TextView sendTime;
+            TextView eventTime;
             TextView place;
+            TextView summary;
 
             public EmailViewHolder(@NonNull View itemView) {
                 super(itemView);
                 senderName = itemView.findViewById(R.id.sender_name);
-                receiverName = itemView.findViewById(R.id.receiver_name);
+                senderDomain = itemView.findViewById(R.id.sender_domain);
                 title = itemView.findViewById(R.id.subject);
-                time = itemView.findViewById(R.id.time);
+                sendTime = itemView.findViewById(R.id.send_time);
+                eventTime = itemView.findViewById(R.id.time);
                 place = itemView.findViewById(R.id.location);
-
+                summary = itemView.findViewById(R.id.summary);
             }
         }
     }

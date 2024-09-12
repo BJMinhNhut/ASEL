@@ -24,6 +24,7 @@ import java.time.Instant;
 import java.io.ByteArrayInputStream;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Map;
@@ -100,8 +101,10 @@ public class Mail {
             } else if (h.getName().equals("To")) {
                 mReceiver = h.getValue();
             } else if (h.getName().equals("Date")) {
-                String sentTime = trimTimeZone(h.getValue());
-                mReceivedTime = parseToInstant(sentTime, "EEE, d MMM yyyy HH:mm:ss");
+                String sentTime = h.getValue();
+                Log.d("Mail", "Parsing: " + sentTime);
+                mReceivedTime = parseSentTime(sentTime);
+                Log.d("Mail", "Received time: " + mReceivedTime);
             }
         }
 
@@ -124,6 +127,7 @@ public class Mail {
     }
 
     private static String trimTimeZone(String dateString) {
+        Log.i("Mail", "Date string: " + dateString);
         String res = dateString.substring(0, 25);
         return res.trim();
     }
@@ -178,13 +182,31 @@ public class Mail {
         return doc.text();
     }
 
+    private static Instant parseSentTime(String sentTime) {
+        List<String> patterns = List.of(
+                "EEE, d MMM yyyy HH:mm:ss X",      // Example: Thu, 12 Sep 2024 08:35:04 -0700
+                "EEE, d MMM yyyy HH:mm:ss X (z)",  // Example: Wed, 11 Sep 2024 10:30:04 +0000 (UTC)
+                "EEE, d MMM yyyy HH:mm:ss z",      // Example: Wed, 11 Sep 2024 13:30:23 GMT
+                "EEE, d MMM yyyy HH:mm:ss Z"       // Example: Thu, 12 Sep 2024 09:45:02 +0800
+        );
+
+        for (String pattern : patterns) {
+            try {
+                Log.d("Mail", "Trying pattern: " + pattern);
+                return parseToInstant(sentTime, pattern);
+            } catch (Exception e) {
+                Log.w("Mail", "Error parsing date: " + e.getMessage());
+            }
+        }
+        Log.e("Mail", "Could not parse date: " + sentTime);
+        return Instant.now(); // fallback to current time
+    }
+
     private static Instant parseToInstant(String dateTime, String pattern) {
-        return LocalDateTime.parse(
-                dateTime,
-                DateTimeFormatter.ofPattern(pattern)
-        ).atZone(
-                ZoneId.of("Asia/Ho_Chi_Minh")
-        ).toInstant();
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern(pattern);
+        LocalDateTime localDateTime = LocalDateTime.parse(dateTime, formatter);
+        ZonedDateTime zonedDateTime = localDateTime.atZone(ZoneId.of("Asia/Ho_Chi_Minh"));
+        return zonedDateTime.toInstant();
     }
 
     public ListenableFuture<GenerateContentResponse> summarize() {
@@ -198,21 +220,20 @@ public class Mail {
         MailInfo mailInfo;
         try {
             mailInfo = new ObjectMapper().readValue(content, MailInfo.class);
+            Log.d("Mail", "Mail event: " + mailInfo.location);
         } catch (Exception e) {
             Log.e("Mail", "Error parsing JSON");
             e.printStackTrace();
             mailInfo = new MailInfo();
         }
 
+
         mSummary = mailInfo.summary;
         mTag = mailInfo.tag;
 
-        int duration = 0;
         if (mailInfo.toDateTime != null && mailInfo.fromDateTime != null) {
-            duration = (int) java.time.Duration.between(mailInfo.fromDateTime, mailInfo.toDateTime).toMinutes();
-        }
+            int duration = (int) java.time.Duration.between(mailInfo.fromDateTime, mailInfo.toDateTime).toMinutes();
 
-        if (mailInfo.fromDateTime != null) {
             mEvent = new Event(
                     mId,
                     mTitle,
@@ -295,6 +316,7 @@ public class Mail {
     public void setEvent(Event event) {
         mEvent = event;
     }
+
     public String getLocation() {
         return mEvent.getLocation();
     }
@@ -321,11 +343,17 @@ public class Mail {
 
     @JsonIgnoreProperties(ignoreUnknown = true)
     public static class MailInfo {
+        @JsonProperty("location")
         private String location = "nothing to show";
+
+
         private Instant fromDateTime;
         private Instant toDateTime;
-        private String toTime = "nothing to show";
+
+        @JsonProperty("summary")
         private String summary = "nothing to show";
+
+        @JsonProperty("tag")
         private String tag = "nothing to show";
 
         @JsonProperty("fromDateTime")
@@ -346,6 +374,10 @@ public class Mail {
             }
 
             this.toDateTime = parseToInstant(toDateTime, "dd/MM/yyyy, HH:mm");
+
+            if (this.fromDateTime == null) {
+                this.fromDateTime = this.toDateTime;
+            }
         }
     }
 }

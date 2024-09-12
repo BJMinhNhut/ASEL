@@ -14,6 +14,7 @@
         android:layout_marginTop="20dp">
 
         <ImageView
+            android:id="@+id/buttonBack"
             android:layout_width="25dp"
             android:layout_height="25dp"
             android:layout_gravity="center|start"
@@ -24,10 +25,24 @@
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:layout_gravity="center"
             android:text="Personal Information"
             android:textAlignment="center"
             android:textAppearance="@style/heading_l"
             android:textColor="@color/dark_darkest"/>
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/camera_button"
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            android:layout_gravity="end|center_vertical"
+            android:insetLeft="5dp"
+            android:insetRight="5dp"
+            android:backgroundTint="@color/highlight_darkest"
+            app:cornerRadius="10dp"
+            app:iconPadding="0dp"
+            app:iconGravity="textStart"
+            app:icon="@drawable/ic_camera"/>
     </FrameLayout>
 
     <ScrollView

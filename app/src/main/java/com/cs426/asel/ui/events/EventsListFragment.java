@@ -1,5 +1,6 @@
 package com.cs426.asel.ui.events;
 
+import android.content.Intent;
 import android.graphics.Rect;
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -15,6 +16,9 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.cs426.asel.R;
 import com.cs426.asel.backend.Event;
 import com.cs426.asel.backend.EventList;
+import com.cs426.asel.backend.EventRepository;
+import com.cs426.asel.backend.Utility;
+import com.cs426.asel.databinding.FragmentEventsBinding;
 
 import java.time.Instant;
 import java.time.LocalDateTime;
@@ -23,42 +27,36 @@ import java.time.format.DateTimeFormatter;
 import java.util.Random;
 
 public class EventsListFragment extends Fragment {
+    private FragmentEventsBinding binding;
     private RecyclerView eventRecyclerView;
     private EventAdapter eventAdapter;
     private EventList eventList;
+    private EventRepository eventRepository;
 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_events_list, container, false);
+        binding = FragmentEventsBinding.inflate(inflater, container, false);
 
         eventRecyclerView = view.findViewById(R.id.eventRecyclerView);
         eventRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         eventRecyclerView.addItemDecoration(new SpaceItemDecoration(20));
 
+        eventRepository = new EventRepository(requireContext(), Utility.getUserEmail(requireContext()));
+//        eventList = eventRepository.getEventsByPublished(true);
         eventList = new EventList();
-        Event event;
-        for (int i = 1; i <= 20; i++) {
-            int type = new Random().nextInt(3);
-            event = new Event();
-            event.setTitle("Event " + i);
-            event.setStartTime(Instant.now().plusSeconds(new Random().nextInt(31536000)));
-            event.setDuration(0);
-            event.setIsAllDay(false);
-            event.setLocation("Location " + i);
-            event.setDescription("Description " + i);
-            if (type == 0) {
-                event.setDuration(new Random().nextInt(525600));
-            } else if (type == 1) {
-
-            } else {
-                event.setIsAllDay(true);
-            }
-
-            eventList.addEvent(event);
-        }
 
         eventAdapter = new EventAdapter(eventList);
         eventRecyclerView.setAdapter(eventAdapter);
+
+        binding.newEventFab.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(getContext(), EventEditorActivity.class);
+                intent.putExtra("userEmail", Utility.getUserEmail(requireContext()));
+                startActivity(intent);
+            }
+        });
 
         return view;
     }
