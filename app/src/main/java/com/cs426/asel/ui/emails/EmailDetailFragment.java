@@ -2,7 +2,6 @@ package com.cs426.asel.ui.emails;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.renderscript.ScriptGroup;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -12,6 +11,7 @@ import android.widget.ImageView;
 import androidx.activity.OnBackPressedCallback;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
+import androidx.fragment.app.FragmentTransaction;
 import androidx.lifecycle.ViewModelProvider;
 
 import com.cs426.asel.R;
@@ -20,7 +20,7 @@ import com.cs426.asel.backend.MailRepository;
 import com.cs426.asel.backend.Utility;
 import com.cs426.asel.databinding.FragmentEmailDetailBinding;
 import com.cs426.asel.ui.account.AccountViewModel;
-import com.cs426.asel.ui.events.EventEditorActivity;
+import com.cs426.asel.ui.events.EventEditorFragment;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -78,15 +78,9 @@ public class EmailDetailFragment extends Fragment {
 
         Button createEventButton = view.findViewById(R.id.create_event);
         createEventButton.setOnClickListener(v -> {
-            Intent intent = new Intent(getContext(), EventEditorActivity.class);
-            intent.putExtra("emailId", emailId);
-            startActivity(intent);
+            FragmentTransaction ft = getParentFragmentManager().beginTransaction();
+            ft.replace(R.id.emailsContainer, new EventEditorFragment()).addToBackStack(null).commit();
         });
-
-//        Button moveToReadButton = view.findViewById(R.id.move_to_read_button);
-//        moveToReadButton.setOnClickListener(v -> {
-//            // TODO: Move email to read
-//        });
 
         backButton.setOnClickListener(v -> {
             FragmentManager fm = getParentFragmentManager();

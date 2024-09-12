@@ -52,6 +52,10 @@ public class EventsListFragment extends Fragment {
             } else if (type == 1) {
 
             } else {
+                if (new Random().nextBoolean()) {
+                    event.setDuration(new Random().nextInt(525600));
+                }
+
                 event.setIsAllDay(true);
             }
 
@@ -120,7 +124,20 @@ public class EventsListFragment extends Fragment {
 
             String time;
             if (event.isAllDay()) { // All-day
-                time = "All-day";
+                LocalDateTime endDateTime = startDateTime.plusMinutes(event.getDuration());
+
+                String endDay = dayFormatter.format(endDateTime);
+                String endMonth = monthFormatter.format(endDateTime);
+
+                if (startDateTime.getDayOfYear() == endDateTime.getDayOfYear() && startDateTime.getYear() == endDateTime.getYear()) { // Same day
+                    time = startMonth + " " + startDay + ", all-day";
+                } else {
+                    time = startMonth + " " + startDay + " - " + endMonth + " " + endDay + ", all-day";
+
+                    holder.toDate.setText("-");
+                    holder.endDay.setText(endDay);
+                    holder.endMonth.setText(endMonth);
+                }
             } else if (duration > 0) { // Event
                 LocalDateTime endDateTime = startDateTime.plusMinutes(event.getDuration());
 
@@ -129,7 +146,7 @@ public class EventsListFragment extends Fragment {
                 String endMonth = monthFormatter.format(endDateTime);
 
                 if (startDateTime.getDayOfYear() == endDateTime.getDayOfYear() && startDateTime.getYear() == endDateTime.getYear()) { // Same day
-                    time = startTime + " - " + endTime;
+                    time = startMonth + " " + startDay + ", " + startTime + " - " + endTime;
                 } else {
                     time = startMonth + " " + startDay + ", " + startTime + " - " + endMonth + " " + endDay + ", " + endTime;
 
@@ -138,7 +155,7 @@ public class EventsListFragment extends Fragment {
                     holder.endMonth.setText(endMonth);
                 }
             } else { // Task
-                time = startTime;
+                time = startMonth + " " + startDay + ", " + startTime;
             }
 
             holder.title.setText(event.getTitle());
