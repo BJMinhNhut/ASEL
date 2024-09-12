@@ -26,6 +26,8 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
+import java.time.temporal.TemporalAccessor;
+import java.time.temporal.TemporalQueries;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -203,10 +205,19 @@ public class Mail {
     }
 
     private static Instant parseToInstant(String dateTime, String pattern) {
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern(pattern);
-        LocalDateTime localDateTime = LocalDateTime.parse(dateTime, formatter);
-        ZonedDateTime zonedDateTime = localDateTime.atZone(ZoneId.of("Asia/Ho_Chi_Minh"));
-        return zonedDateTime.toInstant();
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern(pattern).withZone(ZoneId.of("UTC"));
+        TemporalAccessor temporalAccessor = formatter.parse(dateTime);
+
+        // Check if the parsed date-time string contains a zone or offset
+        if (temporalAccessor.query(TemporalQueries.zoneId()) == null && temporalAccessor.query(TemporalQueries.offset()) == null) {
+            // If no zone or offset is found, use the system default zone
+            LocalDateTime localDateTime = LocalDateTime.from(temporalAccessor);
+            return localDateTime.atZone(ZoneId.of("Asia/Ho_Chi_Minh")).toInstant();
+        } else {
+            // If a zone or offset is found, parse as ZonedDateTime
+            ZonedDateTime zonedDateTime = ZonedDateTime.from(temporalAccessor);
+            return zonedDateTime.toInstant();
+        }
     }
 
     public ListenableFuture<GenerateContentResponse> summarize() {
