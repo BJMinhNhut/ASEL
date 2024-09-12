@@ -26,25 +26,7 @@ public class EventRepository {
     public long insertEvent(Event event) {
         Log.println(Log.WARN, "EventRepository", "Inserting event: " + event.getTitle());
         SQLiteDatabase db = dbHelper.getWritableDatabase();
-        ContentValues values = new ContentValues();
-        values.put(DatabaseContract.Events.COLUMN_NAME_TITLE, event.getTitle());
-        values.put(DatabaseContract.Events.COLUMN_NAME_DESCRIPTION, event.getDescription());
-        if (event.getStartTime() != null) {
-            values.put(DatabaseContract.Events.COLUMN_NAME_FROM_DATETIME, event.getStartTime().toString());
-        }
-        values.put(DatabaseContract.Events.COLUMN_NAME_DURATION, event.getDuration());
-        values.put(DatabaseContract.Events.COLUMN_NAME_PLACE, event.getLocation());
-        values.put(DatabaseContract.Events.COLUMN_NAME_IS_REPEAT, event.isRepeating() ? 1 : 0);
-        values.put(DatabaseContract.Events.COLUMN_NAME_REPEAT_FREQUENCY, event.getRepeatFrequency());
-        if (event.getRepeatEndDate() != null) {
-            values.put(DatabaseContract.Events.COLUMN_NAME_REPEAT_END, event.getRepeatEndDate().toString());
-        }
-        if (event.getReminderTime() != null) {
-            values.put(DatabaseContract.Events.COLUMN_NAME_REMIND_TIME, event.getReminderTime().toString());
-        }
-        values.put(DatabaseContract.Events.COLUMN_NAME_ALL_DAY, event.isAllDay() ? 1 : 0);
-        values.put(DatabaseContract.Events.COLUMN_NAME_PUBLISHED, event.isPublished() ? 1 : 0);
-
+        ContentValues values = getContentValues(event);
         return db.insert(DatabaseContract.Events.TABLE_NAME, null, values);
     }
 
@@ -137,14 +119,45 @@ public class EventRepository {
     }
 
     // add event to calendar -> publish true, remove event from calendar -> publish false
-    public void setPublishEvent(long eventId, boolean published) {
+    public int setPublishEvent(long eventId, boolean published) {
         Log.println(Log.WARN, "EventRepository", "Publishing event: " + eventId);
         SQLiteDatabase db = dbHelper.getWritableDatabase();
         ContentValues values = new ContentValues();
         values.put(DatabaseContract.Events.COLUMN_NAME_PUBLISHED, published ? 1 : 0);
         String selection = DatabaseContract.Events._ID + " = ?";
         String[] selectionArgs = { String.valueOf(eventId) };
-        db.update(DatabaseContract.Events.TABLE_NAME, values, selection, selectionArgs);
+        return db.update(DatabaseContract.Events.TABLE_NAME, values, selection, selectionArgs);
+    }
+
+    public int updateEvent(Event event) {
+        Log.println(Log.WARN, "EventRepository", "Updating event: " + event.getTitle());
+        SQLiteDatabase db = dbHelper.getWritableDatabase();
+        ContentValues values = getContentValues(event);
+        String selection = DatabaseContract.Events._ID + " = ?";
+        String[] selectionArgs = { String.valueOf(event.getID()) };
+        return db.update(DatabaseContract.Events.TABLE_NAME, values, selection, selectionArgs);
+    }
+
+    private ContentValues getContentValues(Event event) {
+        ContentValues values = new ContentValues();
+        values.put(DatabaseContract.Events.COLUMN_NAME_TITLE, event.getTitle());
+        values.put(DatabaseContract.Events.COLUMN_NAME_DESCRIPTION, event.getDescription());
+        if (event.getStartTime() != null) {
+            values.put(DatabaseContract.Events.COLUMN_NAME_FROM_DATETIME, event.getStartTime().toString());
+        }
+        values.put(DatabaseContract.Events.COLUMN_NAME_DURATION, event.getDuration());
+        values.put(DatabaseContract.Events.COLUMN_NAME_PLACE, event.getLocation());
+        values.put(DatabaseContract.Events.COLUMN_NAME_IS_REPEAT, event.isRepeating() ? 1 : 0);
+        values.put(DatabaseContract.Events.COLUMN_NAME_REPEAT_FREQUENCY, event.getRepeatFrequency());
+        if (event.getRepeatEndDate() != null) {
+            values.put(DatabaseContract.Events.COLUMN_NAME_REPEAT_END, event.getRepeatEndDate().toString());
+        }
+        if (event.getReminderTime() != null) {
+            values.put(DatabaseContract.Events.COLUMN_NAME_REMIND_TIME, event.getReminderTime().toString());
+        }
+        values.put(DatabaseContract.Events.COLUMN_NAME_ALL_DAY, event.isAllDay() ? 1 : 0);
+        values.put(DatabaseContract.Events.COLUMN_NAME_PUBLISHED, event.isPublished() ? 1 : 0);
+        return values;
     }
 
     private Event getEventByCursor(Cursor cursor) {
