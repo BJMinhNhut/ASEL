@@ -1,5 +1,6 @@
 package com.cs426.asel.ui.account;
 
+import androidx.activity.OnBackPressedCallback;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.cardview.widget.CardView;
@@ -26,6 +27,7 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 import com.cs426.asel.R;
@@ -95,6 +97,20 @@ public class UpdateInfoFragment extends Fragment {
 
         // Load saved data
         loadStudentInfo();
+
+        ImageView buttonBack = view.findViewById(R.id.buttonBack);
+        buttonBack.setOnClickListener(v -> {
+            FragmentManager fm = getParentFragmentManager();
+            fm.popBackStack();
+        });
+
+        requireActivity().getOnBackPressedDispatcher().addCallback(getViewLifecycleOwner(), new OnBackPressedCallback(true) {
+            @Override
+            public void handleOnBackPressed() {
+                FragmentManager fm = getParentFragmentManager();
+                fm.popBackStack();
+            }
+        });
 
         // Set onClick listener for save button
         buttonSave.setOnClickListener(v -> {
