@@ -7,7 +7,7 @@ import android.util.Log;
 
 public class DatabaseHelper extends SQLiteOpenHelper {
     private static final String DB_NAME = "_db_asel.db";
-    private static final int DB_VERSION = 1;
+    private static final int DB_VERSION = 2;
     private Context mContext;
 
 
@@ -35,8 +35,6 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     public void onCreate(SQLiteDatabase db) {
         db.execSQL(DatabaseContract.Mails.CREATE_TABLE);
         db.execSQL(DatabaseContract.Events.CREATE_TABLE);
-        db.execSQL(DatabaseContract.Tags.CREATE_TABLE);
-        db.execSQL(DatabaseContract.MailTags.CREATE_TABLE);
     }
 
     @Override
