@@ -242,7 +242,7 @@ public class EmailsFragment extends Fragment {
                 Bundle bundle = new Bundle();
                 bundle.putString("emailId", mailList.getMail(position).getId()); // Replace 1 with the actual email ID you want to pass
 
-                FragmentTransaction ft = requireActivity().getSupportFragmentManager().beginTransaction();
+                FragmentTransaction ft = getParentFragmentManager().beginTransaction();
                 EmailDetailFragment fragment = new EmailDetailFragment();
                 fragment.setArguments(bundle);
                 ft.replace(R.id.emailsContainer, fragment).addToBackStack(null).commit();
