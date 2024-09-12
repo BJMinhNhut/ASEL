@@ -8,7 +8,9 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 
+import androidx.activity.OnBackPressedCallback;
 import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
 import androidx.lifecycle.ViewModelProvider;
 
 import com.cs426.asel.R;
@@ -65,6 +67,14 @@ public class EmailDetailFragment extends Fragment {
         Button moveToReadButton = view.findViewById(R.id.move_to_read_button);
         moveToReadButton.setOnClickListener(v -> {
             // TODO: Move email to read
+        });
+
+        requireActivity().getOnBackPressedDispatcher().addCallback(getViewLifecycleOwner(), new OnBackPressedCallback(true) {
+            @Override
+            public void handleOnBackPressed() {
+                FragmentManager fm = getParentFragmentManager();
+                fm.popBackStack();
+            }
         });
     }
 
