@@ -105,17 +105,17 @@ public class AccountFragment extends Fragment {
     }
 
     private void updateAccount() {
-        FragmentTransaction ft = requireActivity().getSupportFragmentManager().beginTransaction();
+        FragmentTransaction ft = getParentFragmentManager().beginTransaction();
         ft.replace(R.id.accountContainer, new UpdateAccountFragment()).addToBackStack(null).commit();
     }
 
     private void updateInfo() {
-        FragmentTransaction ft = requireActivity().getSupportFragmentManager().beginTransaction();
+        FragmentTransaction ft = getParentFragmentManager().beginTransaction();
         ft.replace(R.id.accountContainer, new UpdateInfoFragment()).addToBackStack(null).commit();
     }
 
     private void openSettings() {
-        FragmentTransaction ft = requireActivity().getSupportFragmentManager().beginTransaction();
+        FragmentTransaction ft = getParentFragmentManager().beginTransaction();
         ft.replace(R.id.accountContainer, new SettingsFragment()).addToBackStack(null).commit();
     }
 

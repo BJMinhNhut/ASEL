@@ -1,9 +1,10 @@
 package com.cs426.asel.ui.account;
 
+import androidx.activity.OnBackPressedCallback;
+import androidx.fragment.app.FragmentManager;
 import androidx.lifecycle.ViewModelProvider;
 
 import android.os.Bundle;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -17,10 +18,6 @@ import androidx.fragment.app.Fragment;
 import com.cs426.asel.R;
 import com.cs426.asel.backend.Mail;
 import com.cs426.asel.ui.emails.EmailsViewModel;
-import com.google.android.gms.auth.api.signin.GoogleSignIn;
-import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
-import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
-import com.google.api.services.gmail.model.Message;
 
 import java.util.List;
 
@@ -64,6 +61,14 @@ public class UpdateAccountFragment extends Fragment {
 
         Button logOut = view.findViewById(R.id.log_out);
         logOut.setOnClickListener(v -> logOut());
+
+        requireActivity().getOnBackPressedDispatcher().addCallback(getViewLifecycleOwner(), new OnBackPressedCallback(true) {
+            @Override
+            public void handleOnBackPressed() {
+                FragmentManager fm = getParentFragmentManager();
+                fm.popBackStack();
+            }
+        });
     }
 
     private void logOut() {
@@ -74,7 +79,7 @@ public class UpdateAccountFragment extends Fragment {
         Mail mail = new Mail(emailsViewModel.getMessages().get(0));
 //        mail.summarize();
 
-        System.out.println(mail.getEmailID());
+        System.out.println(mail.getId());
         System.out.println(mail.getTitle());
         System.out.println(mail.getSender());
         System.out.println(mail.getSummary());

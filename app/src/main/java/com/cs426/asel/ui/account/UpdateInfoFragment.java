@@ -1,5 +1,6 @@
 package com.cs426.asel.ui.account;
 
+import androidx.activity.OnBackPressedCallback;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.cardview.widget.CardView;
@@ -112,6 +113,14 @@ public class UpdateInfoFragment extends Fragment {
             Toast.makeText(requireContext(), "Info saved successfully", Toast.LENGTH_SHORT).show();
             FragmentManager fm = getParentFragmentManager();
             fm.popBackStack();
+        });
+
+        requireActivity().getOnBackPressedDispatcher().addCallback(getViewLifecycleOwner(), new OnBackPressedCallback(true) {
+            @Override
+            public void handleOnBackPressed() {
+                FragmentManager fm = getParentFragmentManager();
+                fm.popBackStack();
+            }
         });
     }
 

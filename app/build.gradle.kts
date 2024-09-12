@@ -70,6 +70,7 @@ android {
             excludes += "META-INF/NOTICE.txt"
         }
     }
+
 }
 
 dependencies {
@@ -93,6 +94,10 @@ dependencies {
     implementation("com.journeyapps:zxing-android-embedded:4.3.0")
     implementation(libs.jsoup)
     implementation(libs.generativeai)
+    implementation(libs.jackson.core)
+    implementation(libs.jackson.annotations)
+    implementation(libs.jackson.databind)
+    implementation(libs.javax.mail)
     testImplementation(libs.junit)
     androidTestImplementation(libs.ext.junit)
     androidTestImplementation(libs.espresso.core)
