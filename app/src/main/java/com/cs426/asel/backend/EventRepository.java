@@ -136,6 +136,17 @@ public class EventRepository {
         return events;
     }
 
+    // add event to calendar -> publish true, remove event from calendar -> publish false
+    public void setPublishEvent(long eventId, boolean published) {
+        Log.println(Log.WARN, "EventRepository", "Publishing event: " + eventId);
+        SQLiteDatabase db = dbHelper.getWritableDatabase();
+        ContentValues values = new ContentValues();
+        values.put(DatabaseContract.Events.COLUMN_NAME_PUBLISHED, published ? 1 : 0);
+        String selection = DatabaseContract.Events._ID + " = ?";
+        String[] selectionArgs = { String.valueOf(eventId) };
+        db.update(DatabaseContract.Events.TABLE_NAME, values, selection, selectionArgs);
+    }
+
     private Event getEventByCursor(Cursor cursor) {
         int eventId = cursor.getInt(cursor.getColumnIndexOrThrow(DatabaseContract.Events._ID));
         String mailId = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseContract.Mails._ID));
