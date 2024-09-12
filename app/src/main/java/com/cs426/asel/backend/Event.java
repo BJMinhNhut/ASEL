@@ -88,6 +88,13 @@ public class Event {
         return mStartTime;
     }
 
+    public String getStartTimeString() {
+        if (mStartTime == null) {
+            return null;
+        }
+        return mStartTime.toString();
+    }
+
     public int getDuration() {
         return mDuration;
     }
@@ -108,8 +115,22 @@ public class Event {
         return mRepeatEndDate;
     }
 
+    public String getRepeatEndDateString() {
+        if (mRepeatEndDate == null) {
+            return null;
+        }
+        return mRepeatEndDate.toString();
+    }
+
     public Instant getReminderTime() {
         return mReminderTime;
+    }
+
+    public String getReminderTimeString() {
+        if (mReminderTime == null) {
+            return null;
+        }
+        return mReminderTime.toString();
     }
 
     public String getDescription() {

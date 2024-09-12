@@ -48,6 +48,7 @@ public class MailRepository {
         values.put(DatabaseContract.Mails.COLUMN_NAME_RECEIVER, mail.getReceiver());
         values.put(DatabaseContract.Mails.COLUMN_NAME_CONTENT, mail.getContent());
         values.put(DatabaseContract.Mails.COLUMN_NAME_SUMMARY, mail.getSummary());
+        assert mail.getReceivedTime() != null : "Mail received time is null";
         values.put(DatabaseContract.Mails.COLUMN_NAME_SEND_TIME, mail.getReceivedTime().toString());
         values.put(DatabaseContract.Mails.COLUMN_NAME_EVENT_ID, eventId);
         values.put(DatabaseContract.Mails.COLUMN_NAME_IS_READ, mail.isRead() ? 1 : 0);
@@ -235,13 +236,16 @@ public class MailRepository {
         if (cursor.moveToNext()) {
             String title = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseContract.Events.COLUMN_NAME_TITLE));
             String description = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseContract.Events.COLUMN_NAME_DESCRIPTION));
-            Instant fromDatetime = Instant.parse(cursor.getString(cursor.getColumnIndexOrThrow(DatabaseContract.Events.COLUMN_NAME_FROM_DATETIME)));
+            String fromDatetimeStr = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseContract.Events.COLUMN_NAME_FROM_DATETIME));
+            Instant fromDatetime = fromDatetimeStr != null ? Instant.parse(fromDatetimeStr) : null;
             int duration = cursor.getInt(cursor.getColumnIndexOrThrow(DatabaseContract.Events.COLUMN_NAME_DURATION));
             String place = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseContract.Events.COLUMN_NAME_PLACE));
             boolean isRepeat = cursor.getInt(cursor.getColumnIndexOrThrow(DatabaseContract.Events.COLUMN_NAME_IS_REPEAT)) == 1;
             String repeatFrequency = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseContract.Events.COLUMN_NAME_REPEAT_FREQUENCY));
-            Instant repeatEnd = Instant.parse(cursor.getString(cursor.getColumnIndexOrThrow(DatabaseContract.Events.COLUMN_NAME_REPEAT_END)));
-            Instant remindTime = Instant.parse(cursor.getString(cursor.getColumnIndexOrThrow(DatabaseContract.Events.COLUMN_NAME_REMIND_TIME)));
+            String repeatEndStr = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseContract.Events.COLUMN_NAME_REPEAT_END));
+            Instant repeatEnd = repeatEndStr != null ? Instant.parse(repeatEndStr) : null;
+            String remindTimeStr = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseContract.Events.COLUMN_NAME_REMIND_TIME));
+            Instant remindTime = remindTimeStr != null ? Instant.parse(remindTimeStr) : null;
             boolean allDay = cursor.getInt(cursor.getColumnIndexOrThrow(DatabaseContract.Events.COLUMN_NAME_ALL_DAY)) == 1;
             boolean isPublished = cursor.getInt(cursor.getColumnIndexOrThrow(DatabaseContract.Events.COLUMN_NAME_PUBLISHED)) == 1;
 
