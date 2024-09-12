@@ -1,108 +1,149 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="@color/light_lightest"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     tools:context=".ui.account.SettingsFragment">
 
-    <TextView
-        android:id="@+id/theme_title"
-        android:layout_width="wrap_content"
+    <FrameLayout
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_marginHorizontal="20dp"
+        android:layout_marginTop="20dp">
+
+        <ImageView
+            android:id="@+id/backButton"
+            android:layout_width="25dp"
+            android:layout_height="25dp"
+            android:layout_gravity="center|start"
+            android:src="@drawable/ic_chevron_left"
+            app:tint="@color/highlight_darkest"
+            android:background="?android:attr/selectableItemBackground"/>
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Settings"
+            android:textAlignment="center"
+            android:textAppearance="@style/heading_l"
+            android:textColor="@color/dark_darkest"/>
+    </FrameLayout>
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="20dp"
+        android:layout_marginStart="20dp"
         android:text="Theme"
-        android:textStyle="bold"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintLeft_toLeftOf="parent"
-        />
+        android:textAppearance="@style/heading_m"
+        android:textColor="@color/dark_darkest"/>
 
     <RadioGroup
         android:id="@+id/theme_group"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:orientation="vertical"
-        app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/theme_title"
-        >
+        android:layout_marginStart="20dp"
+        android:orientation="vertical">
+
         <RadioButton
             android:id="@+id/light_theme"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Light" />
+            android:text="Light"
+            android:textAppearance="@style/body_m"
+            android:textColor="@color/dark_darkest"
+            app:buttonTint="@color/dark_darkest"/>
+
         <RadioButton
             android:id="@+id/dark_theme"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Dark" />
+            android:text="Dark"
+            android:textAppearance="@style/body_m"
+            android:textColor="@color/dark_darkest"
+            app:buttonTint="@color/dark_darkest"/>
+
         <RadioButton
             android:id="@+id/system_theme"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="System" />
+            android:text="System"
+            android:textAppearance="@style/body_m"
+            android:textColor="@color/dark_darkest"
+            app:buttonTint="@color/dark_darkest"/>
     </RadioGroup>
 
-    <!-- New Email Notification -->
     <TextView
-        android:id="@+id/new_email_notification_title"
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="New email notification"
-        android:textStyle="bold"
-        android:layout_marginTop="16dp"
-        app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/theme_group"
-        />
+        android:layout_marginTop="10dp"
+        android:layout_marginStart="20dp"
+        android:text="Email notification"
+        android:textAppearance="@style/heading_m"
+        android:textColor="@color/dark_darkest"/>
 
     <RadioGroup
         android:id="@+id/email_notification_group"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:orientation="vertical"
-        app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/new_email_notification_title"
-        >
+        android:layout_marginStart="20dp"
+        android:orientation="vertical">
+
         <RadioButton
             android:id="@+id/email_notification_on"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="On" />
+            android:text="On"
+            android:textAppearance="@style/body_m"
+            android:textColor="@color/dark_darkest"
+            app:buttonTint="@color/dark_darkest"/>
+
         <RadioButton
             android:id="@+id/email_notification_off"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Off" />
+            android:text="Off"
+            android:textAppearance="@style/body_m"
+            android:textColor="@color/dark_darkest"
+            app:buttonTint="@color/dark_darkest"/>
     </RadioGroup>
 
-    <!-- Reminder Notification -->
     <TextView
-        android:id="@+id/reminder_notification_title"
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_marginTop="10dp"
+        android:layout_marginStart="20dp"
         android:text="Reminder notification"
-        android:textStyle="bold"
-        android:layout_marginTop="16dp"
-        app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/email_notification_group"
-        />
+        android:textAppearance="@style/heading_m"
+        android:textColor="@color/dark_darkest"/>
 
     <RadioGroup
         android:id="@+id/reminder_notification_group"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:orientation="vertical"
-        app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/reminder_notification_title"
-        >
+        android:layout_marginStart="20dp"
+        android:orientation="vertical">
+
         <RadioButton
             android:id="@+id/reminder_notification_on"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="On" />
+            android:text="On"
+            android:textAppearance="@style/body_m"
+            android:textColor="@color/dark_darkest"
+            app:buttonTint="@color/dark_darkest"/>
+
         <RadioButton
             android:id="@+id/reminder_notification_off"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Off" />
+            android:text="Off"
+            android:textAppearance="@style/body_m"
+            android:textColor="@color/dark_darkest"
+            app:buttonTint="@color/dark_darkest"/>
     </RadioGroup>
 
-</androidx.constraintlayout.widget.ConstraintLayout>
+</LinearLayout>

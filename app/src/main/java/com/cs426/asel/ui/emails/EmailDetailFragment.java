@@ -1,6 +1,5 @@
 package com.cs426.asel.ui.emails;
 
-import android.content.Intent;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -20,7 +19,7 @@ import com.cs426.asel.backend.MailRepository;
 import com.cs426.asel.backend.Utility;
 import com.cs426.asel.databinding.FragmentEmailDetailBinding;
 import com.cs426.asel.ui.account.AccountViewModel;
-import com.cs426.asel.ui.events.EventEditorFragment;
+import com.cs426.asel.ui.account.EventEditorFragment;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
