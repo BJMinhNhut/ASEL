@@ -25,7 +25,7 @@
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Personal Information"
+            android:text="Personal information"
             android:textAlignment="center"
             android:textAppearance="@style/heading_l"
             android:textColor="@color/dark_darkest"/>
@@ -145,7 +145,7 @@
                 app:boxCornerRadiusTopEnd="15dp"
                 app:boxCornerRadiusBottomStart="15dp"
                 app:boxCornerRadiusBottomEnd="15dp"
-                app:endIconDrawable="@drawable/ic_edit_calendar"
+                app:endIconDrawable="@drawable/ic_calendar_search"
                 app:endIconMode="custom"
                 app:endIconTint="@color/highlight_darkest"
                 app:boxStrokeColor="@color/highlight_darkest"

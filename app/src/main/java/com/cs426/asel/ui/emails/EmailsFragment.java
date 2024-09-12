@@ -28,6 +28,7 @@ import com.cs426.asel.backend.Utility;
 import com.cs426.asel.databinding.FragmentEmailsBinding;
 import com.cs426.asel.ui.account.AccountViewModel;
 import com.google.android.material.snackbar.Snackbar;
+import com.google.android.material.tabs.TabLayout;
 
 public class EmailsFragment extends Fragment {
     private MailList unread;
@@ -54,13 +55,29 @@ public class EmailsFragment extends Fragment {
         unread = new MailList();
         read = new MailRepository(requireContext(), userEmail).getMailByRead(true, "send_time", false);
 
-        binding.mailsRadioGroup.setOnCheckedChangeListener((group, checkedId) -> {
-            if (checkedId == R.id.new_mail_radio_button) {
-                adapter.setMailList(unread);
-                swipeCallback.setSwipeEnabled(true);
-            } else {
-                adapter.setMailList(read);
-                swipeCallback.setSwipeEnabled(false);
+        binding.emailsTab.addOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
+            @Override
+            public void onTabSelected(TabLayout.Tab tab) {
+                switch (tab.getPosition()) {
+                    case 0:
+                        adapter.setMailList(unread);
+                        swipeCallback.setSwipeEnabled(true);
+                        break;
+                    case 1:
+                        adapter.setMailList(read);
+                        swipeCallback.setSwipeEnabled(false);
+                        break;
+                }
+            }
+
+            @Override
+            public void onTabUnselected(TabLayout.Tab tab) {
+
+            }
+
+            @Override
+            public void onTabReselected(TabLayout.Tab tab) {
+
             }
         });
 

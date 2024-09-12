@@ -27,12 +27,10 @@ public class EventsFragment extends Fragment {
         binding = FragmentEventsBinding.inflate(inflater, container, false);
         View root = binding.getRoot();
 
-        TabLayout tabLayout = binding.dashboardTab;
-
         calendarFragment = new EventsCalendarFragment();
         listFragment = new EventsListFragment();
 
-        tabLayout.addOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
+        binding.dashboardTab.addOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
             @Override
             public void onTabSelected(TabLayout.Tab tab) {
                 FragmentTransaction ft = getChildFragmentManager().beginTransaction();

@@ -5,16 +5,29 @@
     android:orientation="vertical"
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
-    <EditText
+    <FrameLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="@dimen/activity_vertical_margin"
-        android:layout_marginHorizontal="@dimen/activity_horizontal_margin"
+        android:layout_marginHorizontal="20dp"
+        android:layout_marginTop="20dp">
 
-        android:textAppearance="@style/TextAppearance.AppCompat.Headline"
+        <ImageView
+            android:id="@+id/back"
+            android:layout_width="25dp"
+            android:layout_height="25dp"
+            android:layout_gravity="center|start"
+            android:src="@drawable/ic_chevron_left"
+            app:tint="@color/highlight_darkest"
+            android:background="?android:attr/selectableItemBackground"/>
 
-        android:hint="Title"
-        android:background="@null"/>
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Create event"
+            android:textAlignment="center"
+            android:textAppearance="@style/heading_l"
+            android:textColor="@color/dark_darkest"/>
+    </FrameLayout>
 
 
     <RadioGroup
@@ -187,7 +200,7 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="@dimen/activity_vertical_margin"
         android:layout_marginHorizontal="@dimen/activity_horizontal_margin"
-        app:startIconDrawable="@drawable/ic_location"
+        app:startIconDrawable="@drawable/ic_map_pin"
         android:hint="Location"
         >
 

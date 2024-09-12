@@ -129,7 +129,7 @@
                     android:layout_width="20dp"
                     android:layout_height="20dp"
                     android:layout_gravity="center"
-                    android:src="@drawable/ic_location"/>
+                    android:src="@drawable/ic_map_pin"/>
 
                 <TextView
                     android:id="@+id/location"
