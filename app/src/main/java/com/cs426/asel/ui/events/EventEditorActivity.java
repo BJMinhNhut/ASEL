@@ -9,13 +9,21 @@ import android.view.View;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.cs426.asel.backend.Event;
+import com.cs426.asel.backend.EventRepository;
+import com.cs426.asel.backend.Mail;
+import com.cs426.asel.backend.MailRepository;
+import com.cs426.asel.backend.Utility;
 import com.cs426.asel.databinding.ActivityEventEditorBinding;
 import com.google.android.material.textfield.TextInputEditText;
+
+import java.time.Instant;
 
 public class EventEditorActivity extends AppCompatActivity {
 
     private ActivityEventEditorBinding binding;
     private int eventType = 0;
+    private Event curEvent;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -23,6 +31,9 @@ public class EventEditorActivity extends AppCompatActivity {
 
         binding = ActivityEventEditorBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
+
+        Bundle extras = getIntent().getExtras();
+        String userEmail = extras.getString("userEmail");
 
         TextInputEditText dateEditText = binding.fromDate;
         TextInputEditText timeEditText = binding.fromTime;
@@ -57,10 +68,6 @@ public class EventEditorActivity extends AppCompatActivity {
             }
         });
 
-        binding.saveEventButton.setOnClickListener(v -> {
-            // TODO: Save event
-        });
-
         binding.eventType.setOnCheckedChangeListener((group, checkedId) -> {
             if (checkedId == binding.taskRadioButton.getId()) {
                 switchToTaskLayout();
@@ -80,6 +87,81 @@ public class EventEditorActivity extends AppCompatActivity {
                 binding.toTimeBoxLayout.setVisibility(View.GONE);
             }
         });
+
+        binding.saveEventButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                EventRepository eventRepository = new EventRepository(EventEditorActivity.this, userEmail);
+
+                putEventInfo();
+                // If event not int db, insert then publish, else find the event and publish
+                if (curEvent.getID() == -1) {
+                    curEvent.setIsPublished(true);
+                    eventRepository.insertEvent(curEvent);
+                } else {
+                    eventRepository.setPublishEvent(curEvent.getID(), true);
+                }
+
+                finish();
+            }
+        });
+
+        if (extras == null || !extras.containsKey("emailId") || extras.getString("emailId") == null) {
+            curEvent = new Event();
+        } else {
+            Mail mail = new MailRepository(this, userEmail).getMailById(extras.getString("emailId"));
+            if (mail == null) {
+                return;
+            }
+            curEvent = mail.getEvent();
+            autofillEvent();
+        }
+    }
+
+    private void putEventInfo() {
+        curEvent.setTitle(binding.title.getText().toString());
+        curEvent.setDescription(binding.description.getText().toString());
+        curEvent.setLocation(binding.location.getText().toString());
+    }
+
+    private void autofillEvent() {
+        Bundle extras = getIntent().getExtras();
+        if (extras == null || !extras.containsKey("emailId") || extras.getString("emailId") == null) {
+            return;
+        }
+
+        String emailId = extras.getString("emailId");
+        String userEmail = extras.getString("userEmail");
+        Mail mail = new MailRepository(this, userEmail).getMailById(emailId);
+        if (mail == null) {
+            return;
+        }
+
+        Instant fromDateTime = mail.getEvent().getStartTime();
+        String fromDateString = Utility.parseInstant(fromDateTime, "dd/MM/yyyy");
+        String fromTimeString = Utility.parseInstant(fromDateTime, "HH:mm");
+
+        binding.fromDate.setText(fromDateString);
+        binding.fromTime.setText(fromTimeString);
+
+        int duration = mail.getEvent().getDuration();
+        if (duration > 0) {
+            switchToEventLayout();
+            Instant toDateTime = fromDateTime.plusSeconds(60 * duration);
+            String toDateString = Utility.parseInstant(toDateTime, "dd/MM/yyyy");
+            String toTimeString = Utility.parseInstant(toDateTime, "HH:mm");
+
+            binding.toDate.setText(toDateString);
+            binding.toTime.setText(toTimeString);
+        } else {
+            binding.toDate.setText(fromDateString);
+            binding.toTime.setText(fromTimeString);
+            switchToTaskLayout();
+        }
+
+        binding.location.setText(mail.getEvent().getLocation());
+        binding.title.setText(mail.getTitle());
+        binding.description.setText(mail.getSummary());
     }
 
     private void chooseDate(TextInputEditText dateEditText) {

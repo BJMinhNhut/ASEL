@@ -59,6 +59,7 @@ public class EmailDetailFragment extends Fragment {
         createEventButton.setOnClickListener(v -> {
             Intent intent = new Intent(getContext(), EventEditorActivity.class);
             intent.putExtra("emailId", emailId);
+            intent.putExtra("userEmail", Utility.getUserEmail(requireContext()));
             startActivity(intent);
         });
 

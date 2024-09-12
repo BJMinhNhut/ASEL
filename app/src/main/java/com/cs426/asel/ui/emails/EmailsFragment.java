@@ -36,6 +36,7 @@ import java.time.format.DateTimeFormatter;
 public class EmailsFragment extends Fragment {
     private MailList unread;
     private MailList read;
+    private MailRepository mailRepository;
     private FragmentEmailsBinding binding;
     private RecyclerView emailListRecyclerView;
     private EmailsViewModel emailsViewModel; // Reference to the shared ViewModel
@@ -52,11 +53,12 @@ public class EmailsFragment extends Fragment {
         // Obtain EmailsViewModel from the activity's ViewModelProvider
         binding = FragmentEmailsBinding.inflate(inflater, container, false);
         userEmail = Utility.getUserEmail(requireContext());
+        mailRepository = new MailRepository(requireContext(), userEmail);
         emailsViewModel = new ViewModelProvider(requireActivity()).get(EmailsViewModel.class);
         emailsViewModel.fetchAllEmailsID();
         adapter = new EmailListAdapter();
         unread = new MailList();
-        read = new MailRepository(requireContext(), userEmail).getMailByRead(true, "send_time", false);
+        read = mailRepository.getMailByRead(true, "send_time", false);
 
         binding.mailsRadioGroup.setOnCheckedChangeListener((group, checkedId) -> {
             if (checkedId == R.id.new_mail_radio_button) {
@@ -141,8 +143,7 @@ public class EmailsFragment extends Fragment {
                                 adapter.removeMail(removedIndex);
                                 read.addMail(mail);
 
-                                MailRepository mailRepo = new MailRepository(requireContext(), userEmail);
-                                mailRepo.updateRead(removedMail.getId(), true);
+                                mailRepository.updateRead(removedMail.getId(), true);
 
                                 dialog.dismiss();
                             });
@@ -155,14 +156,7 @@ public class EmailsFragment extends Fragment {
                             dialog.show();
                         } else if (direction == ItemTouchHelper.RIGHT) {
                             // Right swipe to quick add
-                            removedMail = unread.getMail(viewHolder.getAdapterPosition());
-                            removedIndex = viewHolder.getAdapterPosition();
-
-                            unread.removeMail(removedIndex);
-                            adapter.removeMail(removedIndex);
-                            read.addMail(removedMail);
-                            MailRepository mailRepo = new MailRepository(requireContext(), userEmail);
-                            mailRepo.updateRead(removedMail.getId(), true);
+                            moveMailToRead(viewHolder.getBindingAdapterPosition(), unread.getMail(viewHolder.getBindingAdapterPosition()));
 
                             //TODO: publish event of mail
 
@@ -172,7 +166,7 @@ public class EmailsFragment extends Fragment {
                                         adapter.insertMail(removedMail, removedIndex);
                                         unread.insertMailAt(removedMail, removedIndex);
                                         read.removeMail(read.size() - 1);
-                                        mailRepo.updateRead(removedMail.getId(), false);
+                                        mailRepository.updateRead(removedMail.getId(), false);
 
                                         // TODO: unpublish event of mail
                                     }).show();
@@ -192,6 +186,16 @@ public class EmailsFragment extends Fragment {
     private void showLoadIndicator() {
         binding.loadingIndicator.setVisibility(View.VISIBLE);
         binding.emailListRecyclerView.setVisibility(View.GONE);
+    }
+
+    private void moveMailToRead(int index, Mail mail) {
+        removedMail = mail;
+        removedIndex = index;
+
+        unread.removeMail(removedIndex);
+        adapter.removeMail(removedIndex);
+        read.addMail(removedMail);
+        mailRepository.updateRead(removedMail.getId(), true);
     }
 
     public static class SpaceItemDecoration extends RecyclerView.ItemDecoration {
@@ -263,10 +267,9 @@ public class EmailsFragment extends Fragment {
             String senderDomain = sender.substring(sender.indexOf("@"));
 
             Instant eventStartTime = mailList.getMail(position).getEventStartTime();
-            String eventTime = "";
             int eventDuration = mailList.getMail(position).getEventDuration();
             if (eventStartTime != null) {
-                eventTime = eventStartTime.atZone(ZoneId.of("Asia/Ho_Chi_Minh")).format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm"));
+                String eventTime = eventStartTime.atZone(ZoneId.of("Asia/Ho_Chi_Minh")).format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm"));
                 if (eventDuration != 0) {
                     Instant eventEndTime = eventStartTime.plusSeconds(eventDuration * 60);
                     eventTime += " - " + eventEndTime.atZone(ZoneId.of("Asia/Ho_Chi_Minh")).format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm"));

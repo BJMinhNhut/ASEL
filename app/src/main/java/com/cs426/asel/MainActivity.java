@@ -161,4 +161,7 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
+    public interface PermissionCallback {
+        void onPermissionResult(boolean isGranted);
+    }
 }
