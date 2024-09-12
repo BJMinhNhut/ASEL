@@ -27,6 +27,7 @@ public class MailRepository {
         DatabaseContract.Mails.COLUMN_NAME_CONTENT,
         DatabaseContract.Mails.COLUMN_NAME_SUMMARY,
         DatabaseContract.Mails.COLUMN_NAME_SEND_TIME,
+        DatabaseContract.Mails.COLUMN_NAME_TAG,
         DatabaseContract.Mails.COLUMN_NAME_EVENT_ID,
         DatabaseContract.Mails.COLUMN_NAME_IS_READ
     };
@@ -50,6 +51,7 @@ public class MailRepository {
         values.put(DatabaseContract.Mails.COLUMN_NAME_SUMMARY, mail.getSummary());
         assert mail.getReceivedTime() != null : "Mail received time is null";
         values.put(DatabaseContract.Mails.COLUMN_NAME_SEND_TIME, mail.getReceivedTime().toString());
+        values.put(DatabaseContract.Mails.COLUMN_NAME_TAG, mail.getTag());
         values.put(DatabaseContract.Mails.COLUMN_NAME_EVENT_ID, eventId);
         values.put(DatabaseContract.Mails.COLUMN_NAME_IS_READ, mail.isRead() ? 1 : 0);
 
@@ -193,6 +195,7 @@ public class MailRepository {
         String sender = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseContract.Mails.COLUMN_NAME_SENDER));
         String receiver = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseContract.Mails.COLUMN_NAME_RECEIVER));
         Instant sendTime = Instant.parse(cursor.getString(cursor.getColumnIndexOrThrow(DatabaseContract.Mails.COLUMN_NAME_SEND_TIME)));
+        String tag = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseContract.Mails.COLUMN_NAME_TAG));
         int eventID = cursor.getInt(cursor.getColumnIndexOrThrow(DatabaseContract.Mails.COLUMN_NAME_EVENT_ID));
         boolean isRead = cursor.getInt(cursor.getColumnIndexOrThrow(DatabaseContract.Mails.COLUMN_NAME_IS_READ)) == 1;
 
