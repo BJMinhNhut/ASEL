@@ -7,6 +7,7 @@ import android.database.sqlite.SQLiteDatabase;
 import android.util.Log;
 
 import java.time.Instant;
+import java.util.List;
 
 public class MailRepository {
     private final DatabaseHelper dbHelper;
@@ -20,16 +21,16 @@ public class MailRepository {
     }
 
     public final String[] mailProjection = {
-        DatabaseContract.Mails._ID,
-        DatabaseContract.Mails.COLUMN_NAME_TITLE,
-        DatabaseContract.Mails.COLUMN_NAME_SENDER,
-        DatabaseContract.Mails.COLUMN_NAME_RECEIVER,
-        DatabaseContract.Mails.COLUMN_NAME_CONTENT,
-        DatabaseContract.Mails.COLUMN_NAME_SUMMARY,
-        DatabaseContract.Mails.COLUMN_NAME_SEND_TIME,
-        DatabaseContract.Mails.COLUMN_NAME_TAG,
-        DatabaseContract.Mails.COLUMN_NAME_EVENT_ID,
-        DatabaseContract.Mails.COLUMN_NAME_IS_READ
+            DatabaseContract.Mails._ID,
+            DatabaseContract.Mails.COLUMN_NAME_TITLE,
+            DatabaseContract.Mails.COLUMN_NAME_SENDER,
+            DatabaseContract.Mails.COLUMN_NAME_RECEIVER,
+            DatabaseContract.Mails.COLUMN_NAME_CONTENT,
+            DatabaseContract.Mails.COLUMN_NAME_SUMMARY,
+            DatabaseContract.Mails.COLUMN_NAME_SEND_TIME,
+            DatabaseContract.Mails.COLUMN_NAME_TAG,
+            DatabaseContract.Mails.COLUMN_NAME_EVENT_ID,
+            DatabaseContract.Mails.COLUMN_NAME_IS_READ
     };
 
     public long insertMail(Mail mail) {
@@ -63,7 +64,7 @@ public class MailRepository {
         Log.println(Log.INFO, "MailRepository", "Deleting mail: " + mailId);
         SQLiteDatabase db = dbHelper.getWritableDatabase();
         String selection = DatabaseContract.Mails._ID + " = ?";
-        String[] selectionArgs = { mailId };
+        String[] selectionArgs = {mailId};
         return db.delete(DatabaseContract.Mails.TABLE_NAME, selection, selectionArgs);
     }
 
@@ -90,9 +91,34 @@ public class MailRepository {
         return mailList;
     }
 
-    // TODO: implement this
-    public MailList getMailByTags() {
-        return null;
+    public MailList getMailByTags(List<String> tags, String sortBy, boolean isAscending) {
+        Log.println(Log.INFO, "MailRepository", "Getting mail by tags: " + tags);
+        SQLiteDatabase db = dbHelper.getReadableDatabase();
+
+        String selection = DatabaseContract.Mails.COLUMN_NAME_TAG + " IN (" +
+                String.join(",", tags.stream().map(tag -> "?").toArray(String[]::new)) + ")";
+
+        String[] selectionArgs = tags.toArray(new String[0]);
+
+        String sortOrder = null;
+        if (!sortBy.isEmpty()) sortOrder = sortBy + (isAscending ? " ASC" : " DESC");
+
+        Cursor cursor = db.query(
+                DatabaseContract.Mails.TABLE_NAME,
+                mailProjection,
+                selection,
+                selectionArgs,
+                null,
+                null,
+                sortOrder
+        );
+
+        MailList mailList = new MailList();
+        while (cursor.moveToNext()) {
+            mailList.addMail(getMailByCursor(cursor));
+        }
+        cursor.close();
+        return mailList;
     }
 
     public Mail getMailById(String id) {
@@ -100,7 +126,7 @@ public class MailRepository {
         SQLiteDatabase db = dbHelper.getReadableDatabase();
 
         String selection = DatabaseContract.Mails._ID + " = ?";
-        String[] selectionArgs = { id };
+        String[] selectionArgs = {id};
 
         Cursor cursor = db.query(
                 DatabaseContract.Mails.TABLE_NAME,
@@ -125,7 +151,7 @@ public class MailRepository {
         SQLiteDatabase db = dbHelper.getReadableDatabase();
 
         String selection = DatabaseContract.Mails.COLUMN_NAME_IS_READ + " = ?";
-        String[] selectionArgs = { isRead ? "1" : "0" };
+        String[] selectionArgs = {isRead ? "1" : "0"};
 
         String sortOrder = null;
         if (!sortBy.isEmpty()) sortOrder = sortBy + (isAscending ? " ASC" : " DESC");
@@ -155,7 +181,7 @@ public class MailRepository {
         values.put(DatabaseContract.Mails.COLUMN_NAME_IS_READ, isRead);
 
         String selection = DatabaseContract.Mails._ID + " = ?";
-        String[] selectionArgs = { id };
+        String[] selectionArgs = {id};
 
         return db.update(
                 DatabaseContract.Mails.TABLE_NAME,
@@ -168,9 +194,9 @@ public class MailRepository {
     public boolean isMailExists(String id) {
         Log.println(Log.INFO, "MailRepository", "Checking if mail exists: " + id);
         SQLiteDatabase db = dbHelper.getReadableDatabase();
-        String[] projection = { DatabaseContract.Mails._ID };
+        String[] projection = {DatabaseContract.Mails._ID};
         String selection = DatabaseContract.Mails._ID + " = ?";
-        String[] selectionArgs = { id };
+        String[] selectionArgs = {id};
 
         Cursor cursor = db.query(
                 DatabaseContract.Mails.TABLE_NAME,
@@ -223,7 +249,7 @@ public class MailRepository {
         };
 
         String selection = DatabaseContract.Events._ID + " = ?";
-        String[] selectionArgs = { String.valueOf(eventID) };
+        String[] selectionArgs = {String.valueOf(eventID)};
 
         Cursor cursor = db.query(
                 DatabaseContract.Events.TABLE_NAME,
