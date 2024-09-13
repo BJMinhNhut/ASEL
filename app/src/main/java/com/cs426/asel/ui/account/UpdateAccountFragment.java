@@ -1,13 +1,15 @@
 package com.cs426.asel.ui.account;
 
+import androidx.activity.OnBackPressedCallback;
+import androidx.fragment.app.FragmentManager;
 import androidx.lifecycle.ViewModelProvider;
 
 import android.os.Bundle;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -17,10 +19,6 @@ import androidx.fragment.app.Fragment;
 import com.cs426.asel.R;
 import com.cs426.asel.backend.Mail;
 import com.cs426.asel.ui.emails.EmailsViewModel;
-import com.google.android.gms.auth.api.signin.GoogleSignIn;
-import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
-import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
-import com.google.api.services.gmail.model.Message;
 
 import java.util.List;
 
@@ -48,14 +46,18 @@ public class UpdateAccountFragment extends Fragment {
         accountViewModel = new ViewModelProvider(requireActivity()).get(AccountViewModel.class);
         emailsViewModel = new ViewModelProvider(requireActivity()).get(EmailsViewModel.class);
 
+        TextView accountEmail = view.findViewById(R.id.text_account_email);
         TextView accountName = view.findViewById(R.id.text_account_name);
 
         // Observe signInResult LiveData
         accountViewModel.getSignInResult().observe(getViewLifecycleOwner(), account -> {
             if (account != null) {
-                accountName.setText(account.getDisplayName());  // Update the UI with the signed-in account's name
+                accountEmail.setText(account.getEmail());
+                accountName.setVisibility(View.VISIBLE);
+                accountName.setText(account.getDisplayName());
             } else {
-                accountName.setText("No account selected");     // Update the UI when signed out
+                accountEmail.setText("No account selected");
+                accountName.setVisibility(View.GONE);
             }
         });
 
@@ -64,6 +66,20 @@ public class UpdateAccountFragment extends Fragment {
 
         Button logOut = view.findViewById(R.id.log_out);
         logOut.setOnClickListener(v -> logOut());
+
+        ImageView backButton = view.findViewById(R.id.backButton);
+        backButton.setOnClickListener(v -> {
+            FragmentManager fm = getParentFragmentManager();
+            fm.popBackStack();
+        });
+
+        requireActivity().getOnBackPressedDispatcher().addCallback(getViewLifecycleOwner(), new OnBackPressedCallback(true) {
+            @Override
+            public void handleOnBackPressed() {
+                FragmentManager fm = getParentFragmentManager();
+                fm.popBackStack();
+            }
+        });
     }
 
     private void logOut() {
@@ -74,7 +90,7 @@ public class UpdateAccountFragment extends Fragment {
         Mail mail = new Mail(emailsViewModel.getMessages().get(0));
 //        mail.summarize();
 
-        System.out.println(mail.getEmailID());
+        System.out.println(mail.getId());
         System.out.println(mail.getTitle());
         System.out.println(mail.getSender());
         System.out.println(mail.getSummary());

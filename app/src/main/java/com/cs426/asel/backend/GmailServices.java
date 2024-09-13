@@ -25,6 +25,7 @@ import com.google.api.services.gmail.model.Message;
 import com.google.android.gms.common.api.Scope;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -107,7 +108,6 @@ public class GmailServices {
         });
     }
 
-
     public void fetchEmailByIds(List<String> ids, FetchEmailCallback callback) {
         // Create a fixed thread pool with 4 threads
         ExecutorService executorService = Executors.newFixedThreadPool(16);
@@ -125,7 +125,6 @@ public class GmailServices {
                 for (String id : ids) {
                     futures.add(executorService.submit(() -> {
                         Message message = gmailService.users().messages().get("me", id).execute();
-                        Log.d("GmailServices", "Fetched email with ID: " + id);
                         return message;
                     }));
                 }

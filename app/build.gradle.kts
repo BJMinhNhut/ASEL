@@ -70,6 +70,7 @@ android {
             excludes += "META-INF/NOTICE.txt"
         }
     }
+
 }
 
 dependencies {
@@ -88,8 +89,16 @@ dependencies {
     implementation("com.google.api-client:google-api-client-gson:1.33.0")
     implementation("com.google.apis:google-api-services-gmail:v1-rev110-1.25.0")
     implementation("com.google.http-client:google-http-client-jackson2:1.41.5")
+    implementation("androidx.viewpager2:viewpager2:1.1.0")
+    implementation("com.google.zxing:core:3.4.1")
+    implementation("com.journeyapps:zxing-android-embedded:4.3.0")
     implementation(libs.jsoup)
     implementation(libs.generativeai)
+    implementation(libs.jackson.core)
+    implementation(libs.jackson.annotations)
+    implementation(libs.jackson.databind)
+    implementation(libs.javax.mail)
+    implementation(libs.google.material)
     testImplementation(libs.junit)
     androidTestImplementation(libs.ext.junit)
     androidTestImplementation(libs.espresso.core)

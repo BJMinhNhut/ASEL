@@ -5,6 +5,7 @@ import android.graphics.drawable.Drawable;
 import android.graphics.drawable.GradientDrawable;
 
 import androidx.annotation.NonNull;
+import androidx.core.content.res.ResourcesCompat;
 import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -12,47 +13,66 @@ import com.cs426.asel.R;
 
 public class SwipeCallback extends ItemTouchHelper.SimpleCallback {
     private final float swipeThreshold = 0.4f;
+    private boolean isSwipeEnabled = true;
     private Drawable icon;
-    private GradientDrawable backgroundColor;
+    private final GradientDrawable backgroundColor;
 
     public SwipeCallback(int dragDirs, int swipeDirs) {
         super(dragDirs, swipeDirs);
         backgroundColor = new GradientDrawable();
+        backgroundColor.setCornerRadius(15);
+    }
+
+    public void setSwipeEnabled(boolean enabled) {
+        isSwipeEnabled = enabled;
+    }
+
+    public boolean isSwipeEnabled() {
+        return isSwipeEnabled;
+    }
+
+    @Override
+    public int getSwipeDirs(@NonNull RecyclerView recyclerView, @NonNull RecyclerView.ViewHolder viewHolder) {
+        return isSwipeEnabled ? super.getSwipeDirs(recyclerView, viewHolder) : 0;
     }
 
     @Override
     public void onChildDraw(@NonNull Canvas c, @NonNull RecyclerView recyclerView, @NonNull RecyclerView.ViewHolder viewHolder, float dX, float dY, int actionState, boolean isCurrentlyActive) {
-
+        if (!isSwipeEnabled) {
+            super.onChildDraw(c, recyclerView, viewHolder, dX, dY, actionState, isCurrentlyActive);
+            return;
+        }
         float translationX = dX;
 
-
+        Drawable icon;
         if (dX < 0) { // swipe left
-            icon = viewHolder.itemView.getContext().getResources().getDrawable(R.drawable.ic_delete);
+            icon = ResourcesCompat.getDrawable(viewHolder.itemView.getContext().getResources(), R.drawable.ic_trash, null);
             int iconMargin = (viewHolder.itemView.getHeight() - icon.getIntrinsicHeight()) / 2;
-            int iconTop = viewHolder.itemView.getTop() + (viewHolder.itemView.getHeight() - icon.getIntrinsicHeight()) / 2;
+            int iconTop = viewHolder.itemView.getTop() + iconMargin;
             int iconBottom = iconTop + icon.getIntrinsicHeight();
             int iconLeft = viewHolder.itemView.getRight() - iconMargin - icon.getIntrinsicWidth();
-            int iconRight = viewHolder.itemView.getRight() - iconMargin;
+            int iconRight = iconLeft + icon.getIntrinsicWidth();
 
             icon.setBounds(iconLeft, iconTop, iconRight, iconBottom);
 
             backgroundColor.setBounds(
-                    viewHolder.itemView.getRight() + (int) dX,
+                    viewHolder.itemView.getRight() + (int) dX - 30,
                     viewHolder.itemView.getTop(),
                     viewHolder.itemView.getRight(),
                     viewHolder.itemView.getBottom()
             );
 
             backgroundColor.setColor(
-                    viewHolder.itemView.getContext().getResources().getColor(R.color.red)
+                    ResourcesCompat.getColor(viewHolder.itemView.getContext().getResources(), R.color.error_medium, null)
             );
 
             translationX = Math.max(dX, (-1) * viewHolder.itemView.getWidth() * swipeThreshold);
         } else if (dX > 0) { // swipe right
-            icon = viewHolder.itemView.getContext().getResources().getDrawable(R.drawable.ic_note_add);
-            int iconLeft = viewHolder.itemView.getLeft() + icon.getIntrinsicWidth();
-            int iconRight = viewHolder.itemView.getLeft() + icon.getIntrinsicWidth() + icon.getIntrinsicWidth();
-            int iconTop = viewHolder.itemView.getTop() + (viewHolder.itemView.getHeight() - icon.getIntrinsicHeight()) / 2;
+            icon = ResourcesCompat.getDrawable(viewHolder.itemView.getContext().getResources(), R.drawable.ic_calendar_add, null);
+            int iconMargin = (viewHolder.itemView.getHeight() - icon.getIntrinsicHeight()) / 2;
+            int iconLeft = viewHolder.itemView.getLeft() + iconMargin;
+            int iconRight = iconLeft + icon.getIntrinsicWidth();
+            int iconTop = viewHolder.itemView.getTop() + iconMargin;
             int iconBottom = iconTop + icon.getIntrinsicHeight();
 
             icon.setBounds(iconLeft, iconTop, iconRight, iconBottom);
@@ -60,18 +80,17 @@ public class SwipeCallback extends ItemTouchHelper.SimpleCallback {
             backgroundColor.setBounds(
                     viewHolder.itemView.getLeft(),
                     viewHolder.itemView.getTop(),
-                    (int) dX,
+                    (int) dX + 30,
                     viewHolder.itemView.getBottom()
             );
 
             backgroundColor.setColor(
-                    viewHolder.itemView.getContext().getResources().getColor(R.color.green)
+                    ResourcesCompat.getColor(viewHolder.itemView.getContext().getResources(), R.color.success_medium, null)
             );
 
         } else {
             backgroundColor.setBounds(0, 0, 0, 0);
             icon = null;
-
         }
 
         super.onChildDraw(c, recyclerView, viewHolder, translationX, dY, actionState, isCurrentlyActive);

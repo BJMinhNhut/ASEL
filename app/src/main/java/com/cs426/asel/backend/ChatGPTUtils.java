@@ -2,6 +2,7 @@ package com.cs426.asel.backend;
 
 
 import android.content.Context;
+import android.graphics.Bitmap;
 import android.util.Log;
 
 import com.cs426.asel.BuildConfig;
@@ -16,6 +17,7 @@ import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executor;
@@ -26,9 +28,12 @@ import com.google.ai.client.generativeai.java.GenerativeModelFutures;
 import com.google.ai.client.generativeai.type.Content;
 import com.google.ai.client.generativeai.type.GenerateContentResponse;
 import com.google.ai.client.generativeai.type.GenerationConfig;
+import com.google.ai.client.generativeai.type.Schema;
 import com.google.common.util.concurrent.FutureCallback;
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
+
+import javax.annotation.Nullable;
 
 public class ChatGPTUtils {
     private static final String MODEL = "gemini-1.5-flash";
@@ -38,15 +43,26 @@ public class ChatGPTUtils {
     private static int currentKeyIndex = 0;
 
     static {
+
         GenerationConfig.Builder builder = new GenerationConfig.Builder();
-        builder.temperature = 0.1f;
+        builder.temperature = 0.40f;
+        builder.maxOutputTokens = 8192;
+        builder.topP = 0.95f;
+        builder.topK = 64;
+        builder.responseMimeType = "application/json";
+
         CONFIG = builder.build();
     }
 
-    public static ListenableFuture<GenerateContentResponse> getResponse(String prompt) {
-        GenerativeModel gm = new GenerativeModel(MODEL, getAPIKey());
+    public static ListenableFuture<GenerateContentResponse> getResponse(String prompt, Bitmap... images) {
+        GenerativeModel gm = new GenerativeModel(MODEL, getAPIKey(), CONFIG);
         GenerativeModelFutures model = GenerativeModelFutures.from(gm);
-        Content content = new Content.Builder().addText(prompt).build();
+        Content content;
+        if (images.length > 0)  {
+            content = new Content.Builder().addText(prompt).addImage(images[0]).build();
+        } else {
+            content = new Content.Builder().addText(prompt).build();
+        }
 
         return model.generateContent(content);
     }

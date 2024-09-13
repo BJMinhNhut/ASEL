@@ -5,10 +5,11 @@ import androidx.annotation.NonNull;
 import java.time.Instant;
 
 public class Event {
+    int mID;
     String mMailID;
     String mTitle;
     Instant mStartTime;
-    int mDuration; // duration = 0 if the event is a task
+    int mDuration; // in minutes, duration = 0 if the event is a task
     String mLocation;
 
     // Repeat information
@@ -21,22 +22,26 @@ public class Event {
     String mDescription;
 
     boolean mIsAllDay;
+    boolean mIsPublished;
 
     public Event() {
+        mID = -1; // -1 for undefined ID (not in the database)
         mMailID = "";
         mTitle = "";
-        mStartTime = Instant.now();
+        mStartTime = null;
         mDuration = 0;
         mLocation = "";
         mIsRepeating = false;
         mRepeatFrequency = "";
-        mRepeatEndDate = Instant.now();
-        mReminderTime = Instant.now();
+        mRepeatEndDate = null;
+        mReminderTime = null;
         mDescription = "";
         mIsAllDay = false;
+        mIsPublished = false;
     }
 
-    public Event(String mailID, String title, Instant startTime, int duration, String location, boolean isRepeating, String repeatFrequency, Instant repeatEndDate, Instant reminderTime, String description, boolean isAllDay) {
+    public Event(int id, String mailID, String title, Instant startTime, int duration, String location, boolean isRepeating, String repeatFrequency, Instant repeatEndDate, Instant reminderTime, String description, boolean isAllDay, boolean isPublished) {
+        mID = id;
         mMailID = mailID;
         mTitle = title;
         mStartTime = startTime;
@@ -48,6 +53,27 @@ public class Event {
         mReminderTime = reminderTime;
         mDescription = description;
         mIsAllDay = isAllDay;
+        mIsPublished = isPublished;
+    }
+
+    public Event(String mailID, String title, Instant startTime, int duration, String location, boolean isRepeating, String repeatFrequency, Instant repeatEndDate, Instant reminderTime, String description, boolean isAllDay, boolean isPublished) {
+        mID = -1; // -1 for undefined ID (not in the database)
+        mMailID = mailID;
+        mTitle = title;
+        mStartTime = startTime;
+        mDuration = duration;
+        mLocation = location;
+        mIsRepeating = isRepeating;
+        mRepeatFrequency = repeatFrequency;
+        mRepeatEndDate = repeatEndDate;
+        mReminderTime = reminderTime;
+        mDescription = description;
+        mIsAllDay = isAllDay;
+        mIsPublished = isPublished;
+    }
+
+    public int getID() {
+        return mID;
     }
 
     public String getMailID() {
@@ -60,6 +86,13 @@ public class Event {
 
     public Instant getStartTime() {
         return mStartTime;
+    }
+
+    public String getStartTimeString() {
+        if (mStartTime == null) {
+            return null;
+        }
+        return mStartTime.toString();
     }
 
     public int getDuration() {
@@ -82,8 +115,22 @@ public class Event {
         return mRepeatEndDate;
     }
 
+    public String getRepeatEndDateString() {
+        if (mRepeatEndDate == null) {
+            return null;
+        }
+        return mRepeatEndDate.toString();
+    }
+
     public Instant getReminderTime() {
         return mReminderTime;
+    }
+
+    public String getReminderTimeString() {
+        if (mReminderTime == null) {
+            return null;
+        }
+        return mReminderTime.toString();
     }
 
     public String getDescription() {
@@ -92,6 +139,10 @@ public class Event {
 
     public boolean isAllDay() {
         return mIsAllDay;
+    }
+
+    public boolean isPublished() {
+        return mIsPublished;
     }
 
     public void setMailID(String mailID) {
@@ -140,10 +191,15 @@ public class Event {
         mIsAllDay = isAllDay;
     }
 
+    public void setIsPublished(boolean isPublished) {
+        mIsPublished = isPublished;
+    }
+
     @NonNull
     public String toString() {
         return "Event{" +
-                "mMailID='" + mMailID + '\'' +
+                "mID=" + mID +
+                ", mMailID='" + mMailID + '\'' +
                 ", mTitle='" + mTitle + '\'' +
                 ", mStartTime=" + mStartTime +
                 ", mDuration=" + mDuration +

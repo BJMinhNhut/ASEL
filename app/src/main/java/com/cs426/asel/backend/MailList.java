@@ -14,29 +14,29 @@ public class MailList {
         mailList = new ArrayList<>();
     }
 
-    public void updateEmails(Context context, List<Message> messages) {
-        // Fetch Messages from Gmail into a List and add to database
-
-
-        // Fet  ch existing Mail from Database to fill up displaying list
-
-    }
-
     public Mail getMail(int index) {
         return mailList.get(index);
     }
 
     public Mail findMailbyID(String id) {
         for (Mail mail : mailList) {
-            if (mail.getEmailID().equals(id)) {
+            if (mail.getId().equals(id)) {
                 return mail;
             }
         }
         return null;
     }
 
+    public void append(MailList mailList) {
+        this.mailList.addAll(mailList.mailList);
+    }
+
     public void addMail(Mail mail) {
         mailList.add(mail);
+    }
+
+    public void insertMailAt(Mail mail, int index) {
+        mailList.add(index, mail);
     }
 
     public void removeMail(int index) {

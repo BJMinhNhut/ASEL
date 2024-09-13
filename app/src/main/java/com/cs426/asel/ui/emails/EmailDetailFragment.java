@@ -1,23 +1,35 @@
 package com.cs426.asel.ui.emails;
 
-import android.content.Intent;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.ImageView;
 
+import androidx.activity.OnBackPressedCallback;
 import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
+import androidx.fragment.app.FragmentTransaction;
+import androidx.lifecycle.ViewModelProvider;
 
 import com.cs426.asel.R;
-import com.cs426.asel.ui.events.EventEditorActivity;
+import com.cs426.asel.backend.Mail;
+import com.cs426.asel.backend.MailRepository;
+import com.cs426.asel.backend.Utility;
+import com.cs426.asel.databinding.FragmentEmailDetailBinding;
+import com.cs426.asel.ui.account.AccountViewModel;
+import com.cs426.asel.ui.events.EventEditorFragment;
 
 public class EmailDetailFragment extends Fragment {
-    private static int emailId;
+    private static String emailId;
+    private Mail mail;
+    private FragmentEmailDetailBinding binding;
+    private MailRepository mailRepository;
 
-    public static EmailDetailFragment newInstance(int emailId) {
+    public static EmailDetailFragment newInstance(Mail mail) {
         Bundle args = new Bundle();
-        args.putInt("emailId", emailId);
+        args.putString("emailId", emailId);
 
         EmailDetailFragment fragment = new EmailDetailFragment();
         fragment.setArguments(args);
@@ -28,12 +40,22 @@ public class EmailDetailFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_email_detail, container, false);
+        AccountViewModel accountViewModel = new ViewModelProvider(requireActivity()).get(AccountViewModel.class);
 
-        emailId = getArguments().getInt("emailId");
+        binding = FragmentEmailDetailBinding.bind(view);
+        mailRepository = new MailRepository(requireContext(), Utility.getUserEmail(requireContext()));
+        emailId = getArguments().getString("emailId");
+        mail = mailRepository.getMailById(emailId);
 
-        // TODO: Set email details in the view
+        String sender = mail.getSender();
+        String senderName = sender.substring(0, sender.indexOf("@"));
+        String senderDomain = sender.substring(sender.indexOf("@"));
 
-        // Bind onClick
+        binding.subject.setText(mail.getTitle());
+        binding.senderName.setText(senderName);
+        binding.senderDomain.setText(senderDomain);
+        binding.body.setText(mail.getContent());
+        binding.sendTime.setText(mail.getSentTime());
 
         return view;
     }
@@ -42,16 +64,30 @@ public class EmailDetailFragment extends Fragment {
     public void onViewCreated(View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        Button createEventButton = view.findViewById(R.id.create_event_button);
+        ImageView backButton = view.findViewById(R.id.back);
+
+        Button createEventButton = view.findViewById(R.id.create_event);
         createEventButton.setOnClickListener(v -> {
-            Intent intent = new Intent(getContext(), EventEditorActivity.class);
-            intent.putExtra("emailId", emailId);
-            startActivity(intent);
+            EventEditorFragment eventEditorFragment = new EventEditorFragment();
+            Bundle bundle = new Bundle();
+            bundle.putString("emailId", emailId);
+            eventEditorFragment.setArguments(bundle);
+
+            FragmentTransaction ft = getParentFragmentManager().beginTransaction();
+            ft.replace(R.id.emailsContainer, eventEditorFragment).addToBackStack(null).commit();
         });
 
-        Button moveToReadButton = view.findViewById(R.id.move_to_read_button);
-        moveToReadButton.setOnClickListener(v -> {
-            // TODO: Move email to read
+        backButton.setOnClickListener(v -> {
+            FragmentManager fm = getParentFragmentManager();
+            fm.popBackStack();
+        });
+
+        requireActivity().getOnBackPressedDispatcher().addCallback(getViewLifecycleOwner(), new OnBackPressedCallback(true) {
+            @Override
+            public void handleOnBackPressed() {
+                FragmentManager fm = getParentFragmentManager();
+                fm.popBackStack();
+            }
         });
     }
 

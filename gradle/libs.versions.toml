@@ -13,6 +13,11 @@ navigationUi = "2.6.0"
 legacySupportV4 = "1.0.0"
 jsoup = "1.18.1"
 generativeai = "0.9.0"
+jacksonCore = "2.18.0-rc1"
+jacksonAnnotations = "2.18.0-rc1"
+jacksonDatabind = "2.18.0-rc1"
+javaxMail = "1.6.2"
+materialVersion = "1.13.0-alpha05"
 [libraries]
 junit = { group = "junit", name = "junit", version.ref = "junit" }
 ext-junit = { group = "androidx.test.ext", name = "junit", version.ref = "junitVersion" }
@@ -27,6 +32,11 @@ navigation-ui = { group = "androidx.navigation", name = "navigation-ui", version
 legacy-support-v4 = { group = "androidx.legacy", name = "legacy-support-v4", version.ref = "legacySupportV4" }
 jsoup = { group = "org.jsoup", name = "jsoup", version.ref = "jsoup" }
 generativeai = { group = "com.google.ai.client.generativeai", name = "generativeai", version.ref = "generativeai" }
+jackson-core = { group = "com.fasterxml.jackson.core", name = "jackson-core", version.ref = "jacksonCore" }
+jackson-annotations = { group = "com.fasterxml.jackson.core", name = "jackson-annotations", version.ref = "jacksonAnnotations" }
+jackson-databind = { group = "com.fasterxml.jackson.core", name = "jackson-databind", version.ref = "jacksonDatabind" }
+javax-mail = { group = "com.sun.mail", name = "javax.mail", version.ref = "javaxMail" }
+google-material = { group = "com.google.android.material", name = "material", version.ref = "materialVersion" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
