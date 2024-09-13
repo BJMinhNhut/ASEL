@@ -1,6 +1,7 @@
 package com.cs426.asel.ui.events;
 
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -18,6 +19,8 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.cs426.asel.R;
 import com.cs426.asel.backend.Event;
 import com.cs426.asel.backend.EventList;
+import com.cs426.asel.backend.EventRepository;
+import com.cs426.asel.backend.Utility;
 import com.cs426.asel.databinding.FragmentEventsBinding;
 import com.cs426.asel.ui.decoration.SpaceItemDecoration;
 import com.google.android.material.tabs.TabLayout;
@@ -30,6 +33,8 @@ import java.util.Random;
 
 public class EventsFragment extends Fragment {
     private FragmentEventsBinding binding;
+    private EventRepository eventRepository;
+    private EventList ongoing, upcoming, completed;
 
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         EventsViewModel eventsViewModel =
@@ -42,34 +47,59 @@ public class EventsFragment extends Fragment {
         eventRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         eventRecyclerView.addItemDecoration(new SpaceItemDecoration(20));
 
-        EventList eventList = new EventList();
-        Event event;
-        for (int i = 1; i <= 20; i++) {
-            int type = new Random().nextInt(3);
-            event = new Event();
-            event.setTitle("Event " + i);
-            event.setStartTime(Instant.now().plusSeconds(new Random().nextInt(31536000)));
-            event.setDuration(0);
-            event.setIsAllDay(false);
-            event.setLocation("Location " + i);
-            event.setDescription("Description " + i);
-            if (type == 0) {
-                event.setDuration(new Random().nextInt(525600));
-            } else if (type == 1) {
+        eventRepository = new EventRepository(requireContext(), Utility.getUserEmail(requireContext()));
+        EventList allEvents = eventRepository.getEventsByPublished(true);
+        Log.d("EventsFragment", "allEvents size:" + allEvents.getSize());
+        upcoming = new EventList();
+        ongoing = new EventList();
+        completed = new EventList();
 
-            } else {
-                if (new Random().nextBoolean()) {
-                    event.setDuration(new Random().nextInt(525600));
+        for (int i = 0; i < allEvents.getSize(); i++) {
+            Event event = allEvents.getEvent(i);
+            Instant startTime = event.getStartTime();
+            if (startTime.isAfter(Instant.now())) {
+                   upcoming.addEvent(event);
+            } else if (startTime.isBefore(Instant.now())) {
+                if (startTime.plusSeconds(event.getDuration() * 60).isAfter(Instant.now())) {
+                    ongoing.addEvent(event);
+                } else {
+                    completed.addEvent(event);
                 }
-
-                event.setIsAllDay(true);
             }
-
-            eventList.addEvent(event);
         }
 
-        EventAdapter eventAdapter = new EventAdapter(eventList);
+        EventAdapter eventAdapter = new EventAdapter();
         eventRecyclerView.setAdapter(eventAdapter);
+
+        binding.eventTab.addOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
+            @Override
+            public void onTabSelected(TabLayout.Tab tab) {
+                switch (tab.getPosition()) {
+                    case 0:
+                        eventAdapter.setEventList(ongoing);
+                        break;
+                    case 1:
+                        eventAdapter.setEventList(upcoming);
+                        break;
+                    case 2:
+                        eventAdapter.setEventList(completed);
+                        break;
+                    default:
+                        eventAdapter.setEventList(ongoing);
+                        break;
+                }
+            }
+
+            @Override
+            public void onTabUnselected(TabLayout.Tab tab) {
+
+            }
+
+            @Override
+            public void onTabReselected(TabLayout.Tab tab) {
+
+            }
+        });
 
         return root;
     }
@@ -78,6 +108,15 @@ public class EventsFragment extends Fragment {
         private EventList eventList;
         public EventAdapter(EventList eventList) {
             this.eventList = eventList;
+        }
+
+        public EventAdapter() {
+
+        }
+
+        public void setEventList(EventList newEventList) {
+            this.eventList = newEventList;
+            notifyDataSetChanged();
         }
 
         public static class EventViewHolder extends RecyclerView.ViewHolder {
@@ -171,6 +210,9 @@ public class EventsFragment extends Fragment {
 
         @Override
         public int getItemCount() {
+            if (eventList == null) {
+                return 0;
+            }
             return eventList.getSize();
         }
     }

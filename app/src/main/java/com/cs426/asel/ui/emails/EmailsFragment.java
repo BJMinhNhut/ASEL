@@ -174,11 +174,8 @@ public class EmailsFragment extends Fragment {
                             // Right swipe to quick add
                             Mail mail = unread.getMail(viewHolder.getBindingAdapterPosition());
                             int eventId = mail.getEvent().getID();
-                            if (eventId != -1) {
-                                eventRepository.insertEvent(mail.getEvent());
-                            } else {
-                                eventRepository.setPublishEvent(eventId, true);
-                            }
+                            Log.d("EmailsFragment", "Publishing event ID: " + eventId);
+                            eventRepository.setPublishEvent(eventId, true);
                             moveMailToRead(viewHolder.getBindingAdapterPosition(), mail);
 
                             //TODO: publish event of mail

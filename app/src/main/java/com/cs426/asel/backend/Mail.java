@@ -314,9 +314,6 @@ public class Mail {
         return mEvent.getDuration();
     }
 
-    public String getEventLocation() {
-        return mEvent.getLocation();
-    }
 
     public Instant getReceivedTime() {
         return mReceivedTime;
