@@ -4,6 +4,7 @@ import android.app.AlertDialog;
 import android.app.DatePickerDialog;
 import android.app.TimePickerDialog;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -143,7 +144,8 @@ public class EventEditorFragment extends Fragment {
     private void chooseDate(TextInputEditText dateEditText) {
         DatePickerDialog datePickerDialog = new DatePickerDialog(getContext());
         datePickerDialog.setOnDateSetListener((view, year, month, dayOfMonth) -> {
-            dateEditText.setText(String.format("%d/%d/%d", month, dayOfMonth, year));
+            Log.d("EventEditorFragment", "year: " + year + ", month: " + (month + 1) + ", dayOfMonth: " + dayOfMonth);
+            dateEditText.setText(String.format("%d/%d/%d", month + 1, dayOfMonth, year));
 
             // TODO: add validation for date time
         });
