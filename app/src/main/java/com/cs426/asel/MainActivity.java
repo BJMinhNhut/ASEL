@@ -16,6 +16,7 @@ import android.provider.Settings;
 import android.util.Log;
 import android.widget.Toast;
 
+import com.cs426.asel.backend.Utility;
 import com.cs426.asel.ui.account.AccountContainer;
 import com.cs426.asel.ui.account.AccountViewModel;
 import com.cs426.asel.ui.account.AccountViewModelFactory;
@@ -150,6 +151,7 @@ public class MainActivity extends AppCompatActivity {
             NotificationManager notificationManager = getSystemService(NotificationManager.class);
             notificationManager.createNotificationChannel(channel);
         }
+        Utility.startScheduledWork(this);
     }
 
     private static final int HOME_FRAGMENT_POSITION = 0; // Position of HomeFragment in ViewPager2

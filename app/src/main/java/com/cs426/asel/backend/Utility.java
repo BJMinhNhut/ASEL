@@ -1,5 +1,4 @@
 package com.cs426.asel.backend;
-
 import static android.content.Context.MODE_PRIVATE;
 
 import android.app.AlarmManager;
@@ -9,8 +8,13 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Build;
 
-import com.cs426.asel.backend.NotificationReceiver;
+import androidx.work.OneTimeWorkRequest;
+import androidx.work.PeriodicWorkRequest;
+import androidx.work.WorkManager;
 
+import com.cs426.asel.backend.NotiWorker;
+import com.cs426.asel.backend.Notification;
+import com.cs426.asel.backend.NotificationReceiver;
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
 
@@ -18,8 +22,14 @@ import java.time.Instant;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.Calendar;
+import java.util.concurrent.TimeUnit;
 
 public final class Utility {
+
+    // Unique tags for the scheduled work
+    private static final String PERIODIC_WORK_TAG = "NotiPeriodicWorker";
+    private static final String IMMEDIATE_WORK_TAG = "NotiImmediateWorker";
+
     public static String getUserEmail(Context context) {
         GoogleSignInAccount account = GoogleSignIn.getLastSignedInAccount(context);
         if (account == null) {
@@ -46,8 +56,10 @@ public final class Utility {
 
         // Set up the AlarmManager to trigger at the specified time
         AlarmManager alarmManager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
-        if (alarmManager.canScheduleExactAlarms()) {
-            alarmManager.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, triggerTime, pendingIntent);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {  // API 31+
+            if (alarmManager.canScheduleExactAlarms()) {
+                alarmManager.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, triggerTime, pendingIntent);
+            }
         } else {
             alarmManager.setExact(AlarmManager.RTC_WAKEUP, triggerTime, pendingIntent);
         }
@@ -81,5 +93,35 @@ public final class Utility {
 
         // Schedule a new notification with updated time
         scheduleNotification(context, eventId, noti);
+    }
+
+    // Static method to start a new scheduled work
+    public static void startScheduledWork(Context context) {
+        // Create a OneTimeWorkRequest for immediate execution
+        OneTimeWorkRequest immediateWorkRequest = new OneTimeWorkRequest.Builder(NotiWorker.class)
+                .addTag(IMMEDIATE_WORK_TAG)  // Use a separate tag for immediate work
+                .build();
+
+        // Create a PeriodicWorkRequest that runs every 1 hour
+        PeriodicWorkRequest periodicWorkRequest = new PeriodicWorkRequest.Builder(NotiWorker.class, 1, TimeUnit.HOURS)
+                .addTag(PERIODIC_WORK_TAG)  // Use a unique tag for periodic work
+                .build();
+
+        // Schedule the one-time work to run immediately
+        WorkManager.getInstance(context).enqueue(immediateWorkRequest);
+
+        // Schedule the periodic work
+        WorkManager.getInstance(context).enqueueUniquePeriodicWork(
+                PERIODIC_WORK_TAG, // Unique name for the periodic work
+                androidx.work.ExistingPeriodicWorkPolicy.REPLACE, // If work exists, replace it
+                periodicWorkRequest
+        );
+    }
+
+    // Static method to stop the scheduled work
+    public static void stopScheduledWork(Context context) {
+        // Cancel all work by the unique tag
+        WorkManager.getInstance(context).cancelAllWorkByTag(PERIODIC_WORK_TAG);
+        WorkManager.getInstance(context).cancelAllWorkByTag(IMMEDIATE_WORK_TAG);
     }
 }
