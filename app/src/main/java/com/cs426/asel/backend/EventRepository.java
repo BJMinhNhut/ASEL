@@ -83,13 +83,17 @@ public class EventRepository {
         return rowsDeleted;
     }
 
-    public EventList getAllEvents() {
+    public EventList getAllEvents(String sortBy, boolean ascending) {
         Log.println(Log.INFO, "EventRepository", "Getting all events");
         SQLiteDatabase db = dbHelper.getReadableDatabase();
+        String sortOrder = null;
+        if (!sortBy.isEmpty()) sortOrder = sortBy + (ascending ? " ASC" : " DESC");
 
         Cursor cursor = null;
         EventList events = new EventList();
-        String query = "SELECT " + eventProjection + " FROM " + EVENT_MAIL_JOIN;
+        String query = "SELECT " + eventProjection + " FROM " + EVENT_MAIL_JOIN +
+                (sortOrder != null ? " ORDER BY " + sortOrder : "");
+
         Log.d("EventRepository", "Generated SQL query for getAllEvents: " + query);
         try {
             cursor = db.rawQuery(query, null);
@@ -110,14 +114,17 @@ public class EventRepository {
     }
 
     // should use this for the EventFragment instead of getAllEvents()
-    public EventList getEventsByPublished(boolean published) {
+    public EventList getEventsByPublished(boolean published, String sortBy, boolean ascending) {
         Log.println(Log.INFO, "EventRepository", "Getting events by published: " + published);
         SQLiteDatabase db = dbHelper.getReadableDatabase();
+        String sortOrder = null;
+        if (!sortBy.isEmpty()) sortOrder = sortBy + (ascending ? " ASC" : " DESC");
 
         Cursor cursor = null;
         EventList events = new EventList();
         String query = "SELECT " + eventProjection + " FROM " + EVENT_MAIL_JOIN +
-                " WHERE " + DatabaseContract.Events.COLUMN_NAME_PUBLISHED + " = " + (published ? 1 : 0);
+                " WHERE " + DatabaseContract.Events.COLUMN_NAME_PUBLISHED + " = " + (published ? 1 : 0)
+                + (sortOrder != null ? " ORDER BY " + sortOrder : "");
         Log.d("EventRepository", "Generated SQL query for getEventsByPublished: " + query);
         try {
             cursor = db.rawQuery(query, null);
