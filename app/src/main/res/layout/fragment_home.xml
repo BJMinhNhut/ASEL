@@ -26,12 +26,13 @@
             android:orientation="vertical">
 
             <TextView
+                android:id="@+id/school"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="Ho Chi Minh University of Science"
+                android:textAlignment="center"
                 android:textAppearance="@style/heading_l"
-                android:textColor="@color/highlight_darkest"
-                android:textAlignment="center"/>
+                android:textColor="@color/highlight_darkest" />
 
             <TextView
                 android:layout_width="match_parent"
