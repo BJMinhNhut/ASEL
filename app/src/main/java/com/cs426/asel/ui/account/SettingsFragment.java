@@ -7,8 +7,10 @@ import android.os.Bundle;
 import androidx.activity.OnBackPressedCallback;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.AppCompatDelegate;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
+import androidx.fragment.app.FragmentTransaction;
 
 import android.preference.PreferenceManager;
 import android.view.LayoutInflater;
@@ -52,10 +54,13 @@ public class SettingsFragment extends Fragment {
         themeGroup.setOnCheckedChangeListener((group, checkedId) -> {
             if (checkedId == R.id.light_theme) {
                 savePreference("theme", "light");
+                AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO);
             } else if (checkedId == R.id.dark_theme) {
                 savePreference("theme", "dark");
+                AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES);
             } else if (checkedId == R.id.system_theme) {
                 savePreference("theme", "system");
+                AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM);
             }
         });
 
