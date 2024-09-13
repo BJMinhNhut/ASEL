@@ -9,6 +9,7 @@ import com.cs426.asel.ui.account.AccountContainer;
 import com.cs426.asel.ui.account.AccountViewModel;
 import com.cs426.asel.ui.account.AccountViewModelFactory;
 import com.cs426.asel.ui.emails.EmailsContainer;
+import com.cs426.asel.ui.events.EventsContainer;
 import com.cs426.asel.ui.events.EventsFragment;
 import com.cs426.asel.ui.emails.EmailsViewModel;
 import com.cs426.asel.ui.emails.EmailsViewModelFactory;
@@ -112,7 +113,7 @@ public class MainActivity extends AppCompatActivity {
                 case 0:
                     return new HomeFragment();
                 case 1:
-                    return new EventsFragment();
+                    return new EventsContainer();
                 case 2:
                     return new NotificationsFragment();
                 case 3:

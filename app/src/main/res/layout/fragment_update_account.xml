@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
@@ -7,71 +7,72 @@
     android:orientation="vertical"
     tools:context=".ui.account.UpdateAccountFragment">
 
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="20dp"
+        android:layout_marginTop="20dp">
+
+        <ImageView
+            android:id="@+id/backButton"
+            android:layout_width="25dp"
+            android:layout_height="25dp"
+            android:layout_gravity="center|start"
+            android:src="@drawable/ic_chevron_left"
+            app:tint="@color/highlight_darkest"
+            android:background="?android:attr/selectableItemBackground"/>
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Email account"
+            android:textAlignment="center"
+            android:textAppearance="@style/heading_l"
+            android:textColor="@color/dark_darkest"/>
+    </FrameLayout>
+
+    <TextView
+        android:id="@+id/text_account_email"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="20dp"
+        android:text="No account selected"
+        android:textAppearance="@style/heading_l"
+        android:textColor="@color/highlight_darkest"
+        android:textAlignment="center"/>
+
     <TextView
         android:id="@+id/text_account_name"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text=""
-        android:layout_margin="50sp"
-        android:textSize="20sp"
-        android:gravity="center"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintBottom_toTopOf="@+id/button_add_account"
-        />
+        android:text="No account selected"
+        android:textAppearance="@style/body_l"
+        android:textColor="@color/dark_darkest"
+        android:textAlignment="center"/>
 
-    <Button
+    <com.google.android.material.button.MaterialButton
         android:id="@+id/button_add_account"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Connect gmail account"
-        android:layout_margin="50sp"
-        app:layout_constraintTop_toBottomOf="@id/text_account_name"
-        />
+        android:layout_height="50dp"
+        android:layout_margin="20dp"
+        android:insetTop="0dp"
+        android:insetBottom="0dp"
+        app:cornerRadius="15dp"
+        android:text="Connect email account"
+        android:textAppearance="@style/action_l"
+        android:textColor="@color/light_lightest"
+        android:backgroundTint="@color/highlight_darkest"/>
 
-    <Button
-        android:id="@+id/fetch_email_ids"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Fetch Email IDs"
-        android:layout_margin="50sp"
-        app:layout_constraintTop_toBottomOf="@+id/button_add_account"
-        />
-
-    <Button
-        android:id="@+id/fetch_email_content"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Fetch Email Content"
-        android:layout_margin="50sp"
-        app:layout_constraintTop_toBottomOf="@+id/fetch_email_ids"
-        />
-
-    <Button
-        android:id="@+id/print_email_content"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Print Email Content"
-        android:layout_margin="50sp"
-        app:layout_constraintTop_toBottomOf="@+id/fetch_email_content"
-        />
-
-    <Button
-        android:id="@+id/test_mail"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Test Mail"
-        android:layout_margin="50sp"
-        app:layout_constraintTop_toBottomOf="@+id/fetch_email_content"
-        />
-
-    <Button
+    <com.google.android.material.button.MaterialButton
         android:id="@+id/log_out"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="50dp"
+        android:layout_marginHorizontal="20dp"
+        android:insetTop="0dp"
+        android:insetBottom="0dp"
+        app:cornerRadius="15dp"
         android:text="Log out"
-        android:layout_margin="50sp"
-        app:layout_constraintTop_toBottomOf="@+id/test_mail"
-        />
-</androidx.constraintlayout.widget.ConstraintLayout>
+        android:textAppearance="@style/action_l"
+        android:textColor="@color/light_lightest"
+        android:backgroundTint="@color/highlight_darkest"/>
+</LinearLayout>
