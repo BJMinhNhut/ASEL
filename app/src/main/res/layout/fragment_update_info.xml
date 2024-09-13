@@ -36,9 +36,9 @@
             android:layout_width="25dp"
             android:layout_height="25dp"
             android:layout_gravity="center|end"
-            android:background="?android:attr/selectableItemBackground"
             android:src="@drawable/ic_camera"
-            app:tint="@color/highlight_darkest" />
+            app:tint="@color/highlight_darkest"
+            android:background="?android:attr/selectableItemBackground"/>
     </FrameLayout>
 
     <ScrollView
@@ -155,6 +155,9 @@
                 app:boxCornerRadiusTopEnd="15dp"
                 app:boxCornerRadiusBottomStart="15dp"
                 app:boxCornerRadiusBottomEnd="15dp"
+                app:endIconDrawable="@drawable/ic_calendar_search"
+                app:endIconMode="custom"
+                app:endIconTint="@color/highlight_darkest"
                 app:boxStrokeColor="@color/highlight_darkest"
                 app:hintTextColor="@color/highlight_darkest"
                 app:cursorColor="@color/dark_darkest">

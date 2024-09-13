@@ -186,9 +186,7 @@ public class EmailsFragment extends Fragment {
                             eventRepository.setPublishEvent(eventId, true);
                             moveMailToRead(viewHolder.getBindingAdapterPosition(), mail);
 
-                            //TODO: publish event of mail
-
-                            Snackbar.make(emailListRecyclerView, "Event of email added to calendar", Snackbar.LENGTH_LONG)
+                            Snackbar snackbar = Snackbar.make(emailListRecyclerView, "Event of email added to calendar", Snackbar.LENGTH_LONG)
                                     .setAction("Undo", v -> {
                                         // Undo the action (implement undo logic here)
                                         read.removeMail(read.size() - 1);
@@ -199,9 +197,14 @@ public class EmailsFragment extends Fragment {
                                             adapter.removeMail(adapter.mailList.size() - 1);
                                         }
                                         mailRepository.updateRead(removedMail.getId(), false);
+                                    });
 
-                                        // TODO: unpublish event of mail
-                                    }).show();
+                            View snackbarView = snackbar.getView();
+                            ViewGroup.MarginLayoutParams params = (ViewGroup.MarginLayoutParams) snackbarView.getLayoutParams();
+                            params.setMargins(params.leftMargin, params.topMargin, params.rightMargin, params.bottomMargin + 180); // Adjust the bottom margin as needed
+                            snackbarView.setLayoutParams(params);
+
+                            snackbar.show();
                         }
                     }
                 };
