@@ -14,7 +14,6 @@ import java.util.List;
 
 public class EventRepository {
     private final DatabaseHelper dbHelper;
-    private final SQLiteQueryBuilder queryBuilder = new SQLiteQueryBuilder();
     private final String COLUMN_MAIL_ID = DatabaseContract.Mails.TABLE_NAME + "." + DatabaseContract.Mails._ID;
     private final String COLUMN_EVENT_ID = DatabaseContract.Events.TABLE_NAME + "." + DatabaseContract.Events._ID;
     private final String COLUMN_EVENT_TITLE = DatabaseContract.Events.TABLE_NAME + "." + DatabaseContract.Events.COLUMN_NAME_TITLE;
@@ -44,7 +43,7 @@ public class EventRepository {
     // How to use this class:
     // EventRepository eventRepository = new EventRepository(getApplicationContext(), accountViewModel.getUserEmail());
     public EventRepository(Context context, String userEmail) {
-        dbHelper = new DatabaseHelper(context, userEmail);
+        dbHelper = DatabaseHelper.getInstance(context, userEmail);
     }
 
     // insert and return the id of the event
@@ -107,7 +106,6 @@ public class EventRepository {
             if (cursor != null) {
                 cursor.close();
             }
-            db.close();
         }
 
         return events;
@@ -138,7 +136,6 @@ public class EventRepository {
             if (cursor != null) {
                 cursor.close();
             }
-            db.close();
         }
 
         return events;
