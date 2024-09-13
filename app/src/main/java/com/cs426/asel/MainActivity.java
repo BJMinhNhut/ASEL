@@ -27,6 +27,7 @@ import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.app.AppCompatDelegate;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentActivity;
 import androidx.fragment.app.FragmentManager;
@@ -106,6 +107,7 @@ public class MainActivity extends AppCompatActivity {
         // Initialize ViewModels (AccountViewModel, EmailsViewModel)
         initializeViewModels();
         loadStudentInfoToViewModel();
+        loadTheme();
     }
 
     private static final int HOME_FRAGMENT_POSITION = 0; // Position of HomeFragment in ViewPager2
@@ -195,6 +197,18 @@ public class MainActivity extends AppCompatActivity {
         infoViewModel.setFaculty(sharedPreferences.getString("faculty", ""));
         infoViewModel.setDegree(sharedPreferences.getString("degree", ""));
         infoViewModel.setAvatar(sharedPreferences.getString("avatar_image", "")); // Set avatar
+    }
+
+    private void loadTheme() {
+        SharedPreferences sharedPreferences = getSharedPreferences("Settings", Context.MODE_PRIVATE);
+        String savedTheme = sharedPreferences.getString("theme", "light");
+        if (savedTheme.equals("light")) {
+            AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO);
+        } else if (savedTheme.equals("dark")) {
+            AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES);
+        } else {
+            AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM);
+        }
     }
 
     public interface PermissionCallback {
