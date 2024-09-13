@@ -2,6 +2,7 @@ package com.cs426.asel.backend;
 
 
 import android.content.Context;
+import android.graphics.Bitmap;
 import android.util.Log;
 
 import com.cs426.asel.BuildConfig;
@@ -32,6 +33,8 @@ import com.google.common.util.concurrent.FutureCallback;
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
 
+import javax.annotation.Nullable;
+
 public class ChatGPTUtils {
     private static final String MODEL = "gemini-1.5-flash";
     private static final GenerationConfig CONFIG;
@@ -51,10 +54,15 @@ public class ChatGPTUtils {
         CONFIG = builder.build();
     }
 
-    public static ListenableFuture<GenerateContentResponse> getResponse(String prompt) {
+    public static ListenableFuture<GenerateContentResponse> getResponse(String prompt, Bitmap... images) {
         GenerativeModel gm = new GenerativeModel(MODEL, getAPIKey(), CONFIG);
         GenerativeModelFutures model = GenerativeModelFutures.from(gm);
-        Content content = new Content.Builder().addText(prompt).build();
+        Content content;
+        if (images.length > 0)  {
+            content = new Content.Builder().addText(prompt).addImage(images[0]).build();
+        } else {
+            content = new Content.Builder().addText(prompt).build();
+        }
 
         return model.generateContent(content);
     }

@@ -35,7 +35,7 @@
             app:tabMode="fixed"
             app:tabGravity="fill"
             app:tabIndicatorGravity="stretch"
-            app:tabSelectedTextAppearance="@style/heading_l"
+            app:tabSelectedTextAppearance="@style/heading_m"
             app:tabTextAppearance="@style/body_m"
             app:tabIndicator="@drawable/tab_indicator"
             app:tabIndicatorColor="@color/light_lightest"
