@@ -233,13 +233,11 @@ public class Mail {
         MailInfo mailInfo;
         try {
             mailInfo = new ObjectMapper().readValue(content, MailInfo.class);
-            Log.d("Mail", "Mail event: " + mailInfo.location);
         } catch (Exception e) {
             Log.e("Mail", "Error parsing JSON");
             e.printStackTrace();
             mailInfo = new MailInfo();
         }
-
 
         mSummary = mailInfo.summary;
         mTag = mailInfo.tag;

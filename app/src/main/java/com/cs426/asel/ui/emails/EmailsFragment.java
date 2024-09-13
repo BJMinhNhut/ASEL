@@ -282,7 +282,6 @@ public class EmailsFragment extends Fragment {
         @Override
         public void onBindViewHolder(@NonNull EmailViewHolder holder, int position) {
             holder.itemView.setOnClickListener(v -> {
-                // TODO: Pass email ID to the fragment
                 Bundle bundle = new Bundle();
                 bundle.putString("emailId", mailList.getMail(position).getId()); // Replace 1 with the actual email ID you want to pass
 

@@ -6,11 +6,9 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
-import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -23,13 +21,13 @@ import com.cs426.asel.backend.EventRepository;
 import com.cs426.asel.backend.Utility;
 import com.cs426.asel.databinding.FragmentEventsBinding;
 import com.cs426.asel.ui.decoration.SpaceItemDecoration;
+import com.cs426.asel.ui.emails.EmailDetailFragment;
 import com.google.android.material.tabs.TabLayout;
 
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
-import java.util.Random;
 
 public class EventsFragment extends Fragment {
     private FragmentEventsBinding binding;
@@ -48,7 +46,7 @@ public class EventsFragment extends Fragment {
         eventRecyclerView.addItemDecoration(new SpaceItemDecoration(20));
 
         eventRepository = new EventRepository(requireContext(), Utility.getUserEmail(requireContext()));
-        EventList allEvents = eventRepository.getEventsByPublished(true);
+        EventList allEvents = eventRepository.getEventsByPublished(true, "from_datetime", true);
         Log.d("EventsFragment", "allEvents size:" + allEvents.getSize());
         upcoming = new EventList();
         ongoing = new EventList();
@@ -101,10 +99,18 @@ public class EventsFragment extends Fragment {
             }
         });
 
+        binding.newEventFab.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                FragmentTransaction ft = getParentFragmentManager().beginTransaction();
+                ft.replace(R.id.eventsContainer, new EventEditorFragment()).addToBackStack(null).commit();
+            }
+        });
+
         return root;
     }
 
-    public static class EventAdapter extends RecyclerView.Adapter<EventAdapter.EventViewHolder> {
+    class EventAdapter extends RecyclerView.Adapter<EventAdapter.EventViewHolder> {
         private EventList eventList;
         public EventAdapter(EventList eventList) {
             this.eventList = eventList;
@@ -119,7 +125,7 @@ public class EventsFragment extends Fragment {
             notifyDataSetChanged();
         }
 
-        public static class EventViewHolder extends RecyclerView.ViewHolder {
+        class EventViewHolder extends RecyclerView.ViewHolder {
             public TextView startDay, startMonth, toDate, endDay, endMonth;
             public TextView title, time, location, description;
 
@@ -206,6 +212,16 @@ public class EventsFragment extends Fragment {
             holder.time.setText(time);
             holder.location.setText(event.getLocation());
             holder.description.setText(event.getDescription());
+
+            holder.itemView.setOnClickListener(v -> {
+                Bundle bundle = new Bundle();
+                bundle.putString("emailId", eventList.getEvent(position).getMailID()); // Replace 1 with the actual email ID you want to pass
+
+                FragmentTransaction ft = getParentFragmentManager().beginTransaction();
+                EventEditorFragment fragment = new EventEditorFragment();
+                fragment.setArguments(bundle);
+                ft.replace(R.id.eventsContainer, fragment).addToBackStack(null).commit();
+            });
         }
 
         @Override

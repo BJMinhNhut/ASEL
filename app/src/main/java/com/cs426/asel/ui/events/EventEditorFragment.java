@@ -14,14 +14,22 @@ import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 
+import com.cs426.asel.backend.Event;
+import com.cs426.asel.backend.EventRepository;
+import com.cs426.asel.backend.Mail;
+import com.cs426.asel.backend.MailRepository;
+import com.cs426.asel.backend.Utility;
 import com.cs426.asel.databinding.FragmentEventEditorBinding;
 import com.google.android.material.tabs.TabLayout;
 import com.google.android.material.textfield.TextInputEditText;
+
+import java.time.Instant;
 
 public class EventEditorFragment extends Fragment {
 
     private FragmentEventEditorBinding binding;
     private int eventType = 0;
+    private Event curEvent;
 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -116,10 +124,6 @@ public class EventEditorFragment extends Fragment {
             }
         });
 
-        binding.saveEventButton.setOnClickListener(v -> {
-            // TODO: Save event
-        });
-
         binding.eventTypeTab.addOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
             @Override
             public void onTabSelected(TabLayout.Tab tab) {
@@ -169,7 +173,79 @@ public class EventEditorFragment extends Fragment {
             }
         });
 
+        binding.saveEventButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                EventRepository eventRepository = new EventRepository(requireContext(), Utility.getUserEmail(requireContext()));
+
+                putEventInfo();
+                // If event not int db, insert then publish, else find the event and publish
+                if (curEvent.getID() == -1) {
+                    curEvent.setIsPublished(true);
+                    eventRepository.insertEvent(curEvent);
+                } else {
+                    eventRepository.updateEvent(curEvent);
+                }
+            }
+        });
+
+        Bundle extras = getArguments();
+
+        if (extras == null || !extras.containsKey("emailId") || extras.getString("emailId") == null) {
+            curEvent = new Event();
+        } else {
+            Mail mail = new MailRepository(requireContext(), Utility.getUserEmail(requireContext())).getMailById(extras.getString("emailId"));
+            curEvent = mail.getEvent();
+            autofillEvent();
+        }
+
         return root;
+    }
+
+    private void putEventInfo() {
+        curEvent.setTitle(binding.title.getText().toString());
+        curEvent.setDescription(binding.descriptionText.getText().toString());
+        curEvent.setLocation(binding.locationText.getText().toString());
+    }
+
+    private void autofillEvent() {
+        Bundle extras = getArguments();
+        if (extras == null || !extras.containsKey("emailId") || extras.getString("emailId") == null) {
+            return;
+        }
+
+        String emailId = extras.getString("emailId");
+        String userEmail = extras.getString("userEmail");
+        Mail mail = new MailRepository(requireContext(), Utility.getUserEmail(requireContext())).getMailById(emailId);
+        if (mail == null) {
+            return;
+        }
+
+        Instant fromDateTime = mail.getEvent().getStartTime();
+        String fromDateString = Utility.parseInstant(fromDateTime, "dd/MM/yyyy");
+        String fromTimeString = Utility.parseInstant(fromDateTime, "HH:mm");
+
+        binding.startDateText.setText(fromDateString);
+        binding.startTimeText.setText(fromTimeString);
+
+        int duration = mail.getEvent().getDuration();
+        if (duration > 0) {
+            switchToEventLayout();
+            Instant toDateTime = fromDateTime.plusSeconds(60 * duration);
+            String toDateString = Utility.parseInstant(toDateTime, "dd/MM/yyyy");
+            String toTimeString = Utility.parseInstant(toDateTime, "HH:mm");
+
+            binding.endDateText.setText(toDateString);
+            binding.endTimeText.setText(toTimeString);
+        } else {
+            binding.endDateText.setText(fromDateString);
+            binding.endTimeText.setText(fromTimeString);
+            switchToTaskLayout();
+        }
+
+        binding.locationText.setText(mail.getEvent().getLocation());
+        binding.title.setText(mail.getTitle());
+        binding.descriptionText.setText(mail.getSummary());
     }
 
     private void chooseDate(TextInputEditText dateEditText) {
