@@ -119,6 +119,7 @@
             android:orientation="horizontal">
 
             <ImageView
+                android:id="@+id/time_icon"
                 android:layout_width="20dp"
                 android:layout_height="20dp"
                 android:layout_gravity="center"
@@ -143,6 +144,7 @@
             android:layout_marginTop="2dp">
 
             <ImageView
+                android:id="@+id/location_icon"
                 android:layout_width="20dp"
                 android:layout_height="20dp"
                 android:layout_gravity="center"

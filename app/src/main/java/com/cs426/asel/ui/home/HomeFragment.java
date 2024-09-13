@@ -20,17 +20,13 @@ import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.cs426.asel.R;
-import com.cs426.asel.backend.Event;
-import com.cs426.asel.backend.EventList;
 import com.cs426.asel.databinding.FragmentHomeBinding;
 import com.cs426.asel.ui.account.InfoViewModel;
 import com.cs426.asel.ui.account.UpdateInfoFragment;
-import com.cs426.asel.ui.events.EventsListFragment;
 import com.google.api.services.gmail.Gmail;
 import com.google.zxing.BarcodeFormat;
 import com.google.zxing.MultiFormatWriter;
 import com.google.zxing.common.BitMatrix;
-import com.journeyapps.barcodescanner.BarcodeEncoder;
 
 import java.time.Instant;
 import java.time.LocalDateTime;

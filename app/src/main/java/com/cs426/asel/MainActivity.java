@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.util.Log;
 import android.widget.Toast;
 
 import com.cs426.asel.ui.account.AccountContainer;
@@ -56,6 +57,7 @@ public class MainActivity extends AppCompatActivity {
         viewPager.setAdapter(new ScreenSlidePagerAdapter(this));
         navView.setOnItemSelectedListener(item -> {
             int id = item.getItemId();
+
             if (id == R.id.navigation_home) {
                 viewPager.setCurrentItem(0);
                 return true;
@@ -192,5 +194,9 @@ public class MainActivity extends AppCompatActivity {
         infoViewModel.setFaculty(sharedPreferences.getString("faculty", ""));
         infoViewModel.setDegree(sharedPreferences.getString("degree", ""));
         infoViewModel.setAvatar(sharedPreferences.getString("avatar_image", "")); // Set avatar
+    }
+
+    public interface PermissionCallback {
+        void onPermissionResult(boolean isGranted);
     }
 }

@@ -25,10 +25,24 @@
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:layout_gravity="center"
             android:text="Personal information"
             android:textAlignment="center"
             android:textAppearance="@style/heading_l"
             android:textColor="@color/dark_darkest"/>
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/camera_button"
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            android:layout_gravity="end|center_vertical"
+            android:insetLeft="5dp"
+            android:insetRight="5dp"
+            android:backgroundTint="@color/highlight_darkest"
+            app:cornerRadius="10dp"
+            app:iconPadding="0dp"
+            app:iconGravity="textStart"
+            app:icon="@drawable/ic_camera"/>
     </FrameLayout>
 
     <ScrollView
@@ -248,8 +262,6 @@
         android:insetTop="0dp"
         android:insetBottom="0dp"
         app:cornerRadius="15dp"
-        app:elevation="10dp"
-        android:elevation="10dp"
         android:text="Save changes"
         android:textAppearance="@style/action_l"
         android:textColor="@color/light_lightest"
