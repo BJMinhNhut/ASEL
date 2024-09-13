@@ -275,16 +275,21 @@ public class EventEditorFragment extends Fragment {
 
         if (!binding.allDaySwitch.isChecked()) {
             if (binding.startTimeText.getText() == null
-                  || binding.startTimeText.getText().toString().isEmpty()
-                  || binding.endTimeText == null
-                  || binding.endTimeText.getText().toString().isEmpty()) {
+                  || binding.startTimeText.getText().toString().isEmpty()) {
               return false;
             }
+
         }
+
+
 
         if (binding.eventTypeTab.getSelectedTabPosition() == 0) {
             if (binding.endDateText.getText() == null || binding.endDateText.getText().toString().isEmpty())
                 return false; // Event must have end date
+            if (!binding.allDaySwitch.isChecked() && (binding.endTimeText.getText() == null
+                    || binding.endTimeText.getText().toString().isEmpty())) {
+                return false;
+            }
         }
 
         if (binding.repeatModeText.getText() == null || binding.repeatModeText.getText().toString().isEmpty())
