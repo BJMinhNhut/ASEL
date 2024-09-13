@@ -125,8 +125,6 @@
         android:insetTop="0dp"
         android:insetBottom="0dp"
         app:cornerRadius="15dp"
-        app:elevation="10dp"
-        android:elevation="10dp"
         android:text="Create event"
         android:textAppearance="@style/action_l"
         android:textColor="@color/light_lightest"

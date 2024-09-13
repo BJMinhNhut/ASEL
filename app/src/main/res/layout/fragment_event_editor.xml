@@ -53,6 +53,7 @@
             app:tabIndicator="@drawable/tab_indicator"
             app:tabIndicatorColor="@color/light_lightest"
             app:tabSelectedTextColor="@color/dark_darkest"
+            app:tabTextColor="@color/dark_darkest"
             app:tabRippleColor="@color/light_medium"
             app:tabIndicatorAnimationMode="elastic">
 
@@ -337,8 +338,6 @@
         android:insetTop="0dp"
         android:insetBottom="0dp"
         app:cornerRadius="15dp"
-        app:elevation="10dp"
-        android:elevation="10dp"
         android:text="Save event"
         android:textAppearance="@style/action_l"
         android:textColor="@color/light_lightest"
