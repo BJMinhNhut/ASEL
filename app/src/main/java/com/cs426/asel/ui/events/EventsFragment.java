@@ -45,26 +45,26 @@ public class EventsFragment extends Fragment {
         eventRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         eventRecyclerView.addItemDecoration(new SpaceItemDecoration(20));
 
-        eventRepository = new EventRepository(requireContext(), Utility.getUserEmail(requireContext()));
-        EventList allEvents = eventRepository.getEventsByPublished(true, "from_datetime", true);
-        Log.d("EventsFragment", "allEvents size:" + allEvents.getSize());
-        upcoming = new EventList();
-        ongoing = new EventList();
-        completed = new EventList();
-
-        for (int i = 0; i < allEvents.getSize(); i++) {
-            Event event = allEvents.getEvent(i);
-            Instant startTime = event.getStartTime();
-            if (startTime.isAfter(Instant.now())) {
-                   upcoming.addEvent(event);
-            } else if (startTime.isBefore(Instant.now())) {
-                if (startTime.plusSeconds(event.getDuration() * 60).isAfter(Instant.now())) {
-                    ongoing.addEvent(event);
-                } else {
-                    completed.addEvent(event);
-                }
-            }
-        }
+//        eventRepository = new EventRepository(requireContext(), Utility.getUserEmail(requireContext()));
+//        EventList allEvents = eventRepository.getEventsByPublished(true, "from_datetime", true);
+//        Log.d("EventsFragment", "allEvents size:" + allEvents.getSize());
+//        upcoming = new EventList();
+//        ongoing = new EventList();
+//        completed = new EventList();
+//
+//        for (int i = 0; i < allEvents.getSize(); i++) {
+//            Event event = allEvents.getEvent(i);
+//            Instant startTime = event.getStartTime();
+//            if (startTime.isAfter(Instant.now())) {
+//                   upcoming.addEvent(event);
+//            } else if (startTime.isBefore(Instant.now())) {
+//                if (startTime.plusSeconds(event.getDuration() * 60).isAfter(Instant.now())) {
+//                    ongoing.addEvent(event);
+//                } else {
+//                    completed.addEvent(event);
+//                }
+//            }
+//        }
 
         EventAdapter eventAdapter = new EventAdapter();
         eventRecyclerView.setAdapter(eventAdapter);
@@ -230,6 +230,32 @@ public class EventsFragment extends Fragment {
                 return 0;
             }
             return eventList.getSize();
+        }
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        Log.d("EventsFragment", "onResume");
+        eventRepository = new EventRepository(requireContext(), Utility.getUserEmail(requireContext()));
+        EventList allEvents = eventRepository.getEventsByPublished(true, "from_datetime", true);
+        Log.d("EventsFragment", "allEvents size:" + allEvents.getSize());
+        upcoming = new EventList();
+        ongoing = new EventList();
+        completed = new EventList();
+
+        for (int i = 0; i < allEvents.getSize(); i++) {
+            Event event = allEvents.getEvent(i);
+            Instant startTime = event.getStartTime();
+            if (startTime.isAfter(Instant.now())) {
+                upcoming.addEvent(event);
+            } else if (startTime.isBefore(Instant.now())) {
+                if (startTime.plusSeconds(event.getDuration() * 60L).isAfter(Instant.now())) {
+                    ongoing.addEvent(event);
+                } else {
+                    completed.addEvent(event);
+                }
+            }
         }
     }
 
