@@ -122,7 +122,7 @@
                 android:id="@+id/time_icon"
                 android:layout_width="20dp"
                 android:layout_height="20dp"
-                android:layout_gravity="center"
+                android:layout_gravity="center_horizontal"
                 android:src="@drawable/ic_clock"
                 app:tint="@color/dark_darkest"/>
 
@@ -147,7 +147,7 @@
                 android:id="@+id/location_icon"
                 android:layout_width="20dp"
                 android:layout_height="20dp"
-                android:layout_gravity="center"
+                android:layout_gravity="center_horizontal"
                 android:src="@drawable/ic_map_pin"/>
 
             <TextView
