@@ -46,20 +46,36 @@ public class EventEditorFragment extends Fragment {
             private void showRepeatOptions() {
                 String[] options = new String[]{"Does not repeat", "Daily", "Weekly", "Monthly", "Annually"};
                 String selected = binding.repeatModeText.getText().toString();
+                int selectedIndex = 0; // Default to the first option
+
+                // Find the index of the current selected option if it matches any in the options
+                for (int i = 0; i < options.length; i++) {
+                    if (options[i].equals(selected)) {
+                        selectedIndex = i;
+                        break;
+                    }
+                }
 
                 AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
                 builder.setTitle("Repeat mode:");
-                builder.setSingleChoiceItems(options, 0, (dialog, which) -> {
-                    binding.repeatModeText.setText(options[which]);
+
+                // Use an array to hold the selected index inside the listener
+                final int[] tempSelectedIndex = {selectedIndex};
+
+                builder.setSingleChoiceItems(options, selectedIndex, (dialog, which) -> {
+                    tempSelectedIndex[0] = which;
                 });
 
                 builder.setPositiveButton("OK", (dialog, which) -> {
+                    // Set the text to the option that was selected
+                    binding.repeatModeText.setText(options[tempSelectedIndex[0]]);
                     dialog.dismiss();
                 });
 
                 builder.show();
             }
         });
+
 
         binding.remindBeforeText.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -70,14 +86,29 @@ public class EventEditorFragment extends Fragment {
             private void showReminderOptions() {
                 String[] options = new String[]{"5 minutes", "15 minutes", "30 minutes", "1 hour", "1 day"};
                 String selected = binding.remindBeforeText.getText().toString();
+                int selectedIndex = 0; // Default to the first option
+
+                // Find the index of the current selected option if it matches any in the options
+                for (int i = 0; i < options.length; i++) {
+                    if (options[i].equals(selected)) {
+                        selectedIndex = i;
+                        break;
+                    }
+                }
 
                 AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
                 builder.setTitle("Remind me before:");
-                builder.setSingleChoiceItems(options, 0, (dialog, which) -> {
-                    binding.remindBeforeText.setText(options[which]);
+
+                // Use an array to hold the selected index inside the listener
+                final int[] tempSelectedIndex = {selectedIndex};
+
+                builder.setSingleChoiceItems(options, selectedIndex, (dialog, which) -> {
+                    tempSelectedIndex[0] = which;
                 });
 
                 builder.setPositiveButton("OK", (dialog, which) -> {
+                    // Set the text to the option that was selected
+                    binding.remindBeforeText.setText(options[tempSelectedIndex[0]]);
                     dialog.dismiss();
                 });
 
