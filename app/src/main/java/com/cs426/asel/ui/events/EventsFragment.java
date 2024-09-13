@@ -247,6 +247,9 @@ public class EventsFragment extends Fragment {
         for (int i = 0; i < allEvents.getSize(); i++) {
             Event event = allEvents.getEvent(i);
             Instant startTime = event.getStartTime();
+            if (startTime == null) {
+                continue;
+            }
             if (startTime.isAfter(Instant.now())) {
                 upcoming.addEvent(event);
             } else if (startTime.isBefore(Instant.now())) {
