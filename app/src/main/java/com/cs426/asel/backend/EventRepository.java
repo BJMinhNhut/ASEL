@@ -35,6 +35,7 @@ public class EventRepository {
             DatabaseContract.Events.COLUMN_NAME_REPEAT_END,
             DatabaseContract.Events.COLUMN_NAME_REMIND_TIME,
             DatabaseContract.Events.COLUMN_NAME_ALL_DAY,
+            DatabaseContract.Events.COLUMN_NAME_PUBLISHED,
             COLUMN_MAIL_ID
     };
 
