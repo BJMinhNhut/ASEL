@@ -8,19 +8,26 @@ import android.util.Log;
 public class DatabaseHelper extends SQLiteOpenHelper {
     private static final String DB_NAME = "_db_asel.db";
     private static final int DB_VERSION = 2;
-    private Context mContext;
+    private static DatabaseHelper mInstance = null;
 
 
     // How to use this class:
-    // DatabaseHelper dbHelper = new DatabaseHelper(getApplicationContext(), accountViewModel.getUserEmail());
-    public DatabaseHelper(Context context, String userEmail) {
+    // DatabaseHelper dbHelper = DatabaseHelper.getInstance(getApplicationContext(), accountViewModel.getUserEmail());
+    private DatabaseHelper(Context context, String userEmail) {
         super(context, userEmail + DB_NAME, null, DB_VERSION);
         Log.println(Log.INFO, "DatabaseHelper", "Loading database for user: " + userEmail);
-        mContext = context;
     }
 
-    public Context getContext() {
-        return mContext;
+    // https://stackoverflow.com/questions/18147354/sqlite-connection-leaked-although-everything-closed/18148718#18148718
+    public static DatabaseHelper getInstance(Context context, String userEmail) {
+
+        // Use the application context, which will ensure that you
+        // don't accidentally leak an Activity's context.
+        // See this article for more information: http://bit.ly/6LRzfx
+        if (mInstance == null) {
+            mInstance = new DatabaseHelper(context.getApplicationContext(), userEmail);
+        }
+        return mInstance;
     }
 
     /**

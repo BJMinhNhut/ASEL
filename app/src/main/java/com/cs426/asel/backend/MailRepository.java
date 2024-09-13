@@ -12,12 +12,14 @@ import java.util.List;
 public class MailRepository {
     private final DatabaseHelper dbHelper;
     private final String mUserMail;
+    private final Context mContext;
 
     // How to use this class:
     // MailRepository mailRepository = new MailRepository(getApplicationContext(), Utility.getUserEmail(context));
     public MailRepository(Context context, String userMail) {
-        dbHelper = new DatabaseHelper(context, userMail);
+        dbHelper = DatabaseHelper.getInstance(context, userMail);
         mUserMail = userMail;
+        mContext = context;
     }
 
     public final String[] mailProjection = {
@@ -38,7 +40,7 @@ public class MailRepository {
         db.beginTransaction();
         long mailId = -1;
         try {
-            EventRepository eventRepository = new EventRepository(dbHelper.getContext(), mUserMail);
+            EventRepository eventRepository = new EventRepository(mContext, mUserMail);
             long eventId = eventRepository.insertEvent(mail.getEvent());
             if (eventId == -1) {
                 Log.println(Log.ERROR, "MailRepository", "Failed to insert event for mail: " + mail.getTitle());
@@ -114,7 +116,6 @@ public class MailRepository {
             if (cursor != null) {
                 cursor.close();
             }
-            db.close();
         }
         return mailList;
     }
@@ -155,7 +156,6 @@ public class MailRepository {
             if (cursor != null) {
                 cursor.close();
             }
-            db.close();
         }
         return mailList;
     }
@@ -189,7 +189,6 @@ public class MailRepository {
             if (cursor != null) {
                 cursor.close();
             }
-            db.close();
         }
         return mail;
     }
@@ -226,7 +225,6 @@ public class MailRepository {
             if (cursor != null) {
                 cursor.close();
             }
-            db.close();
         }
         return mailList;
     }
@@ -279,7 +277,6 @@ public class MailRepository {
             Log.e("MailRepository", "Error checking if mail exists: " + id, e);
             return false;
         } finally {
-            db.close();
         }
     }
 
