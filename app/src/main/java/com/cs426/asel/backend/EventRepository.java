@@ -17,13 +17,15 @@ public class EventRepository {
     private final SQLiteQueryBuilder queryBuilder = new SQLiteQueryBuilder();
     private final String COLUMN_MAIL_ID = DatabaseContract.Mails.TABLE_NAME + "." + DatabaseContract.Mails._ID;
     private final String COLUMN_EVENT_ID = DatabaseContract.Events.TABLE_NAME + "." + DatabaseContract.Events._ID;
-    private final String EVENT_MAIL_JOIN = DatabaseContract.Events.TABLE_NAME +
+    private final String COLUMN_EVENT_TITLE = DatabaseContract.Events.TABLE_NAME + "." + DatabaseContract.Events.COLUMN_NAME_TITLE;
+    final String EVENT_MAIL_JOIN = DatabaseContract.Events.TABLE_NAME +
             " LEFT JOIN " + DatabaseContract.Mails.TABLE_NAME +
             " ON " + COLUMN_EVENT_ID +
             " = " + DatabaseContract.Mails.TABLE_NAME + "." + DatabaseContract.Mails.COLUMN_NAME_EVENT_ID;
+
     private final String[] eventProjection = {
             COLUMN_EVENT_ID,
-            DatabaseContract.Events.COLUMN_NAME_TITLE,
+            COLUMN_EVENT_TITLE,
             DatabaseContract.Events.COLUMN_NAME_DESCRIPTION,
             DatabaseContract.Events.COLUMN_NAME_FROM_DATETIME,
             DatabaseContract.Events.COLUMN_NAME_DURATION,
@@ -141,7 +143,7 @@ public class EventRepository {
     private Event getEventByCursor(Cursor cursor) {
         int eventId = cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_EVENT_ID));
         String mailId = cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_MAIL_ID));
-        String title = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseContract.Events.COLUMN_NAME_TITLE));
+        String title = cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_EVENT_TITLE));
         String description = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseContract.Events.COLUMN_NAME_DESCRIPTION));
 
         String fromDatetimeString = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseContract.Events.COLUMN_NAME_FROM_DATETIME));

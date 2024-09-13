@@ -63,6 +63,7 @@ public class Mail {
         mReceiver = "";
         mContent = "";
         mSummary = "";
+        mTag = "";
         mEvent = new Event();
         mIsRead = false;
         mReceivedTime = Instant.now();
@@ -311,6 +312,10 @@ public class Mail {
 
     public Instant getReceivedTime() {
         return mReceivedTime;
+    }
+
+    public String getTag() {
+        return mTag;
     }
 
     public boolean isRead() {
