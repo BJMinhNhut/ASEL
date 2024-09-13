@@ -31,18 +31,14 @@
             android:textAppearance="@style/heading_l"
             android:textColor="@color/dark_darkest"/>
 
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/camera_button"
-            android:layout_width="50dp"
-            android:layout_height="50dp"
-            android:layout_gravity="end|center_vertical"
-            android:insetLeft="5dp"
-            android:insetRight="5dp"
-            android:backgroundTint="@color/highlight_darkest"
-            app:cornerRadius="10dp"
-            app:iconPadding="0dp"
-            app:iconGravity="textStart"
-            app:icon="@drawable/ic_camera"/>
+        <ImageView
+            android:id="@+id/buttonCamera"
+            android:layout_width="25dp"
+            android:layout_height="25dp"
+            android:layout_gravity="center|end"
+            android:src="@drawable/ic_camera"
+            app:tint="@color/highlight_darkest"
+            android:background="?android:attr/selectableItemBackground"/>
     </FrameLayout>
 
     <ScrollView
