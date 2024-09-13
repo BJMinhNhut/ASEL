@@ -114,6 +114,7 @@ public class MailRepository {
             if (cursor != null) {
                 cursor.close();
             }
+            db.close();
         }
         return mailList;
     }
@@ -154,6 +155,7 @@ public class MailRepository {
             if (cursor != null) {
                 cursor.close();
             }
+            db.close();
         }
         return mailList;
     }
@@ -187,6 +189,7 @@ public class MailRepository {
             if (cursor != null) {
                 cursor.close();
             }
+            db.close();
         }
         return mail;
     }
@@ -223,6 +226,7 @@ public class MailRepository {
             if (cursor != null) {
                 cursor.close();
             }
+            db.close();
         }
         return mailList;
     }
@@ -274,6 +278,8 @@ public class MailRepository {
         } catch (Exception e) {
             Log.e("MailRepository", "Error checking if mail exists: " + id, e);
             return false;
+        } finally {
+            db.close();
         }
     }
 
@@ -290,7 +296,7 @@ public class MailRepository {
         boolean isRead = cursor.getInt(cursor.getColumnIndexOrThrow(DatabaseContract.Mails.COLUMN_NAME_IS_READ)) == 1;
 
         Event event = getEventByID(id, eventID);
-        return new Mail(id, title, sender, receiver, content, summary, event, sendTime, isRead, "None");
+        return new Mail(id, title, sender, receiver, content, summary, event, sendTime, isRead, tag);
     }
 
     private Event getEventByID(String mailId, int eventID) {
