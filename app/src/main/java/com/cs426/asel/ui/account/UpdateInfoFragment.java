@@ -1,19 +1,29 @@
 package com.cs426.asel.ui.account;
 
+import static com.cs426.asel.backend.ChatGPTUtils.getResponse;
+
+import androidx.activity.result.ActivityResultCallback;
+import androidx.activity.OnBackPressedCallback;
 import androidx.activity.OnBackPressedCallback;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.cardview.widget.CardView;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
+import androidx.core.content.FileProvider;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
 import androidx.lifecycle.ViewModelProvider;
 import android.app.DatePickerDialog;
+import android.app.Dialog;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.ImageDecoder;
 import android.net.Uri;
 import android.os.Bundle;
 import androidx.annotation.NonNull;
@@ -22,6 +32,7 @@ import androidx.fragment.app.Fragment;
 import androidx.navigation.fragment.NavHostFragment;
 import android.provider.MediaStore;
 import android.util.Base64;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -31,27 +42,44 @@ import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import com.cs426.asel.MainActivity;
 import com.cs426.asel.R;
+import com.cs426.asel.backend.ChatGPTUtils;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.ai.client.generativeai.type.GenerateContentResponse;
 import com.google.android.material.button.MaterialButton;
+import com.google.android.material.snackbar.Snackbar;
 import com.google.android.material.textfield.TextInputEditText;
+import com.google.common.util.concurrent.FutureCallback;
+import com.google.common.util.concurrent.Futures;
+import com.google.common.util.concurrent.ListenableFuture;
 
 import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.IOException;
 import java.io.InputStream;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Locale;
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
 
-public class UpdateInfoFragment extends Fragment {
-
+public class UpdateInfoFragment extends Fragment implements MainActivity.PermissionCallback {
+    private static final int REQUEST_IMAGE_CAPTURE = 1;
     private AccountViewModel mViewModel;
     private TextInputEditText editTextFullName, editTextStudentId, editTextSchool, editTextFaculty, editTextDegree;
     private TextInputEditText textViewBirthday;
     private ImageButton imageButtonAvatar;
     private ImageView buttonBack;
-    private MaterialButton buttonSave;
+    private MaterialButton buttonSave, cameraButton;
     private Calendar calendar;
+    private boolean isCameraPermitted = false;
 
     private ActivityResultLauncher<Intent> imagePickerLauncher;
+    private ActivityResultLauncher<Intent> cameraLauncher;
 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,
@@ -66,6 +94,7 @@ public class UpdateInfoFragment extends Fragment {
 
         // Initialize UI components
         imageButtonAvatar = view.findViewById(R.id.imageButtonAvatar);
+        cameraButton = view.findViewById(R.id.camera_button);
         editTextFullName = view.findViewById(R.id.editTextFullName);
         editTextStudentId = view.findViewById(R.id.editTextStudentId);
         textViewBirthday = view.findViewById(R.id.textViewBirthday);
@@ -98,6 +127,17 @@ public class UpdateInfoFragment extends Fragment {
                 }
         );
 
+        cameraLauncher = registerForActivityResult(
+                new ActivityResultContracts.StartActivityForResult(),
+                result -> {
+                    if (result.getResultCode() == getActivity().RESULT_OK && result.getData() != null) {
+                        Bundle bundle = result.getData().getExtras();
+                        Bitmap bitmap = (Bitmap) bundle.get("data");
+                        extractUserInfo(bitmap);
+                    }
+                }
+        );
+
         // Load saved data
         loadStudentInfo();
 
@@ -105,6 +145,20 @@ public class UpdateInfoFragment extends Fragment {
         buttonBack.setOnClickListener(v -> {
             FragmentManager fm = getParentFragmentManager();
             fm.popBackStack();
+        });
+
+        requireActivity().getOnBackPressedDispatcher().addCallback(getViewLifecycleOwner(), new OnBackPressedCallback(true) {
+            @Override
+            public void handleOnBackPressed() {
+                FragmentManager fm = getParentFragmentManager();
+                fm.popBackStack();
+            }
+        });
+
+        // Set listener for camera button to open image picker
+        checkCameraPermission();
+        cameraButton.setOnClickListener(v -> {
+            openCamera();
         });
 
         // Set onClick listener for save button
@@ -122,6 +176,75 @@ public class UpdateInfoFragment extends Fragment {
                 fm.popBackStack();
             }
         });
+    }
+
+    private void checkCameraPermission() {
+        ActivityResultLauncher<String> requestPermissionLauncher =
+                registerForActivityResult(new ActivityResultContracts.RequestPermission(), isGranted -> {
+                    onPermissionResult(isGranted);
+                });
+
+        if (ContextCompat.checkSelfPermission(
+                requireContext(), android.Manifest.permission.CAMERA) ==
+                PackageManager.PERMISSION_GRANTED) {
+            isCameraPermitted = true;
+        } else {
+            requestPermissionLauncher.launch(android.Manifest.permission.CAMERA);
+        }
+    }
+
+    private void openCamera() {
+        Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+        cameraLauncher.launch(intent);
+    }
+
+    private void extractUserInfo(Bitmap bitmap) {
+        String prompt = "Extract user information from the image following the schema: { \"fullName\": str, \"studentId\": str, \"birthday\": str, \"degree\": str, \"school\": str, \"faculty\": str}. Birthday should be in the format \"dd/MM/yyyy\". Unclear info should be null.";
+        ListenableFuture<GenerateContentResponse> future = ChatGPTUtils.getResponse(prompt, bitmap);
+        Executor executor = Executors.newSingleThreadExecutor();
+        // TODO: start loading screen
+        Futures.addCallback(
+                future,
+                new FutureCallback<GenerateContentResponse>() {
+                    @Override
+                    public void onSuccess(GenerateContentResponse result) {
+                        setStudentInfo(result.getText());
+                        // TODO: stop loading screen
+                    }
+
+                    @Override
+                    public void onFailure(Throwable t) {
+                        Log.e("UpdateInfoFragment", "Error extracting user info from image");
+                    }
+                },
+                executor
+        );
+    }
+
+    private void setStudentInfo(String text) {
+        try {
+            StudentInfo studentInfo = new ObjectMapper().readValue(text, StudentInfo.class);
+            if (studentInfo.fullName == null || studentInfo.studentId == null || studentInfo.birthday == null || studentInfo.school == null || studentInfo.faculty == null) {
+                Snackbar snackbar = Snackbar.make(requireView(), "Invalid student info", Snackbar.LENGTH_SHORT);
+                snackbar.show();
+                throw new Exception("Invalid student info");
+            }
+
+            editTextFullName.setText(studentInfo.fullName);
+            editTextStudentId.setText(studentInfo.studentId);
+            textViewBirthday.setText(studentInfo.birthday);
+            editTextDegree.setText(studentInfo.degree);
+            editTextSchool.setText(studentInfo.school);
+            editTextFaculty.setText(studentInfo.faculty);
+        } catch (Exception e) {
+            e.printStackTrace();
+            requireActivity().runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    Toast.makeText(requireContext(), "Failed to extract user info from image", Toast.LENGTH_SHORT).show();
+                }
+            });
+        }
     }
 
     private void openImagePicker() {
@@ -214,4 +337,35 @@ public class UpdateInfoFragment extends Fragment {
         editor.putString("degree", editTextDegree.getText().toString());
         editor.apply();
     }
+
+    @Override
+    public void onPermissionResult(boolean isGranted) {
+        isCameraPermitted = isGranted;
+        if (!isGranted) {
+            Snackbar snackbar = Snackbar.make(requireView(), "Camera permission denied", Snackbar.LENGTH_SHORT);
+            snackbar.show();
+        }
+    }
+
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    private static class StudentInfo {
+        @JsonProperty("fullName")
+        private String fullName;
+
+        @JsonProperty("studentId")
+        private String studentId;
+
+        @JsonProperty("birthday")
+        private String birthday;
+
+        @JsonProperty("degree")
+        private String degree;
+
+        @JsonProperty("school")
+        private String school;
+
+        @JsonProperty("faculty")
+        private String faculty;
+    }
 }
+

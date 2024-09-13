@@ -24,6 +24,7 @@ public final class DatabaseContract {
         public static final String COLUMN_NAME_SENDER = "sender";
         public static final String COLUMN_NAME_RECEIVER = "receiver";
         public static final String COLUMN_NAME_SEND_TIME = "send_time";
+        public static final String COLUMN_NAME_TAG = "tag";
         public static final String COLUMN_NAME_EVENT_ID = "event_id";
         public static final String COLUMN_NAME_IS_READ = "is_read";
 
@@ -36,6 +37,7 @@ public final class DatabaseContract {
                 COLUMN_NAME_SENDER + " TEXT," +
                 COLUMN_NAME_RECEIVER + " TEXT," +
                 COLUMN_NAME_SEND_TIME + " TEXT," +
+                COLUMN_NAME_TAG + " TEXT," +
                 COLUMN_NAME_EVENT_ID + " INTEGER," +
                 COLUMN_NAME_IS_READ + " INTEGER)";
 
