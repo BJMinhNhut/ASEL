@@ -19,6 +19,7 @@ import com.cs426.asel.backend.EventList;
 import com.cs426.asel.backend.EventRepository;
 import com.cs426.asel.backend.Utility;
 import com.cs426.asel.databinding.FragmentEventsBinding;
+import com.cs426.asel.ui.decoration.SpaceItemDecoration;
 
 import java.time.Instant;
 import java.time.LocalDateTime;
@@ -59,19 +60,6 @@ public class EventsListFragment extends Fragment {
         });
 
         return view;
-    }
-
-    public static class SpaceItemDecoration extends RecyclerView.ItemDecoration {
-        private final int verticalSpaceHeight;
-
-        public SpaceItemDecoration(int verticalSpaceHeight) {
-            this.verticalSpaceHeight = verticalSpaceHeight;
-        }
-
-        @Override
-        public void getItemOffsets(@NonNull Rect outRect, @NonNull View view, @NonNull RecyclerView parent, @NonNull RecyclerView.State state) {
-            outRect.bottom = verticalSpaceHeight;
-        }
     }
 
     public static class EventAdapter extends RecyclerView.Adapter<EventAdapter.EventViewHolder> {
@@ -130,7 +118,20 @@ public class EventsListFragment extends Fragment {
 
             String time;
             if (event.isAllDay()) { // All-day
-                time = "All-day";
+                LocalDateTime endDateTime = startDateTime.plusMinutes(event.getDuration());
+
+                String endDay = dayFormatter.format(endDateTime);
+                String endMonth = monthFormatter.format(endDateTime);
+
+                if (startDateTime.getDayOfYear() == endDateTime.getDayOfYear() && startDateTime.getYear() == endDateTime.getYear()) { // Same day
+                    time = startMonth + " " + startDay + ", all-day";
+                } else {
+                    time = startMonth + " " + startDay + " - " + endMonth + " " + endDay + ", all-day";
+
+                    holder.toDate.setText("-");
+                    holder.endDay.setText(endDay);
+                    holder.endMonth.setText(endMonth);
+                }
             } else if (duration > 0) { // Event
                 LocalDateTime endDateTime = startDateTime.plusMinutes(event.getDuration());
 
@@ -139,7 +140,7 @@ public class EventsListFragment extends Fragment {
                 String endMonth = monthFormatter.format(endDateTime);
 
                 if (startDateTime.getDayOfYear() == endDateTime.getDayOfYear() && startDateTime.getYear() == endDateTime.getYear()) { // Same day
-                    time = startTime + " - " + endTime;
+                    time = startMonth + " " + startDay + ", " + startTime + " - " + endTime;
                 } else {
                     time = startMonth + " " + startDay + ", " + startTime + " - " + endMonth + " " + endDay + ", " + endTime;
 
@@ -148,7 +149,7 @@ public class EventsListFragment extends Fragment {
                     holder.endMonth.setText(endMonth);
                 }
             } else { // Task
-                time = startTime;
+                time = startMonth + " " + startDay + ", " + startTime;
             }
 
             holder.title.setText(event.getTitle());

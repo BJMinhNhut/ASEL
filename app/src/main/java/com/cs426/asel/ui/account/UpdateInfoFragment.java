@@ -4,6 +4,7 @@ import static com.cs426.asel.backend.ChatGPTUtils.getResponse;
 
 import androidx.activity.result.ActivityResultCallback;
 import androidx.activity.OnBackPressedCallback;
+import androidx.activity.OnBackPressedCallback;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.cardview.widget.CardView;
@@ -12,6 +13,7 @@ import androidx.core.content.ContextCompat;
 import androidx.core.content.FileProvider;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentManager;
+import androidx.fragment.app.FragmentTransaction;
 import androidx.lifecycle.ViewModelProvider;
 import android.app.DatePickerDialog;
 import android.app.Dialog;
@@ -71,6 +73,7 @@ public class UpdateInfoFragment extends Fragment implements MainActivity.Permiss
     private TextInputEditText editTextFullName, editTextStudentId, editTextSchool, editTextFaculty, editTextDegree;
     private TextInputEditText textViewBirthday;
     private ImageButton imageButtonAvatar;
+    private ImageView buttonBack;
     private MaterialButton buttonSave, cameraButton;
     private Calendar calendar;
     private boolean isCameraPermitted = false;
@@ -98,6 +101,7 @@ public class UpdateInfoFragment extends Fragment implements MainActivity.Permiss
         editTextSchool = view.findViewById(R.id.editTextSchool);
         editTextFaculty = view.findViewById(R.id.editTextFaculty);
         editTextDegree = view.findViewById(R.id.editTextDegree);
+        buttonBack = view.findViewById(R.id.buttonBack);
         buttonSave = view.findViewById(R.id.buttonSave);
 
         // Initialize Calendar for date picker
@@ -137,7 +141,7 @@ public class UpdateInfoFragment extends Fragment implements MainActivity.Permiss
         // Load saved data
         loadStudentInfo();
 
-        ImageView buttonBack = view.findViewById(R.id.buttonBack);
+        // Set onClick listener for back button
         buttonBack.setOnClickListener(v -> {
             FragmentManager fm = getParentFragmentManager();
             fm.popBackStack();
@@ -163,6 +167,14 @@ public class UpdateInfoFragment extends Fragment implements MainActivity.Permiss
             Toast.makeText(requireContext(), "Info saved successfully", Toast.LENGTH_SHORT).show();
             FragmentManager fm = getParentFragmentManager();
             fm.popBackStack();
+        });
+
+        requireActivity().getOnBackPressedDispatcher().addCallback(getViewLifecycleOwner(), new OnBackPressedCallback(true) {
+            @Override
+            public void handleOnBackPressed() {
+                FragmentManager fm = getParentFragmentManager();
+                fm.popBackStack();
+            }
         });
     }
 

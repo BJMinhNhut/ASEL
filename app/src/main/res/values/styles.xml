@@ -68,4 +68,12 @@
     <style name="custom_indicator" parent="Widget.Material3.BottomNavigationView.ActiveIndicator">
         <item name="android:color">@color/highlight_medium</item>
     </style>
+
+    <!-- Status bar -->
+    <style name="theme" parent="Theme.AppCompat.Light.NoActionBar">
+        <item name="colorPrimary">@color/light_medium</item>
+        <item name="colorAccent">@color/light_medium</item>
+        <item name="colorPrimaryDark">@color/black</item>
+        <item name="fontFamily">@font/inter_medium</item>
+    </style>
 </resources>

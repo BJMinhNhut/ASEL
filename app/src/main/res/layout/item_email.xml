@@ -3,7 +3,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:backgroundTint="@color/light_light"
+    android:backgroundTint="@color/light_medium"
     app:cardCornerRadius="15dp"
     app:cardElevation="0dp">
 
@@ -48,6 +48,7 @@
                 android:layout_width="0dp"
                 android:layout_height="1dp"
                 android:layout_weight="1"
+                android:layout_marginEnd="10dp"
                 android:layout_gravity="center"
                 android:background="@color/dark_medium"/>
 
@@ -55,19 +56,46 @@
                 android:id="@+id/send_time"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="10dp"
                 android:text="Send time"
                 android:textAppearance="@style/body_s"
                 android:textColor="@color/dark_darkest"/>
         </LinearLayout>
 
-        <TextView
-            android:id="@+id/subject"
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Subject"
-            android:textAppearance="@style/heading_l"
-            android:textColor="@color/highlight_darkest"/>
+            android:orientation="horizontal">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="["
+                android:textAppearance="@style/heading_l"
+                android:textColor="@color/highlight_darkest"/>
+
+            <TextView
+                android:id="@+id/tag"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Tag"
+                android:textAppearance="@style/heading_l"
+                android:textColor="@color/highlight_darkest"/>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="] "
+                android:textAppearance="@style/heading_l"
+                android:textColor="@color/highlight_darkest"/>
+
+            <TextView
+                android:id="@+id/subject"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Subject"
+                android:textAppearance="@style/heading_l"
+                android:textColor="@color/highlight_darkest"/>
+        </LinearLayout>
 
         <TextView
             android:id="@+id/summary"
@@ -120,7 +148,7 @@
                 android:layout_width="20dp"
                 android:layout_height="20dp"
                 android:layout_gravity="center"
-                android:src="@drawable/ic_location"/>
+                android:src="@drawable/ic_map_pin"/>
 
             <TextView
                 android:id="@+id/location"
