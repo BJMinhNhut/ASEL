@@ -11,17 +11,12 @@
         android:title="@string/title_events" />
 
     <item
-        android:id="@+id/navigation_notifications"
-        android:icon="@drawable/ic_bell"
-        android:title="@string/title_notifications" />
+        android:id="@+id/navigation_emails"
+        android:icon="@drawable/ic_mail"
+        android:title="@string/title_emails" />
 
     <item
         android:id="@+id/navigation_account"
         android:icon="@drawable/ic_user"
         android:title="@string/title_account" />
-
-    <item
-        android:id="@+id/navigation_emails"
-        android:icon="@drawable/ic_mail"
-        android:title="@string/title_emails" />
 </menu>

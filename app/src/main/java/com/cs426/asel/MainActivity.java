@@ -55,7 +55,7 @@ public class MainActivity extends AppCompatActivity {
         BottomNavigationView navView = binding.navView;
         ViewPager2 viewPager = binding.viewPager;
 
-        viewPager.setOffscreenPageLimit(5);
+        viewPager.setOffscreenPageLimit(4);
         viewPager.setAdapter(new ScreenSlidePagerAdapter(this));
         navView.setOnItemSelectedListener(item -> {
             int id = item.getItemId();
@@ -66,14 +66,11 @@ public class MainActivity extends AppCompatActivity {
             } else if (id == R.id.navigation_events) {
                 viewPager.setCurrentItem(1);
                 return true;
-            } else if (id == R.id.navigation_notifications) {
+            } else if (id == R.id.navigation_emails) {
                 viewPager.setCurrentItem(2);
                 return true;
             } else if (id == R.id.navigation_account) {
                 viewPager.setCurrentItem(3);
-                return true;
-            } else if (id == R.id.navigation_emails) {
-                viewPager.setCurrentItem(4);
                 return true;
             }
 
@@ -92,13 +89,10 @@ public class MainActivity extends AppCompatActivity {
                         navView.setSelectedItemId(R.id.navigation_events);
                         break;
                     case 2:
-                        navView.setSelectedItemId(R.id.navigation_notifications);
+                        navView.setSelectedItemId(R.id.navigation_emails);
                         break;
                     case 3:
                         navView.setSelectedItemId(R.id.navigation_account);
-                        break;
-                    case 4:
-                        navView.setSelectedItemId(R.id.navigation_emails);
                         break;
                 }
             }
@@ -143,11 +137,9 @@ public class MainActivity extends AppCompatActivity {
                 case 1:
                     return new EventsContainer();
                 case 2:
-                    return new NotificationsFragment();
+                    return new EmailsContainer();
                 case 3:
                     return new AccountContainer();
-                case 4:
-                    return new EmailsContainer();
                 default:
                     return new HomeFragment();
             }
@@ -155,7 +147,7 @@ public class MainActivity extends AppCompatActivity {
 
         @Override
         public int getItemCount() {
-            return 5;
+            return 4;
         }
     }
 

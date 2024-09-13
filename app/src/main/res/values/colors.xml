@@ -15,8 +15,8 @@
     <!-- Light -->
     <color name="light_darkest">#C5C6CC</color>
     <color name="light_dark">#D4D6DD</color>
-    <color name="light_light">#E8E9F1</color>
-    <color name="light_medium">#F8F9FE</color>
+    <color name="light_medium">#E8E9F1</color>
+    <color name="light_light">#F8F9FE</color>
     <color name="light_lightest">#FFFFFF</color>
 
     <!-- Dark -->

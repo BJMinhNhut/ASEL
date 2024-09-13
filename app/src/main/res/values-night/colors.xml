@@ -13,18 +13,18 @@
     <color name="highlight_lightest">#0f2545</color>
 
     <!-- Light -->
-    <color name="light_darkest">#aaabb0</color>
-    <color name="light_dark">#87888c</color>
-    <color name="light_medium">#646467</color>
-    <color name="light_light">#49494b</color>
-    <color name="light_lightest">#353639</color>
+    <color name="dark_darkest">#aaabb0</color>
+    <color name="dark_dark">#87888c</color>
+    <color name="dark_medium">#646467</color>
+    <color name="dark_light">#49494b</color>
+    <color name="dark_lightest">#353639</color>
 
     <!-- Dark -->
-    <color name="dark_darkest">#1d1d1d</color>
-    <color name="dark_dark">#1b1b1b</color>
-    <color name="dark_medium">#191919</color>
-    <color name="dark_light">#171717</color>
-    <color name="dark_lightest">#0f0f0f</color>
+    <color name="light_darkest">#1d1d1d</color>
+    <color name="light_dark">#1b1b1b</color>
+    <color name="light_medium">#191919</color>
+    <color name="light_light">#171717</color>
+    <color name="light_lightest">#0f0f0f</color>
 
     <!-- Success -->
     <color name="success_dark">#1A5D47</color>

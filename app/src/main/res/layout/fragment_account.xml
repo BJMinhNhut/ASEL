@@ -78,7 +78,7 @@
         android:layout_height="1dp"
         android:layout_marginTop="5dp"
         android:layout_marginBottom="5dp"
-        android:background="@color/light_dark"/>
+        android:background="@color/dark_medium"/>
 
     <LinearLayout
         android:id="@+id/update_account_button"
@@ -115,7 +115,7 @@
         android:layout_height="1dp"
         android:layout_marginTop="5dp"
         android:layout_marginBottom="5dp"
-        android:background="@color/light_dark"/>
+        android:background="@color/dark_medium"/>
 
     <LinearLayout
         android:id="@+id/settings_button"
