@@ -1,6 +1,8 @@
 package com.cs426.asel;
 
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.util.Log;
 import android.widget.Toast;
@@ -8,6 +10,7 @@ import android.widget.Toast;
 import com.cs426.asel.ui.account.AccountContainer;
 import com.cs426.asel.ui.account.AccountViewModel;
 import com.cs426.asel.ui.account.AccountViewModelFactory;
+import com.cs426.asel.ui.account.InfoViewModel;
 import com.cs426.asel.ui.emails.EmailsContainer;
 import com.cs426.asel.ui.events.EventsFragment;
 import com.cs426.asel.ui.emails.EmailsViewModel;
@@ -25,6 +28,8 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentActivity;
+import androidx.fragment.app.FragmentManager;
+import androidx.fragment.app.FragmentTransaction;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.viewpager2.adapter.FragmentStateAdapter;
 import androidx.viewpager2.widget.ViewPager2;
@@ -36,6 +41,7 @@ public class MainActivity extends AppCompatActivity {
     private AccountViewModel accountViewModel;
     private EmailsViewModel emailsViewModel; // Initialize here
     private ActivityResultLauncher<Intent> signInLauncher;
+    private InfoViewModel infoViewModel;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -98,6 +104,26 @@ public class MainActivity extends AppCompatActivity {
 
         // Initialize ViewModels (AccountViewModel, EmailsViewModel)
         initializeViewModels();
+        loadStudentInfoToViewModel();
+    }
+
+    private static final int HOME_FRAGMENT_POSITION = 0; // Position of HomeFragment in ViewPager2
+
+    public void refreshHomeFragment() {
+        FragmentManager fragmentManager = getSupportFragmentManager();
+        String homeFragmentTag = "f" + HOME_FRAGMENT_POSITION; // Use the tag format to find the fragment
+
+        HomeFragment homeFragment = (HomeFragment) fragmentManager.findFragmentByTag(homeFragmentTag);
+
+        if (homeFragment != null) {
+            FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+            fragmentTransaction.detach(homeFragment);
+            fragmentTransaction.attach(homeFragment);
+            fragmentTransaction.addToBackStack(null);
+            fragmentTransaction.commit();
+        } else {
+            Toast.makeText(this, "HomeFragment not found", Toast.LENGTH_SHORT).show();
+        }
     }
 
     private static class ScreenSlidePagerAdapter extends FragmentStateAdapter {
@@ -155,6 +181,19 @@ public class MainActivity extends AppCompatActivity {
 
         // Pass the launcher to the AccountViewModel
         accountViewModel.setSignInLauncher(signInLauncher);
+
+        infoViewModel = new ViewModelProvider(this).get(InfoViewModel.class);
+    }
+
+    private void loadStudentInfoToViewModel() {
+        SharedPreferences sharedPreferences = getSharedPreferences("StudentInfo", Context.MODE_PRIVATE);
+        infoViewModel.setFullName(sharedPreferences.getString("full_name", ""));
+        infoViewModel.setStudentId(sharedPreferences.getString("student_id", ""));
+        infoViewModel.setBirthdate(sharedPreferences.getString("birthday", ""));
+        infoViewModel.setSchool(sharedPreferences.getString("school", ""));
+        infoViewModel.setFaculty(sharedPreferences.getString("faculty", ""));
+        infoViewModel.setDegree(sharedPreferences.getString("degree", ""));
+        infoViewModel.setAvatar(sharedPreferences.getString("avatar_image", "")); // Set avatar
     }
 
     public interface PermissionCallback {
