@@ -253,7 +253,7 @@ public class EventsFragment extends Fragment {
                 if (startTime.plusSeconds(event.getDuration() * 60L).isAfter(Instant.now())) {
                     ongoing.addEvent(event);
                 } else {
-                    completed.addEvent(event);
+                    completed.addEvent(0, event);
                 }
             }
         }

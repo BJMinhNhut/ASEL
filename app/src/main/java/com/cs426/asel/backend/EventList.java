@@ -14,6 +14,10 @@ public class EventList {
         mEvents.add(event);
     }
 
+    public void addEvent(int index, Event event) {
+        mEvents.add(index, event);
+    }
+
     public void removeEvent(int index) {
         mEvents.remove(index);
     }
