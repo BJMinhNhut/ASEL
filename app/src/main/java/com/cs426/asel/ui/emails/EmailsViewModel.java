@@ -57,18 +57,11 @@ public class EmailsViewModel extends ViewModel implements GmailServices.EmailCal
 
     private ListeningExecutorService executorService;
     private ScheduledExecutorService scheduledExecutor;
-
-    private MailRepository mailRepository;
-    private String userEmail;
     private Context context;
 
     public EmailsViewModel(Context context) {
         this.context = context;
         gmailServices = new GmailServices(context, this); // Initialize GmailServices for email operations
-        userEmail = Utility.getUserEmail(context);
-        Log.d("EmailsViewModel", "Init emails view model with User email: " + userEmail);
-        mailRepository = new MailRepository(context, userEmail);
-
 //        processedIDs = new ArrayList<>();
     }
 
@@ -82,6 +75,9 @@ public class EmailsViewModel extends ViewModel implements GmailServices.EmailCal
 
     private List<String> getUnfetchedID() {
         List<String> unfetchedID = new ArrayList<>();
+        String userEmail = Utility.getUserEmail(context);
+        MailRepository mailRepository = new MailRepository(context, userEmail);
+
         for (Map.Entry<String, Message> entry: messageCache.entrySet()) {
             if (!mailRepository.isMailExists(entry.getKey())) {
                 unfetchedID.add(entry.getKey());
@@ -153,6 +149,8 @@ public class EmailsViewModel extends ViewModel implements GmailServices.EmailCal
     private void processEmails() {
         int processLimit = min(currentIndex + EMAIL_PER_FETCH, messageCache.size());
         int processSize = processLimit - currentIndex;
+        String userEmail = Utility.getUserEmail(context);
+        MailRepository mailRepository = new MailRepository(context, userEmail);
 
         List<ListenableFuture<GenerateContentResponse>> futures = new ArrayList<>();
         CountDownLatch latch = new CountDownLatch(processSize);
@@ -210,6 +208,9 @@ public class EmailsViewModel extends ViewModel implements GmailServices.EmailCal
                     public void onSuccess(GenerateContentResponse result) {
                         latch.countDown();
                         mail.extractInfo(result.getText());
+
+                        String userEmail = Utility.getUserEmail(context);
+                        MailRepository mailRepository = new MailRepository(context, userEmail);
                         mailRepository.insertMail(mail);
                         Log.d("EmailsViewModel", "Email ID: " + mail.getId() + ", is in db?: " + mailRepository.isMailExists(mail.getId()));
                     }
@@ -279,14 +280,20 @@ public class EmailsViewModel extends ViewModel implements GmailServices.EmailCal
     }
 
     private boolean isProcessed(String id) {
+        String userEmail = Utility.getUserEmail(context);
+        MailRepository mailRepository = new MailRepository(context, userEmail);
         return mailRepository.isMailExists(id);
     }
 
     public MailList getMailList() {
+        String userEmail = Utility.getUserEmail(context);
+        MailRepository mailRepository = new MailRepository(context, userEmail);
         return mailRepository.getMailByRead(false, "send_time", false);
     }
 
     public MailList getMailListFrom(int index) {
+        String userEmail = Utility.getUserEmail(context);
+        MailRepository mailRepository = new MailRepository(context, userEmail);
         MailList list = mailRepository.getMailByRead(false, "send_time", false);
         MailList res = new MailList();
 

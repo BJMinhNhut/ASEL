@@ -270,6 +270,10 @@ public class Mail {
         return mId;
     }
 
+    public String getTag() {
+        return mTag;
+    }
+
     public String getTitle() {
         return mTitle;
     }
@@ -286,6 +290,10 @@ public class Mail {
         return mSummary;
     }
 
+    public String getLocation() {
+        return mEvent.getLocation();
+    }
+
     public String getContent() {
         return mContent;
     }
@@ -295,7 +303,7 @@ public class Mail {
     }
 
     public String getSentTime() {
-        return mReceivedTime.atZone(ZoneId.of("Asia/Ho_Chi_Minh")).format(DateTimeFormatter.ofPattern("EEE, dd/MM/yyyy HH:mm"));
+        return mReceivedTime.atZone(ZoneId.of("Asia/Ho_Chi_Minh")).format(DateTimeFormatter.ofPattern("MMM dd, HH:mm"));
     }
 
     public Instant getEventStartTime() {
@@ -314,10 +322,6 @@ public class Mail {
         return mReceivedTime;
     }
 
-    public String getTag() {
-        return mTag;
-    }
-
     public boolean isRead() {
         return mIsRead;
     }
@@ -332,10 +336,6 @@ public class Mail {
 
     public void setEvent(Event event) {
         mEvent = event;
-    }
-
-    public String getLocation() {
-        return mEvent.getLocation();
     }
 
     public void setContent(String content) {

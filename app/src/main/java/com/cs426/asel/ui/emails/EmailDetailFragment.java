@@ -51,26 +51,17 @@ public class EmailDetailFragment extends Fragment {
         binding = FragmentEmailDetailBinding.bind(view);
         mailRepository = new MailRepository(requireContext(), Utility.getUserEmail(requireContext()));
         emailId = getArguments().getString("emailId");
-        Log.d("EmailDetailFragment", "emailId: " + emailId + ", userEmail: " + Utility.getUserEmail(requireContext()));
-        Log.d("EmailDetailFragment", "is mail in db: " + mailRepository.isMailExists(emailId));
         mail = mailRepository.getMailById(emailId);
 
         String sender = mail.getSender();
         String senderName = sender.substring(0, sender.indexOf("@"));
         String senderDomain = sender.substring(sender.indexOf("@"));
 
-        SimpleDateFormat originalFormat = new SimpleDateFormat("EEE, dd/MM/yyyy HH:mm", Locale.ENGLISH);
-        SimpleDateFormat targetFormat = new SimpleDateFormat("MMM dd, HH:mm", Locale.ENGLISH);
-
         binding.subject.setText(mail.getTitle());
         binding.senderName.setText(senderName);
         binding.senderDomain.setText(senderDomain);
         binding.body.setText(mail.getContent());
-        try {
-            binding.sendTime.setText(targetFormat.format(originalFormat.parse(mail.getSentTime())));
-        } catch (ParseException e) {
-            throw new RuntimeException(e);
-        }
+        binding.sendTime.setText(mail.getSentTime());
 
         return view;
     }

@@ -2,6 +2,7 @@ package com.cs426.asel;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.widget.Toast;
 
 import com.cs426.asel.ui.account.AccountContainer;
@@ -50,6 +51,7 @@ public class MainActivity extends AppCompatActivity {
         viewPager.setAdapter(new ScreenSlidePagerAdapter(this));
         navView.setOnItemSelectedListener(item -> {
             int id = item.getItemId();
+
             if (id == R.id.navigation_home) {
                 viewPager.setCurrentItem(0);
                 return true;

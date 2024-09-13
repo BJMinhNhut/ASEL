@@ -21,6 +21,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.cs426.asel.R;
+import com.cs426.asel.backend.EventRepository;
 import com.cs426.asel.backend.Mail;
 import com.cs426.asel.backend.MailList;
 import com.cs426.asel.backend.MailRepository;
@@ -38,6 +39,7 @@ public class EmailsFragment extends Fragment {
     private MailList unread;
     private MailList read;
     private MailRepository mailRepository;
+    private EventRepository eventRepository;
     private FragmentEmailsBinding binding;
     private RecyclerView emailListRecyclerView;
     private EmailsViewModel emailsViewModel; // Reference to the shared ViewModel
@@ -55,6 +57,7 @@ public class EmailsFragment extends Fragment {
         binding = FragmentEmailsBinding.inflate(inflater, container, false);
         userEmail = Utility.getUserEmail(requireContext());
         mailRepository = new MailRepository(requireContext(), userEmail);
+        eventRepository = new EventRepository(requireContext(), userEmail);
         emailsViewModel = new ViewModelProvider(requireActivity()).get(EmailsViewModel.class);
         emailsViewModel.fetchAllEmailsID();
         adapter = new EmailListAdapter();
@@ -122,7 +125,7 @@ public class EmailsFragment extends Fragment {
                 super.onScrollStateChanged(recyclerView, newState);
 
                 if (!recyclerView.canScrollVertically(1)
-                        && binding.mailsRadioGroup.getCheckedRadioButtonId() == R.id.new_mail_radio_button) {
+                        && binding.emailsTab.getSelectedTabPosition() == 0) {
                     emailsViewModel.loadMoreEmails();
                 }
             }
@@ -169,16 +172,27 @@ public class EmailsFragment extends Fragment {
                             dialog.show();
                         } else if (direction == ItemTouchHelper.RIGHT) {
                             // Right swipe to quick add
-                            moveMailToRead(viewHolder.getBindingAdapterPosition(), unread.getMail(viewHolder.getBindingAdapterPosition()));
+                            Mail mail = unread.getMail(viewHolder.getBindingAdapterPosition());
+                            int eventId = mail.getEvent().getID();
+                            if (eventId != -1) {
+                                eventRepository.insertEvent(mail.getEvent());
+                            } else {
+                                eventRepository.setPublishEvent(eventId, true);
+                            }
+                            moveMailToRead(viewHolder.getBindingAdapterPosition(), mail);
 
                             //TODO: publish event of mail
 
                             Snackbar.make(emailListRecyclerView, "Event of email added to calendar", Snackbar.LENGTH_LONG)
                                     .setAction("Undo", v -> {
                                         // Undo the action (implement undo logic here)
-                                        adapter.insertMail(removedMail, removedIndex);
-                                        unread.insertMailAt(removedMail, removedIndex);
                                         read.removeMail(read.size() - 1);
+                                        unread.insertMailAt(removedMail, removedIndex);
+                                        if (binding.emailsTab.getSelectedTabPosition() == 0) {
+                                            adapter.insertMail(removedMail, removedIndex);
+                                        } else {
+                                            adapter.removeMail(adapter.mailList.size() - 1);
+                                        }
                                         mailRepository.updateRead(removedMail.getId(), false);
 
                                         // TODO: unpublish event of mail
@@ -247,7 +261,7 @@ public class EmailsFragment extends Fragment {
 
         public void removeMail(int position) {
             mailList.removeMail(position);
-            notifyItemRemoved(position);
+            notifyDataSetChanged();
         }
 
         public void insertMail(Mail mail, int position) {
@@ -282,10 +296,10 @@ public class EmailsFragment extends Fragment {
             Instant eventStartTime = mailList.getMail(position).getEventStartTime();
             int eventDuration = mailList.getMail(position).getEventDuration();
             if (eventStartTime != null) {
-                String eventTime = eventStartTime.atZone(ZoneId.of("Asia/Ho_Chi_Minh")).format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm"));
+                String eventTime = eventStartTime.atZone(ZoneId.of("Asia/Ho_Chi_Minh")).format(DateTimeFormatter.ofPattern("MMM dd, HH:mm"));
                 if (eventDuration != 0) {
                     Instant eventEndTime = eventStartTime.plusSeconds(eventDuration * 60);
-                    eventTime += " - " + eventEndTime.atZone(ZoneId.of("Asia/Ho_Chi_Minh")).format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm"));
+                    eventTime += " - " + eventEndTime.atZone(ZoneId.of("Asia/Ho_Chi_Minh")).format(DateTimeFormatter.ofPattern("MMM dd, HH:mm"));
                 }
 
                 holder.eventTime.setText(eventTime);
@@ -314,7 +328,7 @@ public class EmailsFragment extends Fragment {
             holder.senderDomain.setText(senderDomain);
             holder.title.setText(mailList.getMail(position).getTitle());
             holder.sendTime.setText(mailList.getMail(position).getSentTime());
-            holder.title.setText(mailList.getMail(position).getTitle());
+            holder.tag.setText(mailList.getMail(position).getTag());
             holder.summary.setText(mailList.getMail(position).getSummary());
         }
 
@@ -332,6 +346,7 @@ public class EmailsFragment extends Fragment {
             TextView eventTime;
             TextView place;
             TextView summary;
+            TextView tag;
 
             public EmailViewHolder(@NonNull View itemView) {
                 super(itemView);
@@ -342,6 +357,7 @@ public class EmailsFragment extends Fragment {
                 eventTime = itemView.findViewById(R.id.time);
                 place = itemView.findViewById(R.id.location);
                 summary = itemView.findViewById(R.id.summary);
+                tag = itemView.findViewById(R.id.tag);
             }
         }
     }

@@ -10,6 +10,7 @@ import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentTransaction;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -19,7 +20,10 @@ import com.cs426.asel.backend.EventList;
 import com.cs426.asel.backend.EventRepository;
 import com.cs426.asel.backend.Utility;
 import com.cs426.asel.databinding.FragmentEventsBinding;
+import com.cs426.asel.databinding.FragmentEventsListBinding;
+import com.cs426.asel.ui.account.EventEditorFragment;
 import com.cs426.asel.ui.decoration.SpaceItemDecoration;
+import com.google.android.material.tabs.TabLayout;
 
 import java.time.Instant;
 import java.time.LocalDateTime;
@@ -28,36 +32,72 @@ import java.time.format.DateTimeFormatter;
 import java.util.Random;
 
 public class EventsListFragment extends Fragment {
-    private FragmentEventsBinding binding;
+    private FragmentEventsListBinding binding;
     private RecyclerView eventRecyclerView;
     private EventAdapter eventAdapter;
-    private EventList eventList;
+    private EventList ongoing, upcoming, completed;
     private EventRepository eventRepository;
 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_events_list, container, false);
-        binding = FragmentEventsBinding.inflate(inflater, container, false);
+        binding = FragmentEventsListBinding.inflate(inflater, container, false);
 
         eventRecyclerView = view.findViewById(R.id.eventRecyclerView);
         eventRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         eventRecyclerView.addItemDecoration(new SpaceItemDecoration(20));
 
         eventRepository = new EventRepository(requireContext(), Utility.getUserEmail(requireContext()));
-//        eventList = eventRepository.getEventsByPublished(true);
-        eventList = new EventList();
+        EventList allEvents = eventRepository.getEventsByPublished(true);
+        for (int i = 0; i < allEvents.getSize(); i++) {
+            Event event = allEvents.getEvent(i);
+            if (event.getStartTime().isAfter(Instant.now())) {
+                upcoming.addEvent(event);
+            } else if (event.getStartTime().isBefore(Instant.now())) {
+                if (event.getStartTime().plusSeconds(event.getDuration() * 60).isAfter(Instant.now())) {
+                    ongoing.addEvent(event);
+                } else {
+                    completed.addEvent(event);
+                }
+            }
+        }
 
-        eventAdapter = new EventAdapter(eventList);
         eventRecyclerView.setAdapter(eventAdapter);
-
-        binding.newEventFab.setOnClickListener(new View.OnClickListener() {
+        binding.eventTab.addOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
             @Override
-            public void onClick(View v) {
-                Intent intent = new Intent(getContext(), EventEditorActivity.class);
-                intent.putExtra("userEmail", Utility.getUserEmail(requireContext()));
-                startActivity(intent);
+            public void onTabSelected(TabLayout.Tab tab) {
+                switch (tab.getPosition()) {
+                    case 0:
+                        eventAdapter.setEventList(ongoing);
+                        break;
+                    case 1:
+                        eventAdapter.setEventList(upcoming);
+                        break;
+                    case 2:
+                        eventAdapter.setEventList(completed);
+                        break;
+                    default:
+                        eventAdapter.setEventList(ongoing);
+                }
+            }
+
+            @Override
+            public void onTabUnselected(TabLayout.Tab tab) {
+
+            }
+
+            @Override
+            public void onTabReselected(TabLayout.Tab tab) {
+
             }
         });
+//        binding.newEventFab.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View v) {
+//                FragmentTransaction ft = getParentFragmentManager().beginTransaction();
+//                ft.replace(R.id.emailsContainer, new EventEditorFragment()).addToBackStack(null).commit();
+//            }
+//        });
 
         return view;
     }
@@ -67,6 +107,11 @@ public class EventsListFragment extends Fragment {
 
         public EventAdapter(EventList eventList) {
             this.eventList = eventList;
+        }
+
+        public void setEventList(EventList newEventList) {
+            eventList = newEventList;
+            notifyDataSetChanged();
         }
 
         public static class EventViewHolder extends RecyclerView.ViewHolder {
