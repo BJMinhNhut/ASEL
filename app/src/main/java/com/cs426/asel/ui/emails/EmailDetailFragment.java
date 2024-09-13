@@ -1,16 +1,16 @@
 package com.cs426.asel.ui.emails;
 
-import android.content.Intent;
 import android.os.Bundle;
-import android.renderscript.ScriptGroup;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.ImageView;
 
 import androidx.activity.OnBackPressedCallback;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
+import androidx.fragment.app.FragmentTransaction;
 import androidx.lifecycle.ViewModelProvider;
 
 import com.cs426.asel.R;
@@ -19,7 +19,11 @@ import com.cs426.asel.backend.MailRepository;
 import com.cs426.asel.backend.Utility;
 import com.cs426.asel.databinding.FragmentEmailDetailBinding;
 import com.cs426.asel.ui.account.AccountViewModel;
-import com.cs426.asel.ui.events.EventEditorActivity;
+import com.cs426.asel.ui.account.EventEditorFragment;
+
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Locale;
 
 public class EmailDetailFragment extends Fragment {
     private static String emailId;
@@ -45,10 +49,22 @@ public class EmailDetailFragment extends Fragment {
         emailId = getArguments().getString("emailId");
         mail = new MailRepository(requireContext(), Utility.getUserEmail(requireContext())).getMailById(emailId);
 
-        binding.emailTitle.setText(mail.getTitle());
-        binding.emailSender.setText(mail.getSender());
-        binding.emailBody.setText(mail.getContent());
-        binding.emailDatetime.setText(mail.getSentTime());
+        String sender = mail.getSender();
+        String senderName = sender.substring(0, sender.indexOf("@"));
+        String senderDomain = sender.substring(sender.indexOf("@"));
+
+        SimpleDateFormat originalFormat = new SimpleDateFormat("EEE, dd/MM/yyyy HH:mm", Locale.ENGLISH);
+        SimpleDateFormat targetFormat = new SimpleDateFormat("MMM dd, HH:mm", Locale.ENGLISH);
+
+        binding.subject.setText(mail.getTitle());
+        binding.senderName.setText(senderName);
+        binding.senderDomain.setText(senderDomain);
+        binding.body.setText(mail.getContent());
+        try {
+            binding.sendTime.setText(targetFormat.format(originalFormat.parse(mail.getSentTime())));
+        } catch (ParseException e) {
+            throw new RuntimeException(e);
+        }
 
         return view;
     }
@@ -57,16 +73,17 @@ public class EmailDetailFragment extends Fragment {
     public void onViewCreated(View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        Button createEventButton = view.findViewById(R.id.create_event_button);
+        ImageView backButton = view.findViewById(R.id.back);
+
+        Button createEventButton = view.findViewById(R.id.create_event);
         createEventButton.setOnClickListener(v -> {
-            Intent intent = new Intent(getContext(), EventEditorActivity.class);
-            intent.putExtra("emailId", emailId);
-            startActivity(intent);
+            FragmentTransaction ft = getParentFragmentManager().beginTransaction();
+            ft.replace(R.id.emailsContainer, new EventEditorFragment()).addToBackStack(null).commit();
         });
 
-        Button moveToReadButton = view.findViewById(R.id.move_to_read_button);
-        moveToReadButton.setOnClickListener(v -> {
-            // TODO: Move email to read
+        backButton.setOnClickListener(v -> {
+            FragmentManager fm = getParentFragmentManager();
+            fm.popBackStack();
         });
 
         requireActivity().getOnBackPressedDispatcher().addCallback(getViewLifecycleOwner(), new OnBackPressedCallback(true) {

@@ -18,14 +18,14 @@
             android:layout_width="25dp"
             android:layout_height="25dp"
             android:layout_gravity="center|start"
-            android:layout_marginEnd="20dp"
             android:src="@drawable/ic_chevron_left"
-            app:tint="@color/highlight_darkest"/>
+            app:tint="@color/highlight_darkest"
+            android:background="?android:attr/selectableItemBackground"/>
 
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Personal Information"
+            android:text="Personal information"
             android:textAlignment="center"
             android:textAppearance="@style/heading_l"
             android:textColor="@color/dark_darkest"/>
@@ -145,7 +145,7 @@
                 app:boxCornerRadiusTopEnd="15dp"
                 app:boxCornerRadiusBottomStart="15dp"
                 app:boxCornerRadiusBottomEnd="15dp"
-                app:endIconDrawable="@drawable/ic_edit_calendar"
+                app:endIconDrawable="@drawable/ic_calendar_search"
                 app:endIconMode="custom"
                 app:endIconTint="@color/highlight_darkest"
                 app:boxStrokeColor="@color/highlight_darkest"
@@ -243,13 +243,15 @@
     <com.google.android.material.button.MaterialButton
         android:id="@+id/buttonSave"
         android:layout_width="match_parent"
-        android:layout_height="40dp"
+        android:layout_height="50dp"
         android:layout_margin="20dp"
         android:insetTop="0dp"
         android:insetBottom="0dp"
         app:cornerRadius="15dp"
-        android:text="Save"
-        android:textAppearance="@style/action_m"
+        app:elevation="10dp"
+        android:elevation="10dp"
+        android:text="Save changes"
+        android:textAppearance="@style/action_l"
         android:textColor="@color/light_lightest"
         android:backgroundTint="@color/highlight_darkest"/>
 </LinearLayout>

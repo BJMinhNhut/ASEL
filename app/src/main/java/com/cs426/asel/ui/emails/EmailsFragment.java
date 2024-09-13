@@ -28,6 +28,7 @@ import com.cs426.asel.backend.Utility;
 import com.cs426.asel.databinding.FragmentEmailsBinding;
 import com.cs426.asel.ui.account.AccountViewModel;
 import com.google.android.material.snackbar.Snackbar;
+import com.google.android.material.tabs.TabLayout;
 
 public class EmailsFragment extends Fragment {
     private MailList unread;
@@ -54,18 +55,30 @@ public class EmailsFragment extends Fragment {
         unread = new MailList();
         read = new MailRepository(requireContext(), userEmail).getMailByRead(true, "send_time", false);
 
-        binding.mailsRadioGroup.setOnCheckedChangeListener((group, checkedId) -> {
-            if (checkedId == R.id.new_mail_radio_button) {
-                adapter.setMailList(unread);
-                swipeCallback.setSwipeEnabled(true);
-            } else {
-                adapter.setMailList(read);
-                swipeCallback.setSwipeEnabled(false);
+        binding.emailsTab.addOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
+            @Override
+            public void onTabSelected(TabLayout.Tab tab) {
+                switch (tab.getPosition()) {
+                    case 0:
+                        adapter.setMailList(unread);
+                        swipeCallback.setSwipeEnabled(true);
+                        break;
+                    case 1:
+                        adapter.setMailList(read);
+                        swipeCallback.setSwipeEnabled(false);
+                        break;
+                }
             }
-        });
 
-        binding.filterButton.setOnClickListener(v -> {
-            // TODO: Implement filter logic
+            @Override
+            public void onTabUnselected(TabLayout.Tab tab) {
+
+            }
+
+            @Override
+            public void onTabReselected(TabLayout.Tab tab) {
+
+            }
         });
 
         final Observer<Boolean> loadObserver = new Observer<Boolean>() {
@@ -249,7 +262,6 @@ public class EmailsFragment extends Fragment {
             });
 
             holder.senderName.setText(mailList.getMail(position).getSender());
-//            holder.receiverName.setText(mailList.getMail(position).getReceiver());
             holder.title.setText(mailList.getMail(position).getTitle());
             holder.time.setText(mailList.getMail(position).getSentTime());
             holder.place.setText(mailList.getMail(position).getLocation());
@@ -263,7 +275,6 @@ public class EmailsFragment extends Fragment {
 
         class EmailViewHolder extends RecyclerView.ViewHolder {
             TextView senderName;
-            TextView receiverName;
             TextView title;
             TextView time;
             TextView place;
@@ -271,7 +282,6 @@ public class EmailsFragment extends Fragment {
             public EmailViewHolder(@NonNull View itemView) {
                 super(itemView);
                 senderName = itemView.findViewById(R.id.sender_name);
-                receiverName = itemView.findViewById(R.id.receiver_name);
                 title = itemView.findViewById(R.id.subject);
                 time = itemView.findViewById(R.id.time);
                 place = itemView.findViewById(R.id.location);
