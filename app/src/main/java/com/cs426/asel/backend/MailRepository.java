@@ -34,38 +34,57 @@ public class MailRepository {
     };
 
     public long insertMail(Mail mail) {
-        EventRepository eventRepository = new EventRepository(dbHelper.getContext(), mUserMail);
-        long eventId = eventRepository.insertEvent(mail.getEvent());
-        if (eventId == -1) {
-            Log.println(Log.ERROR, "MailRepository", "Failed to insert event for mail: " + mail.getTitle());
-            return -1;
-        }
-
-        Log.println(Log.INFO, "MailRepository", "Inserting mail: " + mail.getTitle());
         SQLiteDatabase db = dbHelper.getWritableDatabase();
-        ContentValues values = new ContentValues();
-        values.put(DatabaseContract.Mails._ID, mail.getId());
-        values.put(DatabaseContract.Mails.COLUMN_NAME_TITLE, mail.getTitle());
-        values.put(DatabaseContract.Mails.COLUMN_NAME_SENDER, mail.getSender());
-        values.put(DatabaseContract.Mails.COLUMN_NAME_RECEIVER, mail.getReceiver());
-        values.put(DatabaseContract.Mails.COLUMN_NAME_CONTENT, mail.getContent());
-        values.put(DatabaseContract.Mails.COLUMN_NAME_SUMMARY, mail.getSummary());
-        assert mail.getReceivedTime() != null : "Mail received time is null";
-        values.put(DatabaseContract.Mails.COLUMN_NAME_SEND_TIME, mail.getReceivedTime().toString());
-        values.put(DatabaseContract.Mails.COLUMN_NAME_TAG, mail.getTag());
-        values.put(DatabaseContract.Mails.COLUMN_NAME_EVENT_ID, eventId);
-        values.put(DatabaseContract.Mails.COLUMN_NAME_IS_READ, mail.isRead() ? 1 : 0);
+        db.beginTransaction();
+        long mailId = -1;
+        try {
+            EventRepository eventRepository = new EventRepository(dbHelper.getContext(), mUserMail);
+            long eventId = eventRepository.insertEvent(mail.getEvent());
+            if (eventId == -1) {
+                Log.println(Log.ERROR, "MailRepository", "Failed to insert event for mail: " + mail.getTitle());
+                return -1;
+            }
 
-        // NOTE: the value return is row id, not the actual id of the mail
-        return db.insert(DatabaseContract.Mails.TABLE_NAME, null, values);
+            Log.println(Log.INFO, "MailRepository", "Inserting mail: " + mail.getTitle());
+            ContentValues values = new ContentValues();
+            values.put(DatabaseContract.Mails._ID, mail.getId());
+            values.put(DatabaseContract.Mails.COLUMN_NAME_TITLE, mail.getTitle());
+            values.put(DatabaseContract.Mails.COLUMN_NAME_SENDER, mail.getSender());
+            values.put(DatabaseContract.Mails.COLUMN_NAME_RECEIVER, mail.getReceiver());
+            values.put(DatabaseContract.Mails.COLUMN_NAME_CONTENT, mail.getContent());
+            values.put(DatabaseContract.Mails.COLUMN_NAME_SUMMARY, mail.getSummary());
+            assert mail.getReceivedTime() != null : "Mail received time is null";
+            values.put(DatabaseContract.Mails.COLUMN_NAME_SEND_TIME, mail.getReceivedTime().toString());
+            values.put(DatabaseContract.Mails.COLUMN_NAME_TAG, mail.getTag());
+            values.put(DatabaseContract.Mails.COLUMN_NAME_EVENT_ID, eventId);
+            values.put(DatabaseContract.Mails.COLUMN_NAME_IS_READ, mail.isRead() ? 1 : 0);
+
+            mailId = db.insert(DatabaseContract.Mails.TABLE_NAME, null, values);
+            db.setTransactionSuccessful();
+        } catch (Exception e) {
+            Log.e("MailRepository", "Error inserting mail: " + mail.getTitle(), e);
+        } finally {
+            db.endTransaction();
+        }
+        return mailId;
     }
 
     public int deleteMail(String mailId) {
         Log.println(Log.INFO, "MailRepository", "Deleting mail: " + mailId);
         SQLiteDatabase db = dbHelper.getWritableDatabase();
-        String selection = DatabaseContract.Mails._ID + " = ?";
-        String[] selectionArgs = {mailId};
-        return db.delete(DatabaseContract.Mails.TABLE_NAME, selection, selectionArgs);
+        db.beginTransaction();
+        int rowsDeleted = 0;
+        try {
+            String selection = DatabaseContract.Mails._ID + " = ?";
+            String[] selectionArgs = {mailId};
+            rowsDeleted = db.delete(DatabaseContract.Mails.TABLE_NAME, selection, selectionArgs);
+            db.setTransactionSuccessful();
+        } catch (Exception e) {
+            Log.e("MailRepository", "Error deleting mail: " + mailId, e);
+        } finally {
+            db.endTransaction();
+        }
+        return rowsDeleted;
     }
 
     public MailList getAllMails(String sortBy, boolean isAscending) {
@@ -75,19 +94,27 @@ public class MailRepository {
         String sortOrder = null;
         if (!sortBy.isEmpty()) sortOrder = sortBy + (isAscending ? " ASC" : " DESC");
 
-        Cursor cursor = db.query(DatabaseContract.Mails.TABLE_NAME,
-                mailProjection,
-                null,
-                null,
-                null,
-                null,
-                sortOrder);
-
+        Cursor cursor = null;
         MailList mailList = new MailList();
-        while (cursor.moveToNext()) {
-            mailList.addMail(getMailByCursor(cursor));
+        try {
+            cursor = db.query(DatabaseContract.Mails.TABLE_NAME,
+                    mailProjection,
+                    null,
+                    null,
+                    null,
+                    null,
+                    sortOrder);
+
+            while (cursor.moveToNext()) {
+                mailList.addMail(getMailByCursor(cursor));
+            }
+        } catch (Exception e) {
+            Log.e("MailRepository", "Error getting all mails", e);
+        } finally {
+            if (cursor != null) {
+                cursor.close();
+            }
         }
-        cursor.close();
         return mailList;
     }
 
@@ -95,29 +122,39 @@ public class MailRepository {
         Log.println(Log.INFO, "MailRepository", "Getting mail by tags: " + tags);
         SQLiteDatabase db = dbHelper.getReadableDatabase();
 
-        String selection = DatabaseContract.Mails.COLUMN_NAME_TAG + " IN (" +
-                String.join(",", tags.stream().map(tag -> "?").toArray(String[]::new)) + ")";
-
-        String[] selectionArgs = tags.toArray(new String[0]);
-
         String sortOrder = null;
         if (!sortBy.isEmpty()) sortOrder = sortBy + (isAscending ? " ASC" : " DESC");
 
-        Cursor cursor = db.query(
-                DatabaseContract.Mails.TABLE_NAME,
-                mailProjection,
-                selection,
-                selectionArgs,
-                null,
-                null,
-                sortOrder
-        );
-
-        MailList mailList = new MailList();
-        while (cursor.moveToNext()) {
-            mailList.addMail(getMailByCursor(cursor));
+        String selection = DatabaseContract.Mails.COLUMN_NAME_TAG + " IN (";
+        for (int i = 0; i < tags.size(); i++) {
+            selection += "?";
+            if (i != tags.size() - 1) selection += ",";
         }
-        cursor.close();
+        selection += ")";
+
+        Cursor cursor = null;
+        MailList mailList = new MailList();
+        try {
+            cursor = db.query(
+                    DatabaseContract.Mails.TABLE_NAME,
+                    mailProjection,
+                    selection,
+                    tags.toArray(new String[0]),
+                    null,
+                    null,
+                    sortOrder
+            );
+
+            while (cursor.moveToNext()) {
+                mailList.addMail(getMailByCursor(cursor));
+            }
+        } catch (Exception e) {
+            Log.e("MailRepository", "Error getting mail by tags", e);
+        } finally {
+            if (cursor != null) {
+                cursor.close();
+            }
+        }
         return mailList;
     }
 
@@ -128,21 +165,29 @@ public class MailRepository {
         String selection = DatabaseContract.Mails._ID + " = ?";
         String[] selectionArgs = {id};
 
-        Cursor cursor = db.query(
-                DatabaseContract.Mails.TABLE_NAME,
-                mailProjection,
-                selection,
-                selectionArgs,
-                null,
-                null,
-                null
-        );
-
+        Cursor cursor = null;
         Mail mail = null;
-        if (cursor.moveToNext()) {
-            mail = getMailByCursor(cursor);
+        try {
+            cursor = db.query(
+                    DatabaseContract.Mails.TABLE_NAME,
+                    mailProjection,
+                    selection,
+                    selectionArgs,
+                    null,
+                    null,
+                    null
+            );
+
+            if (cursor.moveToNext()) {
+                mail = getMailByCursor(cursor);
+            }
+        } catch (Exception e) {
+            Log.e("MailRepository", "Error getting mail by ID: " + id, e);
+        } finally {
+            if (cursor != null) {
+                cursor.close();
+            }
         }
-        cursor.close();
         return mail;
     }
 
@@ -156,61 +201,80 @@ public class MailRepository {
         String sortOrder = null;
         if (!sortBy.isEmpty()) sortOrder = sortBy + (isAscending ? " ASC" : " DESC");
 
-        Cursor cursor = db.query(
-                DatabaseContract.Mails.TABLE_NAME,
-                mailProjection,
-                selection,
-                selectionArgs,
-                null,
-                null,
-                sortOrder
-        );
-
+        Cursor cursor = null;
         MailList mailList = new MailList();
-        while (cursor.moveToNext()) {
-            mailList.addMail(getMailByCursor(cursor));
+        try {
+            cursor = db.query(
+                    DatabaseContract.Mails.TABLE_NAME,
+                    mailProjection,
+                    selection,
+                    selectionArgs,
+                    null,
+                    null,
+                    sortOrder
+            );
+
+            while (cursor.moveToNext()) {
+                mailList.addMail(getMailByCursor(cursor));
+            }
+        } catch (Exception e) {
+            Log.e("MailRepository", "Error getting mail by read status: " + isRead, e);
+        } finally {
+            if (cursor != null) {
+                cursor.close();
+            }
         }
-        cursor.close();
         return mailList;
     }
 
     public int updateRead(String id, boolean isRead) {
         Log.println(Log.INFO, "MailRepository", "Updating mail read status: " + id);
         SQLiteDatabase db = dbHelper.getWritableDatabase();
-        ContentValues values = new ContentValues();
-        values.put(DatabaseContract.Mails.COLUMN_NAME_IS_READ, isRead);
+        int rowsUpdated = 0;
+        db.beginTransaction();
+        try {
+            ContentValues values = new ContentValues();
+            values.put(DatabaseContract.Mails.COLUMN_NAME_IS_READ, isRead ? 1 : 0);
 
-        String selection = DatabaseContract.Mails._ID + " = ?";
-        String[] selectionArgs = {id};
+            String selection = DatabaseContract.Mails._ID + " = ?";
+            String[] selectionArgs = {id};
 
-        return db.update(
-                DatabaseContract.Mails.TABLE_NAME,
-                values,
-                selection,
-                selectionArgs
-        );
+            rowsUpdated = db.update(
+                    DatabaseContract.Mails.TABLE_NAME,
+                    values,
+                    selection,
+                    selectionArgs
+            );
+            db.setTransactionSuccessful();
+        } catch (Exception e) {
+            Log.e("MailRepository", "Error updating mail read status: " + id, e);
+        } finally {
+            db.endTransaction();
+        }
+        return rowsUpdated;
     }
 
     public boolean isMailExists(String id) {
         Log.println(Log.INFO, "MailRepository", "Checking if mail exists: " + id);
         SQLiteDatabase db = dbHelper.getReadableDatabase();
-        String[] projection = {DatabaseContract.Mails._ID};
+        String[] projection = {"1"};  // Query only a constant value
         String selection = DatabaseContract.Mails._ID + " = ?";
         String[] selectionArgs = {id};
 
-        Cursor cursor = db.query(
+        try (Cursor cursor = db.query(
                 DatabaseContract.Mails.TABLE_NAME,
                 projection,
                 selection,
                 selectionArgs,
                 null,
                 null,
-                null
-        );
-
-        boolean exists = cursor.getCount() > 0;
-        cursor.close();
-        return exists;
+                null)) {
+            // If the cursor has at least one row, the mail exists
+            return cursor.moveToFirst();
+        } catch (Exception e) {
+            Log.e("MailRepository", "Error checking if mail exists: " + id, e);
+            return false;
+        }
     }
 
     private Mail getMailByCursor(Cursor cursor) {
