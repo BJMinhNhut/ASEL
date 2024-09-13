@@ -49,16 +49,36 @@ public class EventRepository {
     public long insertEvent(Event event) {
         Log.println(Log.WARN, "EventRepository", "Inserting event: " + event.getTitle());
         SQLiteDatabase db = dbHelper.getWritableDatabase();
-        ContentValues values = getContentValues(event);
-        return db.insert(DatabaseContract.Events.TABLE_NAME, null, values);
+        long id = -1;
+        db.beginTransaction();
+        try {
+            ContentValues values = getContentValues(event);
+            id = db.insert(DatabaseContract.Events.TABLE_NAME, null, values);
+            db.setTransactionSuccessful();
+        } catch (Exception e) {
+            Log.e("EventRepository", "Error inserting event: " + event.getTitle(), e);
+        } finally {
+            db.endTransaction();
+        }
+        return id;
     }
 
     public int deleteEvent(long eventId) {
         Log.println(Log.WARN, "EventRepository", "Deleting event: " + eventId);
         SQLiteDatabase db = dbHelper.getWritableDatabase();
-        String selection = DatabaseContract.Events._ID + " = ?";
-        String[] selectionArgs = { String.valueOf(eventId) };
-        return db.delete(DatabaseContract.Events.TABLE_NAME, selection, selectionArgs);
+        int rowsDeleted = 0;
+        db.beginTransaction();
+        try {
+            String selection = DatabaseContract.Events._ID + " = ?";
+            String[] selectionArgs = { String.valueOf(eventId) };
+            rowsDeleted = db.delete(DatabaseContract.Events.TABLE_NAME, selection, selectionArgs);
+            db.setTransactionSuccessful();
+        } catch (Exception e) {
+            Log.e("EventRepository", "Error deleting event: " + eventId, e);
+        } finally {
+            db.endTransaction();
+        }
+        return rowsDeleted;
     }
 
     public EventList getAllEvents() {
@@ -66,14 +86,20 @@ public class EventRepository {
         SQLiteDatabase db = dbHelper.getReadableDatabase();
         queryBuilder.setTables(EVENT_MAIL_JOIN);
 
-        Cursor cursor = queryBuilder.query(db, eventProjection, null, null, null, null, null);
-
+        Cursor cursor = null;
         EventList events = new EventList();
-        while (cursor.moveToNext()) {
-            Event event = getEventByCursor(cursor);
-            events.addEvent(event);
+        try {
+            cursor = queryBuilder.query(db, eventProjection, null, null, null, null, null);
+            while (cursor.moveToNext()) {
+                Event event = getEventByCursor(cursor);
+                events.addEvent(event);
+            }
+        } finally {
+            if (cursor != null) {
+                cursor.close();
+            }
+            db.close();
         }
-        cursor.close();
 
         return events;
     }
@@ -87,14 +113,20 @@ public class EventRepository {
         String selection = DatabaseContract.Events.COLUMN_NAME_PUBLISHED + " = ?";
         String[] selectionArgs = { published ? "1" : "0" };
 
-        Cursor cursor = queryBuilder.query(db, eventProjection, selection, selectionArgs, null, null, null);
-
+        Cursor cursor = null;
         EventList events = new EventList();
-        while (cursor.moveToNext()) {
-            Event event = getEventByCursor(cursor);
-            events.addEvent(event);
+        try {
+            cursor = queryBuilder.query(db, eventProjection, selection, selectionArgs, null, null, null);
+            while (cursor.moveToNext()) {
+                Event event = getEventByCursor(cursor);
+                events.addEvent(event);
+            }
+        } finally {
+            if (cursor != null) {
+                cursor.close();
+            }
+            db.close();
         }
-        cursor.close();
 
         return events;
     }
@@ -103,20 +135,40 @@ public class EventRepository {
     public int setPublishEvent(long eventId, boolean published) {
         Log.println(Log.WARN, "EventRepository", "Publishing event: " + eventId);
         SQLiteDatabase db = dbHelper.getWritableDatabase();
-        ContentValues values = new ContentValues();
-        values.put(DatabaseContract.Events.COLUMN_NAME_PUBLISHED, published ? 1 : 0);
-        String selection = DatabaseContract.Events._ID + " = ?";
-        String[] selectionArgs = { String.valueOf(eventId) };
-        return db.update(DatabaseContract.Events.TABLE_NAME, values, selection, selectionArgs);
+        int rowsUpdated = 0;
+        db.beginTransaction();
+        try {
+            ContentValues values = new ContentValues();
+            values.put(DatabaseContract.Events.COLUMN_NAME_PUBLISHED, published ? 1 : 0);
+            String selection = DatabaseContract.Events._ID + " = ?";
+            String[] selectionArgs = { String.valueOf(eventId) };
+            rowsUpdated = db.update(DatabaseContract.Events.TABLE_NAME, values, selection, selectionArgs);
+            db.setTransactionSuccessful();
+        } catch (Exception e) {
+            Log.e("EventRepository", "Error publishing event: " + eventId, e);
+        } finally {
+            db.endTransaction();
+        }
+        return rowsUpdated;
     }
 
     public int updateEvent(Event event) {
         Log.println(Log.WARN, "EventRepository", "Updating event: " + event.getTitle());
         SQLiteDatabase db = dbHelper.getWritableDatabase();
-        ContentValues values = getContentValues(event);
-        String selection = DatabaseContract.Events._ID + " = ?";
-        String[] selectionArgs = { String.valueOf(event.getID()) };
-        return db.update(DatabaseContract.Events.TABLE_NAME, values, selection, selectionArgs);
+        int rowsUpdated = 0;
+        db.beginTransaction();
+        try {
+            ContentValues values = getContentValues(event);
+            String selection = DatabaseContract.Events._ID + " = ?";
+            String[] selectionArgs = { String.valueOf(event.getID()) };
+            rowsUpdated = db.update(DatabaseContract.Events.TABLE_NAME, values, selection, selectionArgs);
+            db.setTransactionSuccessful();
+        } catch (Exception e) {
+            Log.e("EventRepository", "Error updating event: " + event.getTitle(), e);
+        } finally {
+            db.endTransaction();
+        }
+        return rowsUpdated;
     }
 
     private ContentValues getContentValues(Event event) {
