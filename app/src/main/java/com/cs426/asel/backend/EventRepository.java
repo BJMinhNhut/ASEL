@@ -107,7 +107,6 @@ public class EventRepository {
             if (cursor != null) {
                 cursor.close();
             }
-            db.close();
         }
 
         return events;
@@ -138,7 +137,6 @@ public class EventRepository {
             if (cursor != null) {
                 cursor.close();
             }
-            db.close();
         }
 
         return events;
