@@ -8,6 +8,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Toast;
 
 import androidx.activity.OnBackPressedCallback;
 import androidx.annotation.NonNull;
@@ -24,6 +25,7 @@ import com.google.android.material.tabs.TabLayout;
 import com.google.android.material.textfield.TextInputEditText;
 
 import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 
 public class EventEditorFragment extends Fragment {
 
@@ -44,6 +46,9 @@ public class EventEditorFragment extends Fragment {
         timeEditText.setOnClickListener(v -> chooseTime(timeEditText));
         toDateEditText.setOnClickListener(v -> chooseDate(toDateEditText));
         toTimeEditText.setOnClickListener(v -> chooseTime(toTimeEditText));
+
+        binding.repeatModeText.setText("Does not repeat");
+        binding.remindBeforeText.setText("5 minutes");
 
         binding.repeatModeText.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -185,12 +190,15 @@ public class EventEditorFragment extends Fragment {
                     eventRepository.insertEvent(curEvent);
                 } else {
                     eventRepository.updateEvent(curEvent);
+                    eventRepository.setPublishEvent(curEvent.getID(), true);
                 }
+
+                FragmentManager fm = getParentFragmentManager();
+                fm.popBackStack();
             }
         });
 
         Bundle extras = getArguments();
-
         if (extras == null || !extras.containsKey("emailId") || extras.getString("emailId") == null) {
             curEvent = new Event();
         } else {
@@ -203,9 +211,89 @@ public class EventEditorFragment extends Fragment {
     }
 
     private void putEventInfo() {
+        if (!checkInputValid()) {
+            Toast.makeText(requireContext(), "Please fill in all required fields", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
         curEvent.setTitle(binding.title.getText().toString());
         curEvent.setDescription(binding.descriptionText.getText().toString());
-        curEvent.setLocation(binding.locationText.getText().toString());
+        String startTime = "00:00";
+        if (!binding.allDaySwitch.isChecked()) {
+            startTime = binding.startTimeText.getText().toString();
+        }
+        String startDateTime = binding.startDateText.getText().toString() + " " + startTime;
+        Instant startDateTimeInstant = Utility.parseToInstant(startDateTime, "d/MM/yyyy HH:mm");
+        curEvent.setStartTime(startDateTimeInstant);
+
+        if (binding.eventTypeTab.getSelectedTabPosition() == 0) {
+            String endTime = "00:00";
+            if (!binding.allDaySwitch.isChecked()) {
+                endTime = binding.endTimeText.getText().toString();
+            }
+            String endDateTime = binding.endDateText.getText().toString() + " " + endTime;
+            Instant endTimeInstant = Utility.parseToInstant(endDateTime, "d/MM/yyyy HH:mm");
+            curEvent.setDuration((int) ChronoUnit.MINUTES.between(startDateTimeInstant, endTimeInstant));
+        } else {
+            curEvent.setDuration(0);
+        }
+
+        String remindBefore = binding.remindBeforeText.getText().toString();
+        switch (remindBefore) {
+            case "5 minutes":
+                curEvent.setReminderTime(startDateTimeInstant.minusSeconds(5 * 60));
+                break;
+            case "15 minutes":
+                curEvent.setReminderTime(startDateTimeInstant.minusSeconds(15 * 60));
+                break;
+            case "30 minutes":
+                curEvent.setReminderTime(startDateTimeInstant.minusSeconds(30 * 60));
+                break;
+            case "1 hour":
+                curEvent.setReminderTime(startDateTimeInstant.minusSeconds(60 * 60));
+                break;
+            case "1 day":
+                curEvent.setReminderTime(startDateTimeInstant.minusSeconds(24 * 60 * 60));
+                break;
+            default:
+                curEvent.setReminderTime(startDateTimeInstant.minusSeconds(5 * 60));
+                break;
+        }
+
+        if (binding.locationText.getText() != null && !binding.locationText.getText().toString().isEmpty())
+            curEvent.setLocation(binding.locationText.getText().toString());
+    }
+
+    private boolean checkInputValid() {
+        if (binding.title.getText() == null || binding.title.getText().toString().isEmpty()) {
+            return  false;
+        }
+
+        if (binding.startDateText.getText() == null || binding.startDateText.getText().toString().isEmpty()) {
+            return false;
+        }
+
+        if (!binding.allDaySwitch.isChecked()) {
+            if (binding.startTimeText.getText() == null
+                  || binding.startTimeText.getText().toString().isEmpty()
+                  || binding.endTimeText == null
+                  || binding.endTimeText.getText().toString().isEmpty()) {
+              return false;
+            }
+        }
+
+        if (binding.eventTypeTab.getSelectedTabPosition() == 0) {
+            if (binding.endDateText.getText() == null || binding.endDateText.getText().toString().isEmpty())
+                return false; // Event must have end date
+        }
+
+        if (binding.repeatModeText.getText() == null || binding.repeatModeText.getText().toString().isEmpty())
+            return false;
+
+        if (binding.remindBeforeText.getText() == null || binding.remindBeforeText.getText().toString().isEmpty())
+            return false;
+
+        return true;
     }
 
     private void autofillEvent() {
@@ -252,9 +340,10 @@ public class EventEditorFragment extends Fragment {
         DatePickerDialog datePickerDialog = new DatePickerDialog(getContext());
         datePickerDialog.setOnDateSetListener((view, year, month, dayOfMonth) -> {
             Log.d("EventEditorFragment", "year: " + year + ", month: " + (month + 1) + ", dayOfMonth: " + dayOfMonth);
-            dateEditText.setText(String.format("%d/%d/%d", month + 1, dayOfMonth, year));
+            dateEditText.setText(String.format("%02d/%02d/%02d", dayOfMonth, month + 1, year));
 
             // TODO: add validation for date time
+
         });
         datePickerDialog.show();
     }

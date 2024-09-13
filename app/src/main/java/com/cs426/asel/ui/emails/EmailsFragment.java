@@ -54,6 +54,7 @@ public class EmailsFragment extends Fragment {
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         // Obtain EmailsViewModel from the activity's ViewModelProvider
+        Log.d("EmailsFragment", "onCreateView");
         binding = FragmentEmailsBinding.inflate(inflater, container, false);
         userEmail = Utility.getUserEmail(requireContext());
         mailRepository = new MailRepository(requireContext(), userEmail);
@@ -126,6 +127,7 @@ public class EmailsFragment extends Fragment {
 
                 if (!recyclerView.canScrollVertically(1)
                         && binding.emailsTab.getSelectedTabPosition() == 0) {
+                    Log.d("EmailsFragment", "Loading more emails");
                     emailsViewModel.loadMoreEmails();
                 }
             }
@@ -205,7 +207,7 @@ public class EmailsFragment extends Fragment {
     @Override
     public void onResume() {
         super.onResume();
-        emailsViewModel.fetchAllEmailsID();
+//        emailsViewModel.fetchAllEmailsID();
     }
 
     private void hideLoadIndicator() {
