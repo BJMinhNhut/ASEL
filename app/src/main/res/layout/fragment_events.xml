@@ -15,20 +15,19 @@
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="20dp"
             android:text="Events"
             android:textAlignment="center"
             android:textAppearance="@style/heading_l"
             android:textColor="@color/dark_darkest"/>
 
-        <RelativeLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="20dp"
-            android:layout_marginHorizontal="20dp"
-            android:padding="5dp"
-            android:background="@drawable/rounded_rectangle"
-            android:backgroundTint="@color/light_medium">
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="20dp"
+        android:layout_marginHorizontal="20dp"
+        android:padding="5dp"
+        android:background="@drawable/rounded_rectangle"
+        android:backgroundTint="@color/light_medium">
 
             <com.google.android.material.tabs.TabLayout
                 android:id="@+id/eventTab"

@@ -1,4 +1,4 @@
-package com.cs426.asel.ui.account;
+package com.cs426.asel.ui.events;
 
 import android.app.AlertDialog;
 import android.app.DatePickerDialog;

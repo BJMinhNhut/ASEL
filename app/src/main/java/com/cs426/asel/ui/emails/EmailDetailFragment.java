@@ -1,8 +1,6 @@
 package com.cs426.asel.ui.emails;
 
 import android.os.Bundle;
-import android.renderscript.ScriptGroup;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -21,11 +19,7 @@ import com.cs426.asel.backend.MailRepository;
 import com.cs426.asel.backend.Utility;
 import com.cs426.asel.databinding.FragmentEmailDetailBinding;
 import com.cs426.asel.ui.account.AccountViewModel;
-import com.cs426.asel.ui.account.EventEditorFragment;
-
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.Locale;
+import com.cs426.asel.ui.events.EventEditorFragment;
 
 public class EmailDetailFragment extends Fragment {
     private static String emailId;

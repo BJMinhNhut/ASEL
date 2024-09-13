@@ -25,6 +25,7 @@ import com.google.api.services.gmail.model.Message;
 import com.google.android.gms.common.api.Scope;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -68,7 +69,7 @@ public class GmailServices {
                 }
                 else {
                     Gmail gmailService = getGmailService(account);
-                    ListMessagesResponse messagesResponse = gmailService.users().messages().list("me").execute();
+                    ListMessagesResponse messagesResponse = gmailService.users().messages().list("me").setLabelIds(Arrays.asList("INBOX")).execute();
                     List<Message> messageList = messagesResponse.getMessages();
                     Log.d("GmailServices", "Fetched " + (messageList != null ? messageList.size() : 0) + " emails.");
 
