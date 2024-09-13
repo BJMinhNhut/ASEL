@@ -31,18 +31,14 @@
             android:textAppearance="@style/heading_l"
             android:textColor="@color/dark_darkest"/>
 
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/camera_button"
-            android:layout_width="50dp"
-            android:layout_height="50dp"
-            android:layout_gravity="end|center_vertical"
-            android:insetLeft="5dp"
-            android:insetRight="5dp"
-            android:backgroundTint="@color/highlight_darkest"
-            app:cornerRadius="10dp"
-            app:iconPadding="0dp"
-            app:iconGravity="textStart"
-            app:icon="@drawable/ic_camera"/>
+        <ImageView
+            android:id="@+id/buttonCamera"
+            android:layout_width="25dp"
+            android:layout_height="25dp"
+            android:layout_gravity="center|end"
+            android:background="?android:attr/selectableItemBackground"
+            android:src="@drawable/ic_camera"
+            app:tint="@color/highlight_darkest" />
     </FrameLayout>
 
     <ScrollView
@@ -159,9 +155,6 @@
                 app:boxCornerRadiusTopEnd="15dp"
                 app:boxCornerRadiusBottomStart="15dp"
                 app:boxCornerRadiusBottomEnd="15dp"
-                app:endIconDrawable="@drawable/ic_calendar_search"
-                app:endIconMode="custom"
-                app:endIconTint="@color/highlight_darkest"
                 app:boxStrokeColor="@color/highlight_darkest"
                 app:hintTextColor="@color/highlight_darkest"
                 app:cursorColor="@color/dark_darkest">
