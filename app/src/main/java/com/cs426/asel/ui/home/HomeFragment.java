@@ -1,8 +1,12 @@
 package com.cs426.asel.ui.home;
 
+import android.content.Context;
+import android.content.SharedPreferences;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.os.Bundle;
+import android.util.Base64;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -19,7 +23,10 @@ import com.cs426.asel.R;
 import com.cs426.asel.backend.Event;
 import com.cs426.asel.backend.EventList;
 import com.cs426.asel.databinding.FragmentHomeBinding;
+import com.cs426.asel.ui.account.InfoViewModel;
+import com.cs426.asel.ui.account.UpdateInfoFragment;
 import com.cs426.asel.ui.events.EventsListFragment;
+import com.google.api.services.gmail.Gmail;
 import com.google.zxing.BarcodeFormat;
 import com.google.zxing.MultiFormatWriter;
 import com.google.zxing.common.BitMatrix;
@@ -35,6 +42,7 @@ public class HomeFragment extends Fragment {
 
     private FragmentHomeBinding binding;
     private ImageView barcode;
+    private InfoViewModel infoViewModel;
 
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
@@ -46,14 +54,38 @@ public class HomeFragment extends Fragment {
 
         barcode = binding.barcode;
 
-        Bitmap barcodeBitmap = generateBarcode("22125078");
-        if (barcodeBitmap != null) {
-            barcode.setImageBitmap(barcodeBitmap);
-        } else {
-            Toast.makeText(getContext(), "Failed to generate barcode", Toast.LENGTH_SHORT).show();
-        }
+        infoViewModel = new ViewModelProvider(requireActivity()).get(InfoViewModel.class);
+        observeViewModel();
 
         return root;
+    }
+
+    private void observeViewModel() {
+        infoViewModel.getFullName().observe(getViewLifecycleOwner(), fullName -> binding.fullname.setText(fullName));
+        infoViewModel.getStudentId().observe(getViewLifecycleOwner(), studentId -> {
+            binding.id.setText(studentId);
+            Bitmap barcodeBitmap = generateBarcode(studentId);
+            if (barcodeBitmap != null) {
+                barcode.setImageBitmap(barcodeBitmap);
+            } else {
+                Toast.makeText(getContext(), "Failed to generate barcode", Toast.LENGTH_SHORT).show();
+            }
+        });
+        infoViewModel.getBirthdate().observe(getViewLifecycleOwner(), birthdate -> binding.birthdate.setText(birthdate));
+        infoViewModel.getSchool().observe(getViewLifecycleOwner(), school -> binding.school.setText(school));
+        infoViewModel.getFaculty().observe(getViewLifecycleOwner(), faculty -> binding.faculty.setText(faculty));
+        infoViewModel.getDegree().observe(getViewLifecycleOwner(), degree -> binding.degree.setText(degree));
+
+        // Observe avatar and set the image in ImageView
+        infoViewModel.getAvatar().observe(getViewLifecycleOwner(), avatarBase64 -> {
+            if (avatarBase64 != null && !avatarBase64.isEmpty()) {
+                byte[] decodedBytes = Base64.decode(avatarBase64, Base64.DEFAULT);
+                Bitmap avatarBitmap = BitmapFactory.decodeByteArray(decodedBytes, 0, decodedBytes.length);
+                binding.avatar.setImageBitmap(avatarBitmap);
+            } else {
+                binding.avatar.setImageResource(R.drawable.avatar_default); // Set default avatar if none
+            }
+        });
     }
 
     private Bitmap generateBarcode(String data) {

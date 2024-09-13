@@ -14,6 +14,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.drawable.BitmapDrawable;
 import android.net.Uri;
 import android.os.Bundle;
 import androidx.annotation.NonNull;
@@ -31,7 +32,10 @@ import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import com.cs426.asel.MainActivity;
 import com.cs426.asel.R;
+import com.cs426.asel.ui.home.HomeFragment;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.textfield.TextInputEditText;
 
@@ -43,13 +47,13 @@ import java.util.Locale;
 
 public class UpdateInfoFragment extends Fragment {
 
-    private AccountViewModel mViewModel;
     private TextInputEditText editTextFullName, editTextStudentId, editTextSchool, editTextFaculty, editTextDegree;
     private TextInputEditText textViewBirthday;
     private ImageButton imageButtonAvatar;
     private ImageView buttonBack;
     private MaterialButton buttonSave;
     private Calendar calendar;
+    private InfoViewModel mViewModel;
 
     private ActivityResultLauncher<Intent> imagePickerLauncher;
 
@@ -62,7 +66,7 @@ public class UpdateInfoFragment extends Fragment {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        mViewModel = new ViewModelProvider(requireActivity()).get(AccountViewModel.class);
+        mViewModel = new ViewModelProvider(requireActivity()).get(InfoViewModel.class);
 
         // Initialize UI components
         imageButtonAvatar = view.findViewById(R.id.imageButtonAvatar);
@@ -110,6 +114,18 @@ public class UpdateInfoFragment extends Fragment {
         // Set onClick listener for save button
         buttonSave.setOnClickListener(v -> {
             saveStudentInfo();
+
+            mViewModel.setFullName(editTextFullName.getText().toString());
+            mViewModel.setStudentId(editTextStudentId.getText().toString());
+            mViewModel.setBirthdate(textViewBirthday.getText().toString());
+            mViewModel.setSchool(editTextSchool.getText().toString());
+            mViewModel.setFaculty(editTextFaculty.getText().toString());
+            mViewModel.setDegree(editTextDegree.getText().toString());
+
+            // Set the avatar image to the ViewModel
+            Bitmap avatarBitmap = ((BitmapDrawable) imageButtonAvatar.getDrawable()).getBitmap();
+            mViewModel.setAvatar(encodeToBase64(avatarBitmap));
+
             Toast.makeText(requireContext(), "Info saved successfully", Toast.LENGTH_SHORT).show();
             FragmentManager fm = getParentFragmentManager();
             fm.popBackStack();
@@ -122,6 +138,13 @@ public class UpdateInfoFragment extends Fragment {
                 fm.popBackStack();
             }
         });
+    }
+
+    private String encodeToBase64(Bitmap image) {
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        image.compress(Bitmap.CompressFormat.PNG, 100, baos);
+        byte[] byteArray = baos.toByteArray();
+        return Base64.encodeToString(byteArray, Base64.DEFAULT);
     }
 
     private void openImagePicker() {
@@ -144,11 +167,11 @@ public class UpdateInfoFragment extends Fragment {
     private void saveImageToPreferences(Bitmap bitmap) {
         SharedPreferences sharedPreferences = requireContext().getSharedPreferences("StudentInfo", Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = sharedPreferences.edit();
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        bitmap.compress(Bitmap.CompressFormat.PNG, 100, baos);
-        String imageEncoded = Base64.encodeToString(baos.toByteArray(), Base64.DEFAULT);
-        editor.putString("avatar_image", imageEncoded);
+        editor.putString("avatar_image", encodeToBase64(bitmap));
         editor.apply();
+
+        // Update ViewModel with the new avatar image
+        mViewModel.setAvatar(encodeToBase64(bitmap));
     }
 
     private Bitmap loadImageFromPreferences() {
@@ -213,5 +236,6 @@ public class UpdateInfoFragment extends Fragment {
         editor.putString("faculty", editTextFaculty.getText().toString());
         editor.putString("degree", editTextDegree.getText().toString());
         editor.apply();
+
     }
 }
