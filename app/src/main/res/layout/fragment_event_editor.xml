@@ -116,7 +116,8 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="All-day"
-                    android:textAppearance="@style/body_m"/>
+                    android:textAppearance="@style/body_m"
+                    android:textColor="@color/dark_darkest"/>
 
                 <View
                     android:layout_width="0dp"

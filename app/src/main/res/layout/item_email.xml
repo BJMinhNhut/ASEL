@@ -148,7 +148,8 @@
                 android:layout_width="20dp"
                 android:layout_height="20dp"
                 android:layout_gravity="center_horizontal"
-                android:src="@drawable/ic_map_pin"/>
+                android:src="@drawable/ic_map_pin"
+                app:tint="@color/dark_darkest"/>
 
             <TextView
                 android:id="@+id/location"

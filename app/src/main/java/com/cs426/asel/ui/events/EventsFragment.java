@@ -28,6 +28,7 @@ import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
+import java.util.Locale;
 
 public class EventsFragment extends Fragment {
     private FragmentEventsBinding binding;
@@ -138,9 +139,9 @@ public class EventsFragment extends Fragment {
 
             LocalDateTime startDateTime = LocalDateTime.ofInstant(event.getStartTime(), ZoneId.systemDefault());
 
-            DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("HH:mm");
-            DateTimeFormatter monthFormatter = DateTimeFormatter.ofPattern("MMM");
-            DateTimeFormatter dayFormatter = DateTimeFormatter.ofPattern("dd");
+            DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("HH:mm", Locale.ENGLISH);
+            DateTimeFormatter monthFormatter = DateTimeFormatter.ofPattern("MMM", Locale.ENGLISH);
+            DateTimeFormatter dayFormatter = DateTimeFormatter.ofPattern("dd", Locale.ENGLISH);
 
             String startTime = timeFormatter.format(startDateTime);
             String startDay = dayFormatter.format(startDateTime);
