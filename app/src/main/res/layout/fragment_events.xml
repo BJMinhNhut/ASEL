@@ -3,16 +3,32 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:orientation="vertical">
+    android:orientation="vertical"
+    android:background="@color/light_lightest">
 
-    <TextView
+    <FrameLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="20dp"
-        android:text="Events"
-        android:textAlignment="center"
-        android:textAppearance="@style/heading_l"
-        android:textColor="@color/dark_darkest"/>
+        android:layout_marginHorizontal="20dp"
+        android:layout_marginTop="20dp">
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Events"
+            android:textAlignment="center"
+            android:textAppearance="@style/heading_l"
+            android:textColor="@color/dark_darkest"/>
+
+        <ImageView
+            android:id="@+id/infoButton"
+            android:layout_width="25dp"
+            android:layout_height="25dp"
+            android:layout_gravity="center|end"
+            android:src="@drawable/ic_info"
+            app:tint="@color/highlight_darkest"
+            android:background="?android:attr/selectableItemBackground"/>
+    </FrameLayout>
 
     <RelativeLayout
         android:layout_width="match_parent"

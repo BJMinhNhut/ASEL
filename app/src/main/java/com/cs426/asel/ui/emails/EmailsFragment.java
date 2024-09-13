@@ -205,6 +205,12 @@ public class EmailsFragment extends Fragment {
         itemTouchHelper.attachToRecyclerView(emailListRecyclerView);
     }
 
+    @Override
+    public void onResume() {
+        super.onResume();
+        emailsViewModel.fetchAllEmailsID();
+    }
+
     private void hideLoadIndicator() {
         binding.loadingIndicator.setVisibility(View.GONE);
         binding.emailListRecyclerView.setVisibility(View.VISIBLE);
