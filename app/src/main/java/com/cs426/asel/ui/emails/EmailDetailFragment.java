@@ -68,8 +68,13 @@ public class EmailDetailFragment extends Fragment {
 
         Button createEventButton = view.findViewById(R.id.create_event);
         createEventButton.setOnClickListener(v -> {
+            EventEditorFragment eventEditorFragment = new EventEditorFragment();
+            Bundle bundle = new Bundle();
+            bundle.putString("emailId", emailId);
+            eventEditorFragment.setArguments(bundle);
+
             FragmentTransaction ft = getParentFragmentManager().beginTransaction();
-            ft.replace(R.id.emailsContainer, new EventEditorFragment()).addToBackStack(null).commit();
+            ft.replace(R.id.emailsContainer, eventEditorFragment).addToBackStack(null).commit();
         });
 
         backButton.setOnClickListener(v -> {
