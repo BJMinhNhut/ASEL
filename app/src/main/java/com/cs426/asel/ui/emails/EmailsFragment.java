@@ -66,6 +66,15 @@ public class EmailsFragment extends Fragment {
         setRetainInstance(true);
     }
 
+    @Override
+    public void onResume() {
+        super.onResume();
+
+        if (!emailsViewModel.isFetchStarted()) {
+            emailsViewModel.fetchAllEmailsID();
+        }
+    }
+
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -384,13 +393,19 @@ public class EmailsFragment extends Fragment {
             // cast the holder to EmailViewHolder
             EmailViewHolder emailHolder = (EmailViewHolder) holder;
             emailHolder.itemView.setOnClickListener(v -> {
+                int curPosition = holder.getBindingAdapterPosition();
                 Bundle bundle = new Bundle();
-                bundle.putString("emailId", mailList.getMail(position).getId()); // Replace 1 with the actual email ID you want to pass
-
+                bundle.putString("emailId", mailList.getMail(curPosition).getId()); // Replace 1 with the actual email ID you want to pass
                 FragmentTransaction ft = getParentFragmentManager().beginTransaction();
                 EmailDetailFragment fragment = new EmailDetailFragment();
                 fragment.setArguments(bundle);
                 ft.replace(R.id.emailsContainer, fragment).addToBackStack(null).commit();
+
+                if (!mailList.getMail(curPosition).isRead()) {
+                    removedIndex = curPosition;
+                    removedMail = mailList.getMail(holder.getBindingAdapterPosition());
+                    moveMailToRead(removedIndex, removedMail);
+                }
             });
 
             String sender = mailList.getMail(position).getSender();

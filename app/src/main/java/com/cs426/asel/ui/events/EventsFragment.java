@@ -196,7 +196,7 @@ public class EventsFragment extends Fragment {
 
             holder.itemView.setOnClickListener(v -> {
                 Bundle bundle = new Bundle();
-                bundle.putString("emailId", eventList.getEvent(position).getMailID()); // Replace 1 with the actual email ID you want to pass
+                bundle.putInt("eventId", eventList.getEvent(position).getID()); // Replace 1 with the actual email ID you want to pass
 
                 FragmentTransaction ft = getParentFragmentManager().beginTransaction();
                 EventEditorFragment fragment = new EventEditorFragment();

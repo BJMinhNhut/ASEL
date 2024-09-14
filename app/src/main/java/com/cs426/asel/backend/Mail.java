@@ -223,7 +223,7 @@ public class Mail {
     }
 
     public ListenableFuture<GenerateContentResponse> summarize() {
-        String prompt = "Please provide a brief summary of the email below  with this schema: { \"summary\": str, \"fromDateTime\": str, \"toDateTime\": str, \"location\": str, \"tag\": str}. Provide a short and general summary of the content. If there is an event, provide the fromDateTime, toDateTime, and location of the event, else put null. If there is only one time mark or deadline, put it in fromDateTime and leave toDateTime null. The DateTime should be given in the format \"DD/MM/YYYY/, hh:mm\", if there is date but no specific hour or minute, put 00:00 for hh:mm. Provide the tag of mail (Assignment, Exam, Meeting, Course Material, Other):";
+        String prompt = "Please provide a brief summary of the email below  with this schema: { \"summary\": str, \"fromDateTime\": str, \"toDateTime\": str, \"location\": str, \"tag\": str}. Provide a short and general summary of the content. If there is an event, provide the fromDateTime, toDateTime, and location of the event, else put null. If there is only one time mark or deadline, put it in fromDateTime and leave toDateTime null. The DateTime should be given in the format \"DD/MM/YYYY/, hh:mm\", if there is date but no specific hour or minute, put 00:00 for hh:mm. Provide the tag of mail (Assignment, Exam, Meeting, Material, Spam, Other):";
 
         return ChatGPTUtils.getResponse(prompt + mContent);
     }
