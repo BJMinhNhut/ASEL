@@ -208,7 +208,7 @@ public class EventRepository {
 
         // get mail id from event id
         SQLiteDatabase db = dbHelper.getReadableDatabase();
-        String[] projection = {DatabaseContract.Mails.COLUMN_NAME_EVENT_ID};
+        String[] projection = {DatabaseContract.Mails._ID};
         String selection = DatabaseContract.Mails.COLUMN_NAME_EVENT_ID + " = ?";
         String[] selectionArgs = {String.valueOf(eventID)};
         Cursor cursor = db.query(
