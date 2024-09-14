@@ -16,4 +16,5 @@
     <string name="exception_message">Error occurred</string>
     <string name="new_event_fab_description">Create new event</string>
     <string name="extract_promt">provide a brief summary of the email below. The summary should be short and general. If there is an event, provide the fromDateTime and toDateTime, location, else put null. If there is only one time mark or deadline, put it in fromDateTime and leave toDateTime null. The DateTime should be given in the format "DD/MM/YYYY/ # hh:mm". Provide the tag of mail (Assignment, Exam, Meeting, Course Material, Other):</string>
+    <string name="noti_channel_id">channel_notification</string>
 </resources>

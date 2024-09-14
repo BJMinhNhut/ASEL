@@ -34,7 +34,7 @@ public class NotificationReceiver extends BroadcastReceiver {
         Calendar reminderTime = noti.getReminderTime();
 
         // Build and display the notification
-        NotificationCompat.Builder builder = new NotificationCompat.Builder(context, "event_channel_id")
+        NotificationCompat.Builder builder = new NotificationCompat.Builder(context, context.getString(R.string.noti_channel_id))
                 .setSmallIcon(R.drawable.notification_icon) // Set your notification icon
                 .setContentTitle(eventTitle)
                 .setContentText(eventContent)

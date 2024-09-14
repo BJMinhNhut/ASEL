@@ -139,17 +139,17 @@ public class MainActivity extends AppCompatActivity {
                 })
                 .setNegativeButton("Cancel", null)
                 .show();
-            String channelId = "event_channel_id";
-            CharSequence name = "Event Reminder";
-            String description = "Notifications for upcoming events";
-            int importance = NotificationManager.IMPORTANCE_HIGH;
-            NotificationChannel channel = new NotificationChannel(channelId, name, importance);
-            channel.setDescription(description);
-
-            // Register the channel with the system
-            NotificationManager notificationManager = getSystemService(NotificationManager.class);
-            notificationManager.createNotificationChannel(channel);
         }
+        String channelId = getString(R.string.noti_channel_id);
+        CharSequence name = "Notification channel";
+        String description = "Notifications for upcoming events";
+        int importance = NotificationManager.IMPORTANCE_HIGH;
+        NotificationChannel channel = new NotificationChannel(channelId, name, importance);
+        channel.setDescription(description);
+
+        // Register the channel with the system
+        NotificationManager notificationManager = getSystemService(NotificationManager.class);
+        notificationManager.createNotificationChannel(channel);
         Utility.startScheduledWork(this);
     }
 
@@ -260,24 +260,6 @@ public class MainActivity extends AppCompatActivity {
             // Check if the permission request was granted
             if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                 Toast.makeText(this, "Notification permission granted", Toast.LENGTH_SHORT).show();
-                // Permission is granted, proceed with showing the notification
-                Log.d("MainActivity", "Attempting to noti");
-                NotificationCompat.Builder builder = new NotificationCompat.Builder(this, "event_channel_id")
-                        .setSmallIcon(android.R.drawable.ic_dialog_info) // Make sure you use a valid icon
-                        .setContentTitle("Test Notification")
-                        .setContentText("This is a test notification")
-                        .setPriority(NotificationCompat.PRIORITY_HIGH)
-                        .setAutoCancel(true);
-
-                NotificationManagerCompat notificationManager = NotificationManagerCompat.from(this);
-
-                // Ensure that you can post the notification
-                if (ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED) {
-                    notificationManager.notify(1, builder.build());
-                } else {
-                    // Log or notify the user that the permission is still not available
-                    Toast.makeText(this, "Notification permission not granted", Toast.LENGTH_SHORT).show();
-                }
             } else {
                 // Permission was denied, handle this case
                 Toast.makeText(this, "Notification permission denied", Toast.LENGTH_SHORT).show();

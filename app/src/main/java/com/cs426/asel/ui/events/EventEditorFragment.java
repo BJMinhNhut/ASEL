@@ -25,6 +25,7 @@ import com.cs426.asel.databinding.FragmentEventEditorBinding;
 import com.google.android.material.tabs.TabLayout;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.common.util.concurrent.AbstractExecutionThreadService;
+import com.journeyapps.barcodescanner.Util;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
@@ -197,13 +198,14 @@ public class EventEditorFragment extends Fragment {
                     eventRepository.updateEvent(curEvent);
                     eventID = curEvent.getID();
                     eventRepository.setPublishEvent(eventID, true);
-
+                    Utility.cancelNotification(requireContext(), (int)eventID);
                 }
                 int repeatMode = curEvent.isRepeating() ? Notification.stringToRepeatMode(curEvent.getRepeatFrequency()) : Notification.REPEAT_NONE;
-                Log.d("EventEditorFragment", "repeatMode: " + repeatMode);
-                Log.d("EventEditorFragment", "calendar: " + Utility.toCalendar(curEvent.getStartTime()));
-                Log.d("EventEditorFragment", "reminderTime: " + Utility.toCalendar(curEvent.getReminderTime()));
-                Notification noti = new Notification(curEvent.getTitle(), curEvent.getDescription(), Utility.toCalendar(curEvent.getStartTime()), repeatMode, Utility.toCalendar(curEvent.getReminderTime()));
+                Calendar startTimeCalendar = Utility.toCalendar(curEvent.getStartTime());
+                Calendar reminderTimeCalendar = Utility.toCalendar(curEvent.getReminderTime());
+                long time_diff = (startTimeCalendar.getTimeInMillis() - reminderTimeCalendar.getTimeInMillis()) / (1000 * 60);
+                String title = time_diff + " minutes before " + curEvent.getTitle();
+                Notification noti = new Notification(title, curEvent.getDescription(), Utility.toCalendar(curEvent.getStartTime()), repeatMode, Utility.toCalendar(curEvent.getReminderTime()));
 
                 Utility.scheduleNotification(requireContext(), (int)eventID, noti);
 
