@@ -74,8 +74,8 @@ public class UpdateInfoFragment extends Fragment implements MainActivity.Permiss
     private TextInputEditText editTextFullName, editTextStudentId, editTextSchool, editTextFaculty, editTextDegree;
     private TextInputEditText textViewBirthday;
     private ImageButton imageButtonAvatar;
-    private ImageView buttonBack;
-    private MaterialButton buttonSave, cameraButton;
+    private ImageView buttonBack, buttonCamera;
+    private MaterialButton buttonSave;
     private Calendar calendar;
     private InfoViewModel mViewModel;
     private boolean isCameraPermitted = false;
@@ -96,7 +96,7 @@ public class UpdateInfoFragment extends Fragment implements MainActivity.Permiss
 
         // Initialize UI components
         imageButtonAvatar = view.findViewById(R.id.imageButtonAvatar);
-        cameraButton = view.findViewById(R.id.camera_button);
+        buttonCamera = view.findViewById(R.id.buttonCamera);
         editTextFullName = view.findViewById(R.id.editTextFullName);
         editTextStudentId = view.findViewById(R.id.editTextStudentId);
         textViewBirthday = view.findViewById(R.id.textViewBirthday);
@@ -159,7 +159,7 @@ public class UpdateInfoFragment extends Fragment implements MainActivity.Permiss
 
         // Set listener for camera button to open image picker
         checkCameraPermission();
-        cameraButton.setOnClickListener(v -> {
+        buttonCamera.setOnClickListener(v -> {
             openCamera();
         });
 

@@ -3,6 +3,7 @@ package com.cs426.asel.ui.home;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.res.Configuration;
+import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
@@ -16,6 +17,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
+import androidx.core.content.res.ResourcesCompat;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.RecyclerView;
@@ -63,8 +65,10 @@ public class HomeFragment extends Fragment {
             binding.id.setText(studentId);
             Bitmap barcodeBitmap = generateBarcode(studentId);
             if (barcodeBitmap != null) {
+                barcode.setVisibility(View.VISIBLE);
                 barcode.setImageBitmap(barcodeBitmap);
             } else {
+                barcode.setVisibility(View.GONE);
                 Toast.makeText(getContext(), "Failed to generate barcode", Toast.LENGTH_SHORT).show();
             }
         });
@@ -100,7 +104,7 @@ public class HomeFragment extends Fragment {
 
             for (int x = 0; x < width; x++) {
                 for (int y = 0; y < height; y++) {
-                    bitmap.setPixel(x, y, bitMatrix.get(x, y) ? Color.BLACK : Color.TRANSPARENT);
+                    bitmap.setPixel(x, y, bitMatrix.get(x, y) ? ResourcesCompat.getColor(getResources(), R.color.dark_darkest, null) : Color.TRANSPARENT);
                 }
             }
 
