@@ -126,7 +126,7 @@ public class EmailsFragment extends Fragment {
         View root = binding.getRoot();
         emailListRecyclerView = root.findViewById(R.id.email_list_recycler_view);
         emailListRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
-        emailListRecyclerView.addItemDecoration(new SpaceItemDecoration(20));
+        emailListRecyclerView.addItemDecoration(new SpaceItemDecoration(30));
         emailListRecyclerView.setAdapter(adapter);
         emailListRecyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
             @Override

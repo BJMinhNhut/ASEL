@@ -275,13 +275,11 @@ public class EventEditorFragment extends Fragment {
 
         if (!binding.allDaySwitch.isChecked()) {
             if (binding.startTimeText.getText() == null
-                  || binding.startTimeText.getText().toString().isEmpty()) {
-              return false;
+                    || binding.startTimeText.getText().toString().isEmpty()) {
+                return false;
             }
 
         }
-
-
 
         if (binding.eventTypeTab.getSelectedTabPosition() == 0) {
             if (binding.endDateText.getText() == null || binding.endDateText.getText().toString().isEmpty())
@@ -362,12 +360,16 @@ public class EventEditorFragment extends Fragment {
 
     private void switchToTaskLayout() {
         eventType = 1;
+        binding.startDateLayout.setHint("On date");
+        binding.startTimeLayout.setHint("At time");
         binding.endDateLayout.setVisibility(View.GONE);
         binding.endTimeLayout.setVisibility(View.GONE);
     }
 
     private void switchToEventLayout() {
         eventType = 0;
+        binding.startDateLayout.setHint("Start date");
+        binding.startTimeLayout.setHint("Start time");
         binding.endDateLayout.setVisibility(View.VISIBLE);
         if (binding.allDaySwitch.isChecked()) {
             binding.endTimeLayout.setVisibility(View.GONE);

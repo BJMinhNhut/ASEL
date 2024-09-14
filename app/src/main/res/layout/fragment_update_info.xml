@@ -105,7 +105,7 @@
                 app:boxCornerRadiusTopEnd="15dp"
                 app:boxCornerRadiusBottomStart="15dp"
                 app:boxCornerRadiusBottomEnd="15dp"
-                app:boxStrokeColor="@color/highlight_darkest"
+                app:boxStrokeColor="@color/text_input_color"
                 app:hintTextColor="@color/highlight_darkest"
                 app:cursorColor="@color/dark_darkest">
 
@@ -130,7 +130,7 @@
                 app:boxCornerRadiusTopEnd="15dp"
                 app:boxCornerRadiusBottomStart="15dp"
                 app:boxCornerRadiusBottomEnd="15dp"
-                app:boxStrokeColor="@color/highlight_darkest"
+                app:boxStrokeColor="@color/text_input_color"
                 app:hintTextColor="@color/highlight_darkest"
                 app:cursorColor="@color/dark_darkest">
 
@@ -158,7 +158,7 @@
                 app:endIconDrawable="@drawable/ic_calendar_search"
                 app:endIconMode="custom"
                 app:endIconTint="@color/highlight_darkest"
-                app:boxStrokeColor="@color/highlight_darkest"
+                app:boxStrokeColor="@color/text_input_color"
                 app:hintTextColor="@color/highlight_darkest"
                 app:cursorColor="@color/dark_darkest">
 
@@ -183,7 +183,7 @@
                 app:boxCornerRadiusTopEnd="15dp"
                 app:boxCornerRadiusBottomStart="15dp"
                 app:boxCornerRadiusBottomEnd="15dp"
-                app:boxStrokeColor="@color/highlight_darkest"
+                app:boxStrokeColor="@color/text_input_color"
                 app:hintTextColor="@color/highlight_darkest"
                 app:cursorColor="@color/dark_darkest">
 
@@ -208,7 +208,7 @@
                 app:boxCornerRadiusTopEnd="15dp"
                 app:boxCornerRadiusBottomStart="15dp"
                 app:boxCornerRadiusBottomEnd="15dp"
-                app:boxStrokeColor="@color/highlight_darkest"
+                app:boxStrokeColor="@color/text_input_color"
                 app:hintTextColor="@color/highlight_darkest"
                 app:cursorColor="@color/dark_darkest">
 
@@ -233,7 +233,7 @@
                 app:boxCornerRadiusTopEnd="15dp"
                 app:boxCornerRadiusBottomStart="15dp"
                 app:boxCornerRadiusBottomEnd="15dp"
-                app:boxStrokeColor="@color/highlight_darkest"
+                app:boxStrokeColor="@color/text_input_color"
                 app:hintTextColor="@color/highlight_darkest"
                 app:cursorColor="@color/dark_darkest">
 

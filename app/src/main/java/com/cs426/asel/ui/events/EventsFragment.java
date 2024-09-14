@@ -44,7 +44,7 @@ public class EventsFragment extends Fragment {
 
         RecyclerView eventRecyclerView = binding.eventRecyclerView;
         eventRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
-        eventRecyclerView.addItemDecoration(new SpaceItemDecoration(20));
+        eventRecyclerView.addItemDecoration(new SpaceItemDecoration(30));
 
 
         EventAdapter eventAdapter = new EventAdapter();
