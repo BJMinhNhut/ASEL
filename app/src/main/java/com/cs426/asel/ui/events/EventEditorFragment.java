@@ -19,13 +19,18 @@ import com.cs426.asel.backend.Event;
 import com.cs426.asel.backend.EventRepository;
 import com.cs426.asel.backend.Mail;
 import com.cs426.asel.backend.MailRepository;
+import com.cs426.asel.backend.Notification;
 import com.cs426.asel.backend.Utility;
 import com.cs426.asel.databinding.FragmentEventEditorBinding;
 import com.google.android.material.tabs.TabLayout;
 import com.google.android.material.textfield.TextInputEditText;
+import com.google.common.util.concurrent.AbstractExecutionThreadService;
+import com.journeyapps.barcodescanner.Util;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
+import java.util.Calendar;
+import java.util.Date;
 
 public class EventEditorFragment extends Fragment {
 
@@ -184,14 +189,25 @@ public class EventEditorFragment extends Fragment {
                 EventRepository eventRepository = new EventRepository(requireContext(), Utility.getUserEmail(requireContext()));
 
                 putEventInfo();
+                long eventID = -1;
                 // If event not int db, insert then publish, else find the event and publish
                 if (curEvent.getID() == -1) {
                     curEvent.setIsPublished(true);
-                    eventRepository.insertEvent(curEvent);
+                    eventID = eventRepository.insertEvent(curEvent);
                 } else {
                     eventRepository.updateEvent(curEvent);
-                    eventRepository.setPublishEvent(curEvent.getID(), true);
+                    eventID = curEvent.getID();
+                    eventRepository.setPublishEvent(eventID, true);
+                    Utility.cancelNotification(requireContext(), (int)eventID);
                 }
+                int repeatMode = curEvent.isRepeating() ? Notification.stringToRepeatMode(curEvent.getRepeatFrequency()) : Notification.REPEAT_NONE;
+                Calendar startTimeCalendar = Utility.toCalendar(curEvent.getStartTime());
+                Calendar reminderTimeCalendar = Utility.toCalendar(curEvent.getReminderTime());
+                long time_diff = (startTimeCalendar.getTimeInMillis() - reminderTimeCalendar.getTimeInMillis()) / (1000 * 60);
+                String title = time_diff + " minutes before " + curEvent.getTitle();
+                Notification noti = new Notification(title, curEvent.getDescription(), Utility.toCalendar(curEvent.getStartTime()), repeatMode, Utility.toCalendar(curEvent.getReminderTime()));
+
+                Utility.scheduleNotification(requireContext(), (int)eventID, noti);
 
                 FragmentManager fm = getParentFragmentManager();
                 fm.popBackStack();

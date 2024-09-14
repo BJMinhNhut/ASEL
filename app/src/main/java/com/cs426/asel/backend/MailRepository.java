@@ -257,7 +257,7 @@ public class MailRepository {
     }
 
     public boolean isMailExists(String id) {
-        Log.println(Log.INFO, "MailRepository", "Checking if mail exists: " + id);
+//        Log.println(Log.INFO, "MailRepository", "Checking if mail exists: " + id);
         SQLiteDatabase db = dbHelper.getReadableDatabase();
         String[] projection = {"1"};  // Query only a constant value
         String selection = DatabaseContract.Mails._ID + " = ?";
@@ -297,7 +297,7 @@ public class MailRepository {
     }
 
     private Event getEventByID(String mailId, int eventID) {
-        Log.println(Log.INFO, "MailRepository", "Getting event by ID: " + eventID);
+//        Log.println(Log.INFO, "MailRepository", "Getting event by ID: " + eventID);
         SQLiteDatabase db = dbHelper.getReadableDatabase();
 
         String[] projection = {
