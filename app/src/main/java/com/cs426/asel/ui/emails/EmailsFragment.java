@@ -66,7 +66,7 @@ public class EmailsFragment extends Fragment {
         mailRepository = new MailRepository(requireContext(), userEmail);
         eventRepository = new EventRepository(requireContext(), userEmail);
         emailsViewModel = new ViewModelProvider(requireActivity()).get(EmailsViewModel.class);
-        emailsViewModel.fetchAllEmailsID();
+        emailsViewModel.fetchNextIdBatch();
         adapter = new EmailListAdapter();
         unread = new MailList();
         read = mailRepository.getMailByRead(true, "send_time", false);
