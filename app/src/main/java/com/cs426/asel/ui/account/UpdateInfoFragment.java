@@ -139,6 +139,7 @@ public class UpdateInfoFragment extends Fragment implements MainActivity.Permiss
         // Set listener for camera button to open the camera
         cameraButton.setOnClickListener(v -> {
             openCamera();
+            Toast.makeText(requireContext(), "Camera opened", Toast.LENGTH_SHORT).show();
         });
 
         // Load saved data
@@ -157,9 +158,6 @@ public class UpdateInfoFragment extends Fragment implements MainActivity.Permiss
         });
         // Set listener for camera button to open image picker
 //        checkCameraPermission();
-        cameraButton.setOnClickListener(v -> {
-            openImagePicker();
-        });
         // Set onClick listener for save button
         buttonSave.setOnClickListener(v -> {
             saveStudentInfo();
@@ -206,8 +204,8 @@ public class UpdateInfoFragment extends Fragment implements MainActivity.Permiss
     }
 
     private void openCamera() {
-//        Intent cameraIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-        Intent cameraIntent = new Intent(MediaStore.ACTION_PICK_IMAGES);
+        Intent cameraIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+//        Intent cameraIntent = new Intent(MediaStore.ACTION_PICK_IMAGES);
         cameraLauncher.launch(cameraIntent);
     }
 
