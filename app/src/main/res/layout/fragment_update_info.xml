@@ -42,6 +42,7 @@
             app:cornerRadius="10dp"
             app:iconPadding="0dp"
             app:iconGravity="textStart"
+            app:iconTint="@color/light_lightest"
             app:icon="@drawable/ic_camera"/>
     </FrameLayout>
 
