@@ -107,7 +107,7 @@ public class UpdateAccountFragment extends Fragment {
     }
 
     private void fetchEmailIds() {
-        emailsViewModel.fetchAllEmailsID(); // Use EmailsViewModel
+        emailsViewModel.fetchNextIdBatch(); // Use EmailsViewModel
     }
 
     private void addAccount() {
