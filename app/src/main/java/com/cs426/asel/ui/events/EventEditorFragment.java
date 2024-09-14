@@ -183,35 +183,32 @@ public class EventEditorFragment extends Fragment {
             }
         });
 
-        binding.saveEventButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                EventRepository eventRepository = new EventRepository(requireContext(), Utility.getUserEmail(requireContext()));
+        binding.saveEventButton.setOnClickListener(v -> {
+            EventRepository eventRepository = new EventRepository(requireContext(), Utility.getUserEmail(requireContext()));
 
-                putEventInfo();
-                long eventID = -1;
-                // If event not int db, insert then publish, else find the event and publish
-                if (curEvent.getID() == -1) {
-                    curEvent.setIsPublished(true);
-                    eventID = eventRepository.insertEvent(curEvent);
-                } else {
-                    eventRepository.updateEvent(curEvent);
-                    eventID = curEvent.getID();
-                    eventRepository.setPublishEvent(eventID, true);
-                    Utility.cancelNotification(requireContext(), (int)eventID);
-                }
-                int repeatMode = curEvent.isRepeating() ? Notification.stringToRepeatMode(curEvent.getRepeatFrequency()) : Notification.REPEAT_NONE;
-                Calendar startTimeCalendar = Utility.toCalendar(curEvent.getStartTime());
-                Calendar reminderTimeCalendar = Utility.toCalendar(curEvent.getReminderTime());
-                long time_diff = (startTimeCalendar.getTimeInMillis() - reminderTimeCalendar.getTimeInMillis()) / (1000 * 60);
-                String title = time_diff + " minutes before " + curEvent.getTitle();
-                Notification noti = new Notification(title, curEvent.getDescription(), Utility.toCalendar(curEvent.getStartTime()), repeatMode, Utility.toCalendar(curEvent.getReminderTime()));
-
-                Utility.scheduleNotification(requireContext(), (int)eventID, noti);
-
-                FragmentManager fm = getParentFragmentManager();
-                fm.popBackStack();
+            putEventInfo();
+            long eventID = -1;
+            // If event not int db, insert then publish, else find the event and publish
+            if (curEvent.getID() == -1) {
+                curEvent.setIsPublished(true);
+                eventID = eventRepository.insertEvent(curEvent);
+            } else {
+                eventRepository.updateEvent(curEvent);
+                eventID = curEvent.getID();
+                eventRepository.setPublishEvent(eventID, true);
+                Utility.cancelNotification(requireContext(), (int)eventID);
             }
+            int repeatMode = curEvent.isRepeating() ? Notification.stringToRepeatMode(curEvent.getRepeatFrequency()) : Notification.REPEAT_NONE;
+            Calendar startTimeCalendar = Utility.toCalendar(curEvent.getStartTime());
+            Calendar reminderTimeCalendar = Utility.toCalendar(curEvent.getReminderTime());
+            long time_diff = (startTimeCalendar.getTimeInMillis() - reminderTimeCalendar.getTimeInMillis()) / (1000 * 60);
+            String title = time_diff + " minutes before " + curEvent.getTitle();
+            Notification noti = new Notification(title, curEvent.getDescription(), Utility.toCalendar(curEvent.getStartTime()), repeatMode, Utility.toCalendar(curEvent.getReminderTime()));
+
+            Utility.scheduleNotification(requireContext(), (int)eventID, noti);
+
+            FragmentManager fm = getParentFragmentManager();
+            fm.popBackStack();
         });
 
         Bundle extras = getArguments();
@@ -221,6 +218,21 @@ public class EventEditorFragment extends Fragment {
             Mail mail = new MailRepository(requireContext(), Utility.getUserEmail(requireContext())).getMailById(extras.getString("emailId"));
             curEvent = mail.getEvent();
             autofillEvent();
+        }
+
+        if (curEvent.isPublished()) {
+            binding.deleteEventButton.setVisibility(View.VISIBLE);
+            binding.deleteEventButton.setOnClickListener(v -> {
+                EventRepository eventRepository = new EventRepository(requireContext(), Utility.getUserEmail(requireContext()));
+                assert curEvent.getID() != -1 : "Event not in db yet to delete";
+                int eventID = curEvent.getID();
+                eventRepository.setPublishEvent(eventID, false);
+                Utility.cancelNotification(requireContext(), eventID);
+                FragmentManager fm = getParentFragmentManager();
+                fm.popBackStack();
+            });
+        } else {
+            binding.deleteEventButton.setVisibility(View.GONE);
         }
 
         return root;
