@@ -19,6 +19,7 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
+import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.cs426.asel.MainActivity;
@@ -69,6 +70,9 @@ public class HomeFragment extends Fragment {
 
         binding.events.setAdapter(eventsAdapter);
         binding.mails.setAdapter(mailsAdapter);
+
+        binding.mails.setLayoutManager(new LinearLayoutManager(getContext()));
+        binding.events.setLayoutManager(new LinearLayoutManager(getContext()));
 
         infoViewModel = new ViewModelProvider(requireActivity()).get(InfoViewModel.class);
         emailsViewModel = new ViewModelProvider(requireActivity()).get(EmailsViewModel.class);
