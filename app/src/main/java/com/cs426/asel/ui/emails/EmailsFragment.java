@@ -1,18 +1,25 @@
 package com.cs426.asel.ui.emails;
 
 import android.app.AlertDialog;
+import android.content.res.Resources;
+import android.graphics.Color;
 import android.graphics.Rect;
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.cardview.widget.CardView;
+import androidx.core.content.res.ResourcesCompat;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.Observer;
 import androidx.fragment.app.FragmentTransaction;
@@ -36,6 +43,7 @@ import com.google.android.material.tabs.TabLayout;
 import java.time.Instant;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
+import java.util.Objects;
 
 public class EmailsFragment extends Fragment {
     private MailList unread;
@@ -124,7 +132,58 @@ public class EmailsFragment extends Fragment {
         super.onViewCreated(view, savedInstanceState);
 
         View root = binding.getRoot();
-        emailListRecyclerView = root.findViewById(R.id.email_list_recycler_view);
+
+        binding.infoButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                String[] tags = {"Assignment", "Exam", "Meeting", "Course Material", "Other"};
+                int[] colors = {
+                        ResourcesCompat.getColor(getResources(), R.color.tag_assignment, null),
+                        ResourcesCompat.getColor(getResources(), R.color.tag_exam, null),
+                        ResourcesCompat.getColor(getResources(), R.color.tag_meeting, null),
+                        ResourcesCompat.getColor(getResources(), R.color.tag_course_material, null),
+                        ResourcesCompat.getColor(getResources(), R.color.tag_other, null)
+                };
+
+                LinearLayout layout = new LinearLayout(getContext());
+                layout.setOrientation(LinearLayout.VERTICAL);
+                layout.setPadding(20, 20, 20, 20);
+
+                for (int i = 0; i < tags.length; i++) {
+                    LinearLayout rowLayout = new LinearLayout(getContext());
+                    rowLayout.setOrientation(LinearLayout.HORIZONTAL);
+                    rowLayout.setPadding(20, 20, 20, 20);
+                    rowLayout.setGravity(Gravity.CENTER_VERTICAL);
+
+                    // Create the circle (using a View)
+                    CardView circleView = new CardView(getContext());
+                    LinearLayout.LayoutParams circleParams = new LinearLayout.LayoutParams(50, 50);
+                    circleParams.setMargins(0, 0, 20, 0);
+                    circleView.setLayoutParams(circleParams);
+                    circleView.setRadius(5);
+                    circleView.setCardElevation(0);
+                    circleView.setCardBackgroundColor(colors[i]);
+
+                    TextView textView = new TextView(getContext());
+                    textView.setText(tags[i]);
+                    textView.setTextAppearance(R.style.body_m);
+                    textView.setTextColor(ResourcesCompat.getColor(getResources(), R.color.dark_darkest, null));
+
+                    rowLayout.addView(circleView);
+                    rowLayout.addView(textView);
+
+                    layout.addView(rowLayout);
+                }
+
+                new AlertDialog.Builder(getContext())
+                        .setTitle("Tag color descriptions")
+                        .setView(layout)
+                        .setPositiveButton("OK", null)
+                        .show();
+            }
+        });
+
+        emailListRecyclerView = binding.emailListRecyclerView;
         emailListRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         emailListRecyclerView.addItemDecoration(new SpaceItemDecoration(30));
         emailListRecyclerView.setAdapter(adapter);
@@ -355,11 +414,23 @@ public class EmailsFragment extends Fragment {
                 holder.itemView.findViewById(R.id.time_icon).setVisibility(View.GONE);
             }
 
+            String tag = mailList.getMail(position).getTag();
+            if (Objects.equals(tag, "Assignment")) {
+                holder.tag.setBackground(ResourcesCompat.getDrawable(getResources(), R.color.tag_assignment, null));
+            } else if (Objects.equals(tag, "Exam")) {
+                holder.tag.setBackground(ResourcesCompat.getDrawable(getResources(), R.color.tag_exam, null));
+            } else if (Objects.equals(tag, "Meeting")) {
+                holder.tag.setBackground(ResourcesCompat.getDrawable(getResources(), R.color.tag_meeting, null));
+            } else if (Objects.equals(tag, "Course Material")) {
+                holder.tag.setBackground(ResourcesCompat.getDrawable(getResources(), R.color.tag_course_material, null));
+            } else {
+                holder.tag.setBackground(ResourcesCompat.getDrawable(getResources(), R.color.tag_other, null));
+            }
+
             holder.senderName.setText(senderName);
             holder.senderDomain.setText(senderDomain);
             holder.title.setText(mailList.getMail(position).getTitle());
             holder.sendTime.setText(mailList.getMail(position).getSentTime());
-            holder.tag.setText(mailList.getMail(position).getTag());
             holder.summary.setText(mailList.getMail(position).getSummary());
         }
 
@@ -377,7 +448,7 @@ public class EmailsFragment extends Fragment {
             TextView eventTime;
             TextView place;
             TextView summary;
-            TextView tag;
+            View tag;
 
             public EmailViewHolder(@NonNull View itemView) {
                 super(itemView);
