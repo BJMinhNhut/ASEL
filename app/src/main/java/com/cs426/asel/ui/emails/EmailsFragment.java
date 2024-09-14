@@ -296,13 +296,20 @@ public class EmailsFragment extends Fragment {
         @Override
         public void onBindViewHolder(@NonNull EmailViewHolder holder, int position) {
             holder.itemView.setOnClickListener(v -> {
-                Bundle bundle = new Bundle();
-                bundle.putString("emailId", mailList.getMail(position).getId()); // Replace 1 with the actual email ID you want to pass
+                int curPosition = holder.getBindingAdapterPosition();
 
+                Bundle bundle = new Bundle();
+                bundle.putString("emailId", mailList.getMail(curPosition).getId()); // Replace 1 with the actual email ID you want to pass
                 FragmentTransaction ft = getParentFragmentManager().beginTransaction();
                 EmailDetailFragment fragment = new EmailDetailFragment();
                 fragment.setArguments(bundle);
                 ft.replace(R.id.emailsContainer, fragment).addToBackStack(null).commit();
+
+                if (!mailList.getMail(curPosition).isRead()) {
+                    removedIndex = curPosition;
+                    removedMail = mailList.getMail(holder.getBindingAdapterPosition());
+                    moveMailToRead(removedIndex, removedMail);
+                }
             });
 
             String sender = mailList.getMail(position).getSender();
