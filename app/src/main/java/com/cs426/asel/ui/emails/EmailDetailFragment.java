@@ -70,7 +70,7 @@ public class EmailDetailFragment extends Fragment {
         createEventButton.setOnClickListener(v -> {
             EventEditorFragment eventEditorFragment = new EventEditorFragment();
             Bundle bundle = new Bundle();
-            bundle.putString("emailId", emailId);
+            bundle.putInt("eventId", mail.getEvent().getID());
             eventEditorFragment.setArguments(bundle);
 
             FragmentTransaction ft = getParentFragmentManager().beginTransaction();

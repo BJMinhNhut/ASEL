@@ -56,6 +56,15 @@ public class EmailsFragment extends Fragment {
         setRetainInstance(true);
     }
 
+    @Override
+    public void onResume() {
+        super.onResume();
+
+        if (!emailsViewModel.isFetchStarted()) {
+            emailsViewModel.fetchAllEmailsID();
+        }
+    }
+
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
