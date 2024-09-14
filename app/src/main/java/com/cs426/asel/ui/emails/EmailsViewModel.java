@@ -45,8 +45,8 @@ import java.util.concurrent.TimeUnit;
 public class EmailsViewModel extends ViewModel implements GmailServices.EmailCallback {
     private static final int MAX_RETRY_COUNT = 5;
     private static final int RETRY_DELAY_MS = 1000;
-    private static final int EMAIL_PER_FETCH = 7; // for fetching content
-    private static final int ID_PER_FETCH = 10; // for fetching IDs
+    private static final int EMAIL_PER_FETCH = 10; // for fetching content
+    private static final int ID_PER_FETCH = 200; // for fetching IDs
     private int currentIndex = 0;
 
     public MutableLiveData<Boolean> isLoading = new MutableLiveData<>(true);
@@ -131,9 +131,10 @@ public class EmailsViewModel extends ViewModel implements GmailServices.EmailCal
             List<String> unfetchedID = getUnfetchedID();
             if (unfetchedID.isEmpty()) {
                 Log.w("EmailsViewModel", "No new emails found. Fetching more IDs.");
+                isLoading.postValue(false);
                 loadMoreEmails();
             } else {
-                Log.d("EmailsViewModel", "Fetching email content for " + unfetchedID.size() + " emails.");
+                Log.d("EmailsViewModel", "Found " + unfetchedID.size() + " unfetched emails.");
                 fetchEmailContent(unfetchedID);
             }
         }
