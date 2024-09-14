@@ -150,7 +150,7 @@ public class MainActivity extends AppCompatActivity {
         // Register the channel with the system
         NotificationManager notificationManager = getSystemService(NotificationManager.class);
         notificationManager.createNotificationChannel(channel);
-        Utility.startScheduledWork(this);
+        //Utility.startScheduledWork(this);
     }
 
     private static final int HOME_FRAGMENT_POSITION = 0; // Position of HomeFragment in ViewPager2
