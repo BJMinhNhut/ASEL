@@ -198,6 +198,13 @@
         app:cardCornerRadius="15dp"
         app:cardBackgroundColor="@color/light_medium">
 
+        <TextView
+            android:id="@+id/event_announcement_text"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:gravity="center"
+            android:text="Something"/>
+
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/events"
             android:layout_width="match_parent"
@@ -223,6 +230,13 @@
         app:cardElevation="0dp"
         app:cardCornerRadius="15dp"
         app:cardBackgroundColor="@color/light_medium">
+
+        <TextView
+            android:id="@+id/mail_announcement_text"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:gravity="center"
+            android:text="Something"/>
 
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/mails"

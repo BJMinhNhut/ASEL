@@ -18,6 +18,7 @@ jacksonAnnotations = "2.18.0-rc1"
 jacksonDatabind = "2.18.0-rc1"
 javaxMail = "1.6.2"
 materialVersion = "1.13.0-alpha05"
+textRecognition = "16.0.1"
 [libraries]
 junit = { group = "junit", name = "junit", version.ref = "junit" }
 ext-junit = { group = "androidx.test.ext", name = "junit", version.ref = "junitVersion" }
@@ -37,6 +38,7 @@ jackson-annotations = { group = "com.fasterxml.jackson.core", name = "jackson-an
 jackson-databind = { group = "com.fasterxml.jackson.core", name = "jackson-databind", version.ref = "jacksonDatabind" }
 javax-mail = { group = "com.sun.mail", name = "javax.mail", version.ref = "javaxMail" }
 google-material = { group = "com.google.android.material", name = "material", version.ref = "materialVersion" }
+text-recognition = { group = "com.google.mlkit", name = "text-recognition", version.ref = "textRecognition" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

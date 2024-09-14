@@ -48,7 +48,7 @@ public class EmailsViewModel extends ViewModel implements GmailServices.EmailCal
     private static final int EMAIL_PER_FETCH = 10; // for fetching content
     private static final int ID_PER_FETCH = 50; // for fetching IDs
     private int currentIndex = 0;
-
+    private static boolean isFetchStarted = false;
     public MutableLiveData<Boolean> isLoading = new MutableLiveData<>(true);
 
     private final GmailServices gmailServices;
@@ -71,6 +71,7 @@ public class EmailsViewModel extends ViewModel implements GmailServices.EmailCal
     }
 
     public void fetchAllEmailsID() {
+        Log.d("EmailsViewModel", "Fetching all email IDs");
         gmailServices.fetchAllEmailIDs();
     }
 
@@ -79,12 +80,12 @@ public class EmailsViewModel extends ViewModel implements GmailServices.EmailCal
     }
 
     private List<String> getUnfetchedID() {
-        List<String> unfetchedID = new ArrayList<>();
         String userEmail = Utility.getUserEmail(context);
         MailRepository mailRepository = new MailRepository(context, userEmail);
 
+        List<String> unfetchedID = new ArrayList<>();
         for (Map.Entry<String, Message> entry: messageCache.entrySet()) {
-            if (!mailRepository.isMailExists(entry.getKey())) {
+            if (entry.getValue() == null) {
                 unfetchedID.add(entry.getKey());
             }
         }
@@ -117,12 +118,9 @@ public class EmailsViewModel extends ViewModel implements GmailServices.EmailCal
         });
     }
 
-    public void setUserEmailAddress() {
-
-    }
-
     @Override
     public void onEmailIDsFetched(List<Message> emailIDs) {
+        isFetchStarted = true;
         if (emailIDs != null) {
             for (Message message: emailIDs) {
                 storeID(message.getId());
@@ -187,7 +185,6 @@ public class EmailsViewModel extends ViewModel implements GmailServices.EmailCal
             String curId = ids.get(i);
             if (isProcessed(curId)) {
                 Log.d("EmailsViewModel", "Email ID " + curId + " is already processed. Skipping.");
-                Mail mail = mailRepository.getMailById(curId);
                 latch.countDown();
                 continue;
             }
@@ -277,6 +274,18 @@ public class EmailsViewModel extends ViewModel implements GmailServices.EmailCal
         return new ArrayList<>(messageCache.keySet());
     }
 
+    public boolean isMessageCacheEmpty() {
+        if (messageCache == null) {
+            return true;
+        } else {
+            return messageCache.isEmpty();
+        }
+    }
+
+    public boolean isFetchStarted() {
+        return isFetchStarted;
+    }
+
     public void reset() {
         if (messageCache != null) {
             messageCache.clear();
@@ -284,6 +293,8 @@ public class EmailsViewModel extends ViewModel implements GmailServices.EmailCal
         } else {
             messageCache = new LinkedHashMap<>();
         }
+
+        currentIndex = 0;
     }
 
     public void storeID(String id) {

@@ -16,6 +16,7 @@ import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 
 import com.cs426.asel.backend.Event;
+import com.cs426.asel.backend.EventList;
 import com.cs426.asel.backend.EventRepository;
 import com.cs426.asel.backend.Mail;
 import com.cs426.asel.backend.MailRepository;
@@ -212,12 +213,12 @@ public class EventEditorFragment extends Fragment {
         });
 
         Bundle extras = getArguments();
-        if (extras == null || !extras.containsKey("emailId") || extras.getString("emailId") == null) {
-            curEvent = new Event();
-        } else {
-            Mail mail = new MailRepository(requireContext(), Utility.getUserEmail(requireContext())).getMailById(extras.getString("emailId"));
-            curEvent = mail.getEvent();
+        if (extras != null && extras.containsKey("eventId") && extras.getInt("eventId") != -1) {
+            EventRepository eventRepository = new EventRepository(requireContext(), Utility.getUserEmail(requireContext()));
+            curEvent = eventRepository.getEventByID(extras.getInt("eventId"));
             autofillEvent();
+        } else {
+            curEvent = new Event();
         }
 
         if (curEvent.isPublished()) {
@@ -251,7 +252,7 @@ public class EventEditorFragment extends Fragment {
             startTime = binding.startTimeText.getText().toString();
         }
         String startDateTime = binding.startDateText.getText().toString() + " " + startTime;
-        Instant startDateTimeInstant = Utility.parseToInstant(startDateTime, "d/MM/yyyy HH:mm");
+        Instant startDateTimeInstant = Utility.parseToInstant(startDateTime, "dd/MM/yyyy HH:mm");
         curEvent.setStartTime(startDateTimeInstant);
 
         if (binding.eventTypeTab.getSelectedTabPosition() == 0) {
@@ -260,7 +261,7 @@ public class EventEditorFragment extends Fragment {
                 endTime = binding.endTimeText.getText().toString();
             }
             String endDateTime = binding.endDateText.getText().toString() + " " + endTime;
-            Instant endTimeInstant = Utility.parseToInstant(endDateTime, "d/MM/yyyy HH:mm");
+            Instant endTimeInstant = Utility.parseToInstant(endDateTime, "dd/MM/yyyy HH:mm");
             curEvent.setDuration((int) ChronoUnit.MINUTES.between(startDateTimeInstant, endTimeInstant));
         } else {
             curEvent.setDuration(0);
@@ -306,12 +307,12 @@ public class EventEditorFragment extends Fragment {
                     || binding.startTimeText.getText().toString().isEmpty()) {
                 return false;
             }
-
         }
 
         if (binding.eventTypeTab.getSelectedTabPosition() == 0) {
             if (binding.endDateText.getText() == null || binding.endDateText.getText().toString().isEmpty())
                 return false; // Event must have end date
+
             if (!binding.allDaySwitch.isChecked() && (binding.endTimeText.getText() == null
                     || binding.endTimeText.getText().toString().isEmpty())) {
                 return false;
@@ -324,47 +325,39 @@ public class EventEditorFragment extends Fragment {
         if (binding.remindBeforeText.getText() == null || binding.remindBeforeText.getText().toString().isEmpty())
             return false;
 
-        return true;
+        return validateDateTime();
     }
 
     private void autofillEvent() {
-        Bundle extras = getArguments();
-        if (extras == null || !extras.containsKey("emailId") || extras.getString("emailId") == null) {
-            return;
-        }
-
-        String emailId = extras.getString("emailId");
-        String userEmail = extras.getString("userEmail");
-        Mail mail = new MailRepository(requireContext(), Utility.getUserEmail(requireContext())).getMailById(emailId);
-        if (mail == null) {
-            return;
-        }
-
-        Instant fromDateTime = mail.getEvent().getStartTime();
+        Instant fromDateTime = curEvent.getStartTime();
         String fromDateString = Utility.parseInstant(fromDateTime, "dd/MM/yyyy");
         String fromTimeString = Utility.parseInstant(fromDateTime, "HH:mm");
 
         binding.startDateText.setText(fromDateString);
         binding.startTimeText.setText(fromTimeString);
 
-        int duration = mail.getEvent().getDuration();
+        if (fromTimeString.equals("00:00")) {
+            binding.allDaySwitch.setChecked(true);
+        }
+
+        int duration = curEvent.getDuration();
         if (duration > 0) {
-            switchToEventLayout();
             Instant toDateTime = fromDateTime.plusSeconds(60 * duration);
             String toDateString = Utility.parseInstant(toDateTime, "dd/MM/yyyy");
             String toTimeString = Utility.parseInstant(toDateTime, "HH:mm");
 
             binding.endDateText.setText(toDateString);
             binding.endTimeText.setText(toTimeString);
+            binding.eventTypeTab.selectTab(binding.eventTypeTab.getTabAt(0));
         } else {
             binding.endDateText.setText(fromDateString);
             binding.endTimeText.setText(fromTimeString);
-            switchToTaskLayout();
+            binding.eventTypeTab.selectTab(binding.eventTypeTab.getTabAt(1));
         }
 
-        binding.locationText.setText(mail.getEvent().getLocation());
-        binding.title.setText(mail.getTitle());
-        binding.descriptionText.setText(mail.getSummary());
+        binding.locationText.setText(curEvent.getLocation());
+        binding.title.setText(curEvent.getTitle());
+        binding.descriptionText.setText(curEvent.getDescription());
     }
 
     private void chooseDate(TextInputEditText dateEditText) {
@@ -372,17 +365,70 @@ public class EventEditorFragment extends Fragment {
         datePickerDialog.setOnDateSetListener((view, year, month, dayOfMonth) -> {
             Log.d("EventEditorFragment", "year: " + year + ", month: " + (month + 1) + ", dayOfMonth: " + dayOfMonth);
             dateEditText.setText(String.format("%02d/%02d/%02d", dayOfMonth, month + 1, year));
-
-            // TODO: add validation for date time
-
+            validateDateTime();
         });
         datePickerDialog.show();
+    }
+
+    private boolean validateDateTime() {
+        if (binding.startDateText.getText() == null || binding.startDateText.getText().toString().isEmpty())
+            return true;
+
+        if (!binding.allDaySwitch.isChecked()) {
+            if (binding.startTimeText.getText() == null || binding.startTimeText.getText().toString().isEmpty())
+                return true;
+        }
+
+        String startTime = "00:00";
+        if (!binding.allDaySwitch.isChecked()) {
+            startTime = binding.startTimeText.getText().toString();
+        }
+        String startDateTime = binding.startDateText.getText().toString() + " " + startTime;
+        Instant startDateTimeInstant = Utility.parseToInstant(startDateTime, "dd/MM/yyyy HH:mm");
+
+        if (startDateTimeInstant.isAfter(Instant.now())) {;
+            binding.startDateLayout.setError(null);
+            binding.startTimeLayout.setError(null);
+        } else {
+            binding.startDateLayout.setError("Start date must be in the future");
+            binding.startTimeLayout.setError("Start time must be in the future");
+
+            return false;
+        }
+
+        if (binding.eventTypeTab.getSelectedTabPosition() == 0) {
+            if (binding.endDateText.getText() == null || binding.endDateText.getText().toString().isEmpty())
+                return true;
+            if (!binding.allDaySwitch.isChecked() && (binding.endTimeText.getText() == null || binding.endTimeText.getText().toString().isEmpty()))
+                return true;
+        }
+
+        if (binding.eventTypeTab.getSelectedTabPosition() == 0) {
+            String endTime = "00:00";
+            if (!binding.allDaySwitch.isChecked()) {
+                endTime = binding.endTimeText.getText().toString();
+            }
+            String endDateTime = binding.endDateText.getText().toString() + " " + endTime;
+            Instant endTimeInstant = Utility.parseToInstant(endDateTime, "dd/MM/yyyy HH:mm");
+            if (endTimeInstant.isBefore(startDateTimeInstant)) {
+                binding.endDateLayout.setError("End date must be after start date");
+                binding.endTimeLayout.setError("End time must be after start time");
+                return false;
+            } else {
+                binding.endDateLayout.setError(null);
+                binding.endTimeLayout.setError(null);
+            }
+        }
+
+        return true;
     }
 
     private void chooseTime(TextInputEditText timeEditText) {
         TimePickerDialog timePickerDialog = new TimePickerDialog(getContext(), (view, hourOfDay, minute) -> {
             timeEditText.setText(String.format("%02d:%02d", hourOfDay, minute));
+            validateDateTime();
         }, 0, 0, false);
+
         timePickerDialog.show();
     }
 
