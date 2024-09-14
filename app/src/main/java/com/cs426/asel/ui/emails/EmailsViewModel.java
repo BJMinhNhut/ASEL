@@ -156,15 +156,15 @@ public class EmailsViewModel extends ViewModel implements GmailServices.EmailCal
         isLoading.postValue(true);
         ExecutorService executor = Executors.newSingleThreadExecutor();
         executor.submit(() -> {
-            if (needMoreIds()) {
+            if (allEmailProcessed()) {
                 Log.d("EmailsViewModel", "All emails are processed. Try to fetch more");
                 fetchNextIdBatch();
             } else processEmails();
         });
     }
 
-    private boolean needMoreIds() {
-        return currentIndex + ID_PER_FETCH > messageCache.size();
+    private boolean allEmailProcessed() {
+        return currentIndex >= messageCache.size();
     }
 
     private void processEmails() {
@@ -238,7 +238,7 @@ public class EmailsViewModel extends ViewModel implements GmailServices.EmailCal
 
                     @Override
                     public void onFailure(Throwable t) {
-                        Log.e("EmailsViewModel", "Error processing email ID " + mail.getId(), t);
+                        Log.e("EmailsViewModel", "Error processing email ID " + mail.getId());
                         int retryCount = retryCounts.getOrDefault(future, 0);
                         if (retryCount < MAX_RETRY_COUNT) {
                             int newRetryCount = retryCount + 1;
