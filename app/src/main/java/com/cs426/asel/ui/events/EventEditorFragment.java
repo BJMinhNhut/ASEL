@@ -279,7 +279,6 @@ public class EventEditorFragment extends Fragment {
                   || binding.startTimeText.getText().toString().isEmpty()) {
               return false;
             }
-
         }
 
         if (binding.eventTypeTab.getSelectedTabPosition() == 0) {
@@ -298,7 +297,7 @@ public class EventEditorFragment extends Fragment {
         if (binding.remindBeforeText.getText() == null || binding.remindBeforeText.getText().toString().isEmpty())
             return false;
 
-        return true;
+        return validateDateTime();
     }
 
     private void autofillEvent() {
@@ -338,17 +337,70 @@ public class EventEditorFragment extends Fragment {
         datePickerDialog.setOnDateSetListener((view, year, month, dayOfMonth) -> {
             Log.d("EventEditorFragment", "year: " + year + ", month: " + (month + 1) + ", dayOfMonth: " + dayOfMonth);
             dateEditText.setText(String.format("%02d/%02d/%02d", dayOfMonth, month + 1, year));
-
-            // TODO: add validation for date time
-
+            validateDateTime();
         });
         datePickerDialog.show();
+    }
+
+    private boolean validateDateTime() {
+        if (binding.startDateText.getText() == null || binding.startDateText.getText().toString().isEmpty())
+            return true;
+
+        if (!binding.allDaySwitch.isChecked()) {
+            if (binding.startTimeText.getText() == null || binding.startTimeText.getText().toString().isEmpty())
+                return true;
+        }
+
+        String startTime = "00:00";
+        if (!binding.allDaySwitch.isChecked()) {
+            startTime = binding.startTimeText.getText().toString();
+        }
+        String startDateTime = binding.startDateText.getText().toString() + " " + startTime;
+        Instant startDateTimeInstant = Utility.parseToInstant(startDateTime, "dd/MM/yyyy HH:mm");
+
+        if (startDateTimeInstant.isAfter(Instant.now())) {;
+            binding.startDateLayout.setError(null);
+            binding.startTimeLayout.setError(null);
+        } else {
+            binding.startDateLayout.setError("Start date must be in the future");
+            binding.startTimeLayout.setError("Start time must be in the future");
+
+            return false;
+        }
+
+        if (binding.eventTypeTab.getSelectedTabPosition() == 0) {
+            if (binding.endDateText.getText() == null || binding.endDateText.getText().toString().isEmpty())
+                return true;
+            if (!binding.allDaySwitch.isChecked() && (binding.endTimeText.getText() == null || binding.endTimeText.getText().toString().isEmpty()))
+                return true;
+        }
+
+        if (binding.eventTypeTab.getSelectedTabPosition() == 0) {
+            String endTime = "00:00";
+            if (!binding.allDaySwitch.isChecked()) {
+                endTime = binding.endTimeText.getText().toString();
+            }
+            String endDateTime = binding.endDateText.getText().toString() + " " + endTime;
+            Instant endTimeInstant = Utility.parseToInstant(endDateTime, "dd/MM/yyyy HH:mm");
+            if (endTimeInstant.isBefore(startDateTimeInstant)) {
+                binding.endDateLayout.setError("End date must be after start date");
+                binding.endTimeLayout.setError("End time must be after start time");
+                return false;
+            } else {
+                binding.endDateLayout.setError(null);
+                binding.endTimeLayout.setError(null);
+            }
+        }
+
+        return true;
     }
 
     private void chooseTime(TextInputEditText timeEditText) {
         TimePickerDialog timePickerDialog = new TimePickerDialog(getContext(), (view, hourOfDay, minute) -> {
             timeEditText.setText(String.format("%02d:%02d", hourOfDay, minute));
+            validateDateTime();
         }, 0, 0, false);
+
         timePickerDialog.show();
     }
 

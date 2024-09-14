@@ -211,6 +211,12 @@ public class HomeFragment extends Fragment {
         return null;
     }
 
+    @Override
+    public void onResume() {
+        super.onResume();
+        loadPreviewInfo();
+    }
+
     public static class TitleAdapter extends RecyclerView.Adapter<HomeFragment.TitleAdapter.TitleViewHolder> {
         private List<Instant> timeList;
         private List<String> titleList;
