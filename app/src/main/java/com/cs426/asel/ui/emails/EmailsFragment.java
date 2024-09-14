@@ -135,13 +135,14 @@ public class EmailsFragment extends Fragment {
         binding.infoButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                String[] tags = {"Assignment", "Exam", "Meeting", "Course Material", "Other"};
+                String[] tags = {"Assignment", "Exam", "Meeting", "Course Material", "Other", "Spam"};
                 int[] colors = {
                         ResourcesCompat.getColor(getResources(), R.color.tag_assignment, null),
                         ResourcesCompat.getColor(getResources(), R.color.tag_exam, null),
                         ResourcesCompat.getColor(getResources(), R.color.tag_meeting, null),
                         ResourcesCompat.getColor(getResources(), R.color.tag_course_material, null),
-                        ResourcesCompat.getColor(getResources(), R.color.tag_other, null)
+                        ResourcesCompat.getColor(getResources(), R.color.tag_other, null),
+                        ResourcesCompat.getColor(getResources(), R.color.tag_spam, null)
                 };
 
                 LinearLayout layout = new LinearLayout(getContext());
@@ -159,7 +160,7 @@ public class EmailsFragment extends Fragment {
                     LinearLayout.LayoutParams circleParams = new LinearLayout.LayoutParams(50, 50);
                     circleParams.setMargins(0, 0, 20, 0);
                     circleView.setLayoutParams(circleParams);
-                    circleView.setRadius(5);
+                    circleView.setRadius(15);
                     circleView.setCardElevation(0);
                     circleView.setCardBackgroundColor(colors[i]);
 
