@@ -203,6 +203,88 @@ public class EventRepository {
         return values;
     }
 
+    public Event getEventByID(int eventID) {
+        Log.println(Log.INFO, "MailRepository", "Getting event by ID: " + eventID);
+
+        // get mail id from event id
+        SQLiteDatabase db = dbHelper.getReadableDatabase();
+        String[] projection = {DatabaseContract.Mails.COLUMN_NAME_EVENT_ID};
+        String selection = DatabaseContract.Mails.COLUMN_NAME_EVENT_ID + " = ?";
+        String[] selectionArgs = {String.valueOf(eventID)};
+        Cursor cursor = db.query(
+                DatabaseContract.Mails.TABLE_NAME,
+                projection,
+                selection,
+                selectionArgs,
+                null,
+                null,
+                null
+        );
+        String mailId = null;
+        if (cursor.moveToNext()) {
+            mailId = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseContract.Mails._ID));
+        }
+        cursor.close();
+        return getEventByID(mailId, eventID);
+    }
+
+    private Event getEventByID(String mailId, int eventID) {
+        SQLiteDatabase db = dbHelper.getReadableDatabase();
+
+        String[] projection = {
+                DatabaseContract.Events._ID,
+                DatabaseContract.Events.COLUMN_NAME_TITLE,
+                DatabaseContract.Events.COLUMN_NAME_DESCRIPTION,
+                DatabaseContract.Events.COLUMN_NAME_FROM_DATETIME,
+                DatabaseContract.Events.COLUMN_NAME_DURATION,
+                DatabaseContract.Events.COLUMN_NAME_PLACE,
+                DatabaseContract.Events.COLUMN_NAME_IS_REPEAT,
+                DatabaseContract.Events.COLUMN_NAME_REPEAT_FREQUENCY,
+                DatabaseContract.Events.COLUMN_NAME_REPEAT_END,
+                DatabaseContract.Events.COLUMN_NAME_REMIND_TIME,
+                DatabaseContract.Events.COLUMN_NAME_ALL_DAY,
+                DatabaseContract.Events.COLUMN_NAME_PUBLISHED
+        };
+
+        String selection = DatabaseContract.Events._ID + " = ?";
+        String[] selectionArgs = {String.valueOf(eventID)};
+
+        Cursor cursor = db.query(
+                DatabaseContract.Events.TABLE_NAME,
+                projection,
+                selection,
+                selectionArgs,
+                null,
+                null,
+                null
+        );
+
+        Event event = null;
+        if (cursor.moveToNext()) {
+            String title = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseContract.Events.COLUMN_NAME_TITLE));
+            String description = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseContract.Events.COLUMN_NAME_DESCRIPTION));
+            String fromDatetimeStr = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseContract.Events.COLUMN_NAME_FROM_DATETIME));
+            Instant fromDatetime = fromDatetimeStr != null ? Instant.parse(fromDatetimeStr) : null;
+            int duration = cursor.getInt(cursor.getColumnIndexOrThrow(DatabaseContract.Events.COLUMN_NAME_DURATION));
+            String place = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseContract.Events.COLUMN_NAME_PLACE));
+            boolean isRepeat = cursor.getInt(cursor.getColumnIndexOrThrow(DatabaseContract.Events.COLUMN_NAME_IS_REPEAT)) == 1;
+            String repeatFrequency = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseContract.Events.COLUMN_NAME_REPEAT_FREQUENCY));
+            String repeatEndStr = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseContract.Events.COLUMN_NAME_REPEAT_END));
+            Instant repeatEnd = repeatEndStr != null ? Instant.parse(repeatEndStr) : null;
+            String remindTimeStr = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseContract.Events.COLUMN_NAME_REMIND_TIME));
+            Instant remindTime = remindTimeStr != null ? Instant.parse(remindTimeStr) : null;
+            boolean allDay = cursor.getInt(cursor.getColumnIndexOrThrow(DatabaseContract.Events.COLUMN_NAME_ALL_DAY)) == 1;
+            boolean isPublished = cursor.getInt(cursor.getColumnIndexOrThrow(DatabaseContract.Events.COLUMN_NAME_PUBLISHED)) == 1;
+
+            event = new Event(eventID, mailId, title, fromDatetime, duration, place, isRepeat, repeatFrequency, repeatEnd, remindTime, description, allDay, isPublished);
+        }
+        cursor.close();
+        if (event != null)
+            Log.d("EventRepository", "Retrieved event: " + event.getTitle() + " with ID: " + event.getID() + " mail ID: " + event.getMailID());
+        else Log.d("EventRepository", "Event not found with ID: " + eventID);
+        return event;
+    }
+
     private Event getEventByCursor(Cursor cursor) {
         int eventId = cursor.getInt(cursor.getColumnIndexOrThrow(JOIN_EVENT_ID));
         String mailId = cursor.getString(cursor.getColumnIndexOrThrow(JOIN_MAIL_ID));
