@@ -9,6 +9,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -45,14 +46,18 @@ public class UpdateAccountFragment extends Fragment {
         accountViewModel = new ViewModelProvider(requireActivity()).get(AccountViewModel.class);
         emailsViewModel = new ViewModelProvider(requireActivity()).get(EmailsViewModel.class);
 
+        TextView accountEmail = view.findViewById(R.id.text_account_email);
         TextView accountName = view.findViewById(R.id.text_account_name);
 
         // Observe signInResult LiveData
         accountViewModel.getSignInResult().observe(getViewLifecycleOwner(), account -> {
             if (account != null) {
-                accountName.setText(account.getDisplayName());  // Update the UI with the signed-in account's name
+                accountEmail.setText(account.getEmail());
+                accountName.setVisibility(View.VISIBLE);
+                accountName.setText(account.getDisplayName());
             } else {
-                accountName.setText("No account selected");     // Update the UI when signed out
+                accountEmail.setText("No account selected");
+                accountName.setVisibility(View.GONE);
             }
         });
 
@@ -61,6 +66,12 @@ public class UpdateAccountFragment extends Fragment {
 
         Button logOut = view.findViewById(R.id.log_out);
         logOut.setOnClickListener(v -> logOut());
+
+        ImageView backButton = view.findViewById(R.id.backButton);
+        backButton.setOnClickListener(v -> {
+            FragmentManager fm = getParentFragmentManager();
+            fm.popBackStack();
+        });
 
         requireActivity().getOnBackPressedDispatcher().addCallback(getViewLifecycleOwner(), new OnBackPressedCallback(true) {
             @Override

@@ -32,14 +32,14 @@
                 android:text="Ho Chi Minh University of Science"
                 android:textAlignment="center"
                 android:textAppearance="@style/heading_l"
-                android:textColor="@color/highlight_darkest" />
+                android:textColor="@color/dark_darkest" />
 
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="STUDENT ID CARD"
                 android:textAppearance="@style/heading_xl"
-                android:textColor="@color/error_dark"
+                android:textColor="@color/highlight_darkest"
                 android:textAlignment="center"/>
 
             <LinearLayout

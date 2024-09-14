@@ -50,10 +50,17 @@ public class EmailsFragment extends Fragment {
     private int removedIndex = -1;
     private Mail removedMail;
 
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setRetainInstance(true);
+    }
+
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         // Obtain EmailsViewModel from the activity's ViewModelProvider
+        Log.d("EmailsFragment", "onCreateView");
         binding = FragmentEmailsBinding.inflate(inflater, container, false);
         userEmail = Utility.getUserEmail(requireContext());
         mailRepository = new MailRepository(requireContext(), userEmail);
@@ -126,6 +133,7 @@ public class EmailsFragment extends Fragment {
 
                 if (!recyclerView.canScrollVertically(1)
                         && binding.emailsTab.getSelectedTabPosition() == 0) {
+                    Log.d("EmailsFragment", "Loading more emails");
                     emailsViewModel.loadMoreEmails();
                 }
             }
@@ -174,16 +182,11 @@ public class EmailsFragment extends Fragment {
                             // Right swipe to quick add
                             Mail mail = unread.getMail(viewHolder.getBindingAdapterPosition());
                             int eventId = mail.getEvent().getID();
-                            if (eventId != -1) {
-                                eventRepository.insertEvent(mail.getEvent());
-                            } else {
-                                eventRepository.setPublishEvent(eventId, true);
-                            }
+                            Log.d("EmailsFragment", "Publishing event ID: " + eventId);
+                            eventRepository.setPublishEvent(eventId, true);
                             moveMailToRead(viewHolder.getBindingAdapterPosition(), mail);
 
-                            //TODO: publish event of mail
-
-                            Snackbar.make(emailListRecyclerView, "Event of email added to calendar", Snackbar.LENGTH_LONG)
+                            Snackbar snackbar = Snackbar.make(emailListRecyclerView, "Event of email added to calendar", Snackbar.LENGTH_LONG)
                                     .setAction("Undo", v -> {
                                         // Undo the action (implement undo logic here)
                                         read.removeMail(read.size() - 1);
@@ -194,9 +197,14 @@ public class EmailsFragment extends Fragment {
                                             adapter.removeMail(adapter.mailList.size() - 1);
                                         }
                                         mailRepository.updateRead(removedMail.getId(), false);
+                                    });
 
-                                        // TODO: unpublish event of mail
-                                    }).show();
+                            View snackbarView = snackbar.getView();
+                            ViewGroup.MarginLayoutParams params = (ViewGroup.MarginLayoutParams) snackbarView.getLayoutParams();
+                            params.setMargins(params.leftMargin, params.topMargin, params.rightMargin, params.bottomMargin + 180); // Adjust the bottom margin as needed
+                            snackbarView.setLayoutParams(params);
+
+                            snackbar.show();
                         }
                     }
                 };
@@ -279,7 +287,6 @@ public class EmailsFragment extends Fragment {
         @Override
         public void onBindViewHolder(@NonNull EmailViewHolder holder, int position) {
             holder.itemView.setOnClickListener(v -> {
-                // TODO: Pass email ID to the fragment
                 Bundle bundle = new Bundle();
                 bundle.putString("emailId", mailList.getMail(position).getId()); // Replace 1 with the actual email ID you want to pass
 
