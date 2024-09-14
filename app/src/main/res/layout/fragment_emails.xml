@@ -72,17 +72,6 @@
         </com.google.android.material.tabs.TabLayout>
     </RelativeLayout>
 
-    <TextView
-        android:id="@+id/loading_indicator"
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1"
-        android:layout_marginTop="20dp"
-        android:gravity="center"
-        android:text="Loading..."
-        android:textAppearance="@style/body_m"
-        android:textColor="@color/dark_lightest"/>
-
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/email_list_recycler_view"
         android:layout_width="match_parent"

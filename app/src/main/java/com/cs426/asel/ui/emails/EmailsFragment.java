@@ -107,18 +107,17 @@ public class EmailsFragment extends Fragment {
             }
         });
 
-        final Observer<Boolean> loadObserver = new Observer<Boolean>() {
-            @Override
-            public void onChanged(Boolean aBoolean) {
-                if (aBoolean) {
-                    showLoadIndicator();
-                } else {
-                    Log.d("EmailsFragment", "Hiding load");
-                    MailList newMails = emailsViewModel.getMailListFrom(unread.size());
-                    adapter.appendList(newMails);
-                    unread.append(newMails);
-                    hideLoadIndicator();
-                }
+        final Observer<Boolean> loadObserver = aBoolean -> {
+            if (aBoolean) {
+                // Show loading indicator at the bottom of the list
+                adapter.setLoading(true);
+            } else {
+                // Hide loading indicator
+                adapter.setLoading(false);
+
+                MailList newMails = emailsViewModel.getMailListFrom(unread.size());
+                adapter.appendList(newMails);
+                unread.append(newMails);
             }
         };
 
@@ -296,16 +295,6 @@ public class EmailsFragment extends Fragment {
         itemTouchHelper.attachToRecyclerView(emailListRecyclerView);
     }
 
-    private void hideLoadIndicator() {
-        binding.loadingIndicator.setVisibility(View.GONE);
-        binding.emailListRecyclerView.setVisibility(View.VISIBLE);
-    }
-
-    private void showLoadIndicator() {
-        binding.loadingIndicator.setVisibility(View.VISIBLE);
-        binding.emailListRecyclerView.setVisibility(View.GONE);
-    }
-
     private void moveMailToRead(int index, Mail mail) {
         removedMail = mail;
         removedIndex = index;
@@ -329,8 +318,11 @@ public class EmailsFragment extends Fragment {
         }
     }
 
-    class EmailListAdapter extends RecyclerView.Adapter<EmailListAdapter.EmailViewHolder> {
+    class EmailListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
+        private static final int VIEW_TYPE_ITEM = 0;
+        private static final int VIEW_TYPE_LOADING = 1;
         private MailList mailList;
+        private boolean isLoading = false;
 
         public EmailListAdapter() {
             mailList = new MailList();
@@ -344,15 +336,13 @@ public class EmailsFragment extends Fragment {
         public void appendList(MailList newMailList) {
             int position = this.mailList.size();
             this.mailList.append(newMailList);
-
             Log.d("EmailListAdapter", "Appending list from" + position + " to " + (position + newMailList.size()));
-
-            notifyItemRangeChanged(position, position + newMailList.size());
+            notifyItemRangeInserted(position, newMailList.size());
         }
 
         public void removeMail(int position) {
             mailList.removeMail(position);
-            notifyDataSetChanged();
+            notifyItemRemoved(position);
         }
 
         public void insertMail(Mail mail, int position) {
@@ -360,16 +350,39 @@ public class EmailsFragment extends Fragment {
             notifyItemInserted(position);
         }
 
+        // Set the loading state
+        public void setLoading(boolean isLoading) {
+            this.isLoading = isLoading;
+            if (isLoading) {
+                notifyItemInserted(mailList.size());
+            } else {
+                notifyItemRemoved(mailList.size());
+            }
+        }
+
         @NonNull
         @Override
-        public EmailViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-            View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_email, parent, false);
-            return new EmailViewHolder(view);
+        public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+            if (viewType == VIEW_TYPE_ITEM) {
+                View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_email, parent, false);
+                return new EmailViewHolder(view);
+            } else {
+                // Inflate a progress bar layout for loading view
+                View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_loading, parent, false);
+                return new LoadingViewHolder(view);
+            }
         }
 
         @Override
-        public void onBindViewHolder(@NonNull EmailViewHolder holder, int position) {
-            holder.itemView.setOnClickListener(v -> {
+        public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {
+            // No binding logic needed for LoadingViewHolder (loading spinner)
+            if (holder instanceof LoadingViewHolder) {
+                return;
+            }
+
+            // cast the holder to EmailViewHolder
+            EmailViewHolder emailHolder = (EmailViewHolder) holder;
+            emailHolder.itemView.setOnClickListener(v -> {
                 Bundle bundle = new Bundle();
                 bundle.putString("emailId", mailList.getMail(position).getId()); // Replace 1 with the actual email ID you want to pass
 
@@ -392,53 +405,60 @@ public class EmailsFragment extends Fragment {
                     eventTime += " - " + eventEndTime.atZone(ZoneId.of("Asia/Ho_Chi_Minh")).format(DateTimeFormatter.ofPattern("MMM dd, HH:mm"));
                 }
 
-                holder.eventTime.setText(eventTime);
-                holder.eventTime.setVisibility(View.VISIBLE);
-                holder.itemView.findViewById(R.id.time_icon).setVisibility(View.VISIBLE);
-                holder.itemView.findViewById(R.id.divider).setVisibility(View.VISIBLE);
+                emailHolder.eventTime.setText(eventTime);
+                emailHolder.eventTime.setVisibility(View.VISIBLE);
+                emailHolder.itemView.findViewById(R.id.time_icon).setVisibility(View.VISIBLE);
+                emailHolder.itemView.findViewById(R.id.divider).setVisibility(View.VISIBLE);
 
 
                 if (mailList.getMail(position).getLocation() != null) {
-                    holder.place.setText(mailList.getMail(position).getLocation());
-                    holder.place.setVisibility(View.VISIBLE);
-                    holder.itemView.findViewById(R.id.location_icon).setVisibility(View.VISIBLE);
+                    emailHolder.place.setText(mailList.getMail(position).getLocation());
+                    emailHolder.place.setVisibility(View.VISIBLE);
+                    emailHolder.itemView.findViewById(R.id.location_icon).setVisibility(View.VISIBLE);
                 } else {
-                    holder.place.setVisibility(View.GONE);
-                    holder.itemView.findViewById(R.id.location_icon).setVisibility(View.GONE);
+                    emailHolder.place.setVisibility(View.GONE);
+                    emailHolder.itemView.findViewById(R.id.location_icon).setVisibility(View.GONE);
                 }
             } else {
-                holder.itemView.findViewById(R.id.divider).setVisibility(View.GONE);
-                holder.eventTime.setVisibility(View.GONE);
-                holder.place.setVisibility(View.GONE);
-                holder.itemView.findViewById(R.id.location_icon).setVisibility(View.GONE);
-                holder.itemView.findViewById(R.id.time_icon).setVisibility(View.GONE);
+                emailHolder.itemView.findViewById(R.id.divider).setVisibility(View.GONE);
+                emailHolder.eventTime.setVisibility(View.GONE);
+                emailHolder.place.setVisibility(View.GONE);
+                emailHolder.itemView.findViewById(R.id.location_icon).setVisibility(View.GONE);
+                emailHolder.itemView.findViewById(R.id.time_icon).setVisibility(View.GONE);
             }
 
             String tag = mailList.getMail(position).getTag();
             if (Objects.equals(tag, "Assignment")) {
-                holder.tag.setBackground(ResourcesCompat.getDrawable(getResources(), R.color.tag_assignment, null));
+                emailHolder.tag.setBackground(ResourcesCompat.getDrawable(getResources(), R.color.tag_assignment, null));
             } else if (Objects.equals(tag, "Exam")) {
-                holder.tag.setBackground(ResourcesCompat.getDrawable(getResources(), R.color.tag_exam, null));
+                emailHolder.tag.setBackground(ResourcesCompat.getDrawable(getResources(), R.color.tag_exam, null));
             } else if (Objects.equals(tag, "Meeting")) {
-                holder.tag.setBackground(ResourcesCompat.getDrawable(getResources(), R.color.tag_meeting, null));
+                emailHolder.tag.setBackground(ResourcesCompat.getDrawable(getResources(), R.color.tag_meeting, null));
             } else if (Objects.equals(tag, "Course Material")) {
-                holder.tag.setBackground(ResourcesCompat.getDrawable(getResources(), R.color.tag_course_material, null));
+                emailHolder.tag.setBackground(ResourcesCompat.getDrawable(getResources(), R.color.tag_course_material, null));
             } else {
-                holder.tag.setBackground(ResourcesCompat.getDrawable(getResources(), R.color.tag_other, null));
+                emailHolder.tag.setBackground(ResourcesCompat.getDrawable(getResources(), R.color.tag_other, null));
             }
 
-            holder.senderName.setText(senderName);
-            holder.senderDomain.setText(senderDomain);
-            holder.title.setText(mailList.getMail(position).getTitle());
-            holder.sendTime.setText(mailList.getMail(position).getSentTime());
-            holder.summary.setText(mailList.getMail(position).getSummary());
+            emailHolder.senderName.setText(senderName);
+            emailHolder.senderDomain.setText(senderDomain);
+            emailHolder.title.setText(mailList.getMail(position).getTitle());
+            emailHolder.sendTime.setText(mailList.getMail(position).getSentTime());
+            emailHolder.summary.setText(mailList.getMail(position).getSummary());
+        }
+
+        @Override
+        public int getItemViewType(int position) {
+            // Check if the position is for the loading view
+            return (position == mailList.size()) ? VIEW_TYPE_LOADING : VIEW_TYPE_ITEM;
         }
 
         @Override
         public int getItemCount() {
-            // Update to reflect actual number of emails from ViewModel or LiveData
-            return mailList.size();
+            // Include an extra item for the loading indicator if isLoading is true
+            return mailList.size() + (isLoading ? 1 : 0);
         }
+
 
         class EmailViewHolder extends RecyclerView.ViewHolder {
             TextView senderName;
@@ -460,6 +480,13 @@ public class EmailsFragment extends Fragment {
                 place = itemView.findViewById(R.id.location);
                 summary = itemView.findViewById(R.id.summary);
                 tag = itemView.findViewById(R.id.tag);
+            }
+        }
+
+        // ViewHolder for loading indicator
+        class LoadingViewHolder extends RecyclerView.ViewHolder {
+            public LoadingViewHolder(@NonNull View itemView) {
+                super(itemView);
             }
         }
     }
