@@ -28,15 +28,6 @@
             android:textAlignment="center"
             android:textAppearance="@style/heading_l"
             android:textColor="@color/dark_darkest"/>
-
-        <ImageView
-            android:id="@+id/star"
-            android:layout_width="25dp"
-            android:layout_height="25dp"
-            android:layout_gravity="center|end"
-            android:src="@drawable/ic_star"
-            app:tint="@color/highlight_darkest"
-            android:background="?android:attr/selectableItemBackground"/>
     </FrameLayout>
 
     <ScrollView

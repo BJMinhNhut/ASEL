@@ -86,7 +86,6 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="10dp"
-                android:layout_marginBottom="10dp"
                 android:hint="Title"
                 app:boxCornerRadiusTopStart="15dp"
                 app:boxCornerRadiusTopEnd="15dp"
@@ -110,7 +109,8 @@
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="horizontal">
+                android:orientation="horizontal"
+                android:layout_marginVertical="10dp">
 
                 <TextView
                     android:layout_width="wrap_content"
@@ -360,6 +360,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal">
+
         <com.google.android.material.button.MaterialButton
             android:id="@+id/saveEventButton"
             android:layout_width="0dp"
@@ -379,13 +380,14 @@
             android:layout_width="0dp"
             android:layout_weight="1"
             android:layout_height="50dp"
-            android:layout_margin="20dp"
+            android:layout_marginVertical="20dp"
+            android:layout_marginEnd="20dp"
             android:insetTop="0dp"
             android:insetBottom="0dp"
             app:cornerRadius="15dp"
-            android:text="Delete"
+            android:text="Delete event"
             android:textAppearance="@style/action_l"
             android:textColor="@color/light_lightest"
-            android:backgroundTint="@color/error_medium"/>
+            android:backgroundTint="@color/error_dark"/>
     </LinearLayout>
 </LinearLayout>

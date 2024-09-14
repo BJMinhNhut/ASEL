@@ -81,42 +81,7 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="10dp"
         android:layout_marginStart="20dp"
-        android:text="Email notification"
-        android:textAppearance="@style/heading_m"
-        android:textColor="@color/dark_darkest"/>
-
-    <RadioGroup
-        android:id="@+id/email_notification_group"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="20dp"
-        android:orientation="vertical">
-
-        <RadioButton
-            android:id="@+id/email_notification_on"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="On"
-            android:textAppearance="@style/body_m"
-            android:textColor="@color/dark_darkest"
-            app:buttonTint="@color/dark_darkest"/>
-
-        <RadioButton
-            android:id="@+id/email_notification_off"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Off"
-            android:textAppearance="@style/body_m"
-            android:textColor="@color/dark_darkest"
-            app:buttonTint="@color/dark_darkest"/>
-    </RadioGroup>
-
-    <TextView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="10dp"
-        android:layout_marginStart="20dp"
-        android:text="Reminder notification"
+        android:text="Notification"
         android:textAppearance="@style/heading_m"
         android:textColor="@color/dark_darkest"/>
 

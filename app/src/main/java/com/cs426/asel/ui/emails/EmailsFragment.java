@@ -63,7 +63,6 @@ public class EmailsFragment extends Fragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setRetainInstance(true);
     }
 
     @Override
@@ -144,13 +143,14 @@ public class EmailsFragment extends Fragment {
         binding.infoButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                String[] tags = {"Assignment", "Exam", "Meeting", "Course Material", "Other"};
+                String[] tags = {"Assignment", "Exam", "Meeting", "Course Material", "Other", "Spam"};
                 int[] colors = {
                         ResourcesCompat.getColor(getResources(), R.color.tag_assignment, null),
                         ResourcesCompat.getColor(getResources(), R.color.tag_exam, null),
                         ResourcesCompat.getColor(getResources(), R.color.tag_meeting, null),
                         ResourcesCompat.getColor(getResources(), R.color.tag_course_material, null),
-                        ResourcesCompat.getColor(getResources(), R.color.tag_other, null)
+                        ResourcesCompat.getColor(getResources(), R.color.tag_other, null),
+                        ResourcesCompat.getColor(getResources(), R.color.tag_spam, null)
                 };
 
                 LinearLayout layout = new LinearLayout(getContext());
@@ -168,7 +168,7 @@ public class EmailsFragment extends Fragment {
                     LinearLayout.LayoutParams circleParams = new LinearLayout.LayoutParams(50, 50);
                     circleParams.setMargins(0, 0, 20, 0);
                     circleView.setLayoutParams(circleParams);
-                    circleView.setRadius(5);
+                    circleView.setRadius(15);
                     circleView.setCardElevation(0);
                     circleView.setCardBackgroundColor(colors[i]);
 
@@ -184,7 +184,7 @@ public class EmailsFragment extends Fragment {
                 }
 
                 new AlertDialog.Builder(getContext())
-                        .setTitle("Tag color descriptions")
+                        .setTitle("Tag color descriptions:")
                         .setView(layout)
                         .setPositiveButton("OK", null)
                         .show();
@@ -451,8 +451,10 @@ public class EmailsFragment extends Fragment {
                 emailHolder.tag.setBackground(ResourcesCompat.getDrawable(getResources(), R.color.tag_meeting, null));
             } else if (Objects.equals(tag, "Course Material")) {
                 emailHolder.tag.setBackground(ResourcesCompat.getDrawable(getResources(), R.color.tag_course_material, null));
-            } else {
+            } else if (Objects.equals(tag, "Other")) {
                 emailHolder.tag.setBackground(ResourcesCompat.getDrawable(getResources(), R.color.tag_other, null));
+            } else {
+                emailHolder.tag.setBackground(ResourcesCompat.getDrawable(getResources(), R.color.tag_spam, null));
             }
 
             emailHolder.senderName.setText(senderName);

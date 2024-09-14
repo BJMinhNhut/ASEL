@@ -6,19 +6,24 @@
 
     <TextView
         android:id="@+id/time"
-        android:layout_width="0dp"
+        android:layout_width="110dp"
         android:layout_height="wrap_content"
-        android:layout_weight="3"
         android:text="Jan 01, 00:00"
-        android:textAppearance="@style/heading_m"
+        android:textAppearance="@style/body_m"
         android:textColor="@color/dark_darkest"/>
+
+    <View
+        android:layout_width="1dp"
+        android:layout_height="match_parent"
+        android:background="@color/dark_medium"/>
 
     <TextView
         android:id="@+id/title"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_weight="7"
+        android:layout_weight="1"
+        android:layout_marginStart="10dp"
         android:text="Title"
-        android:textAppearance="@style/heading_m"
+        android:textAppearance="@style/body_m"
         android:textColor="@color/dark_darkest"/>
 </LinearLayout>

@@ -46,5 +46,6 @@
     <color name="tag_exam">@color/error_dark</color>
     <color name="tag_meeting">#ffcc00</color>
     <color name="tag_course_material">@color/success_dark</color>
-    <color name="tag_other">@color/highlight_darkest</color>
+    <color name="tag_other">@color/highlight_dark</color>
+    <color name="tag_spam">@color/dark_dark</color>
 </resources>
