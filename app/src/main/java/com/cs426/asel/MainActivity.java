@@ -1,12 +1,22 @@
 package com.cs426.asel;
 
+import android.Manifest;
+
+import android.app.AlarmManager;
+import android.app.AlertDialog;
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
+import android.os.Build;
 import android.os.Bundle;
+import android.provider.Settings;
 import android.util.Log;
 import android.widget.Toast;
 
+import com.cs426.asel.backend.Utility;
 import com.cs426.asel.ui.account.AccountContainer;
 import com.cs426.asel.ui.account.AccountViewModel;
 import com.cs426.asel.ui.account.AccountViewModelFactory;
@@ -27,6 +37,10 @@ import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
+import androidx.core.app.NotificationCompat;
+import androidx.core.app.NotificationManagerCompat;
+import androidx.core.content.ContextCompat;
 import androidx.appcompat.app.AppCompatDelegate;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentActivity;
@@ -44,6 +58,8 @@ public class MainActivity extends AppCompatActivity {
     private EmailsViewModel emailsViewModel; // Initialize here
     private ActivityResultLauncher<Intent> signInLauncher;
     private InfoViewModel infoViewModel;
+
+    private static final int REQUEST_CODE_POST_NOTIFICATION = 101;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -102,6 +118,39 @@ public class MainActivity extends AppCompatActivity {
         initializeViewModels();
         loadStudentInfoToViewModel();
         loadTheme();
+
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS)
+                != PackageManager.PERMISSION_GRANTED) {
+            // Permission is not granted, request it
+            ActivityCompat.requestPermissions(this,
+                    new String[]{Manifest.permission.POST_NOTIFICATIONS},
+                    REQUEST_CODE_POST_NOTIFICATION);
+        }
+        AlarmManager alarmManager = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
+        if (!alarmManager.canScheduleExactAlarms()) {
+            // Direct the user to the system settings to allow exact alarms\
+            new AlertDialog.Builder(this)
+                .setTitle("Permission Required")
+                .setMessage("This app requires permission to schedule exact alarms to notify you about important events.")
+                .setPositiveButton("Grant Permission", (dialog, which) -> {
+                    // Open the system settings for exact alarms
+                    Intent intent = new Intent(Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM);
+                    startActivity(intent);
+                })
+                .setNegativeButton("Cancel", null)
+                .show();
+        }
+        String channelId = getString(R.string.noti_channel_id);
+        CharSequence name = "Notification channel";
+        String description = "Notifications for upcoming events";
+        int importance = NotificationManager.IMPORTANCE_HIGH;
+        NotificationChannel channel = new NotificationChannel(channelId, name, importance);
+        channel.setDescription(description);
+
+        // Register the channel with the system
+        NotificationManager notificationManager = getSystemService(NotificationManager.class);
+        notificationManager.createNotificationChannel(channel);
+        //Utility.startScheduledWork(this);
     }
 
     private static final int HOME_FRAGMENT_POSITION = 0; // Position of HomeFragment in ViewPager2
@@ -202,6 +251,22 @@ public class MainActivity extends AppCompatActivity {
             AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM);
         }
     }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+
+        if (requestCode == REQUEST_CODE_POST_NOTIFICATION) {
+            // Check if the permission request was granted
+            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                Toast.makeText(this, "Notification permission granted", Toast.LENGTH_SHORT).show();
+            } else {
+                // Permission was denied, handle this case
+                Toast.makeText(this, "Notification permission denied", Toast.LENGTH_SHORT).show();
+            }
+        }
+    }
+
 
     public interface PermissionCallback {
         void onPermissionResult(boolean isGranted);

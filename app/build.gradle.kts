@@ -21,7 +21,7 @@ android {
 
     defaultConfig {
         applicationId = "com.cs426.asel"
-        minSdk = 30
+        minSdk = 31
         targetSdk = 34
         versionCode = 1
         versionName = "1.0"
@@ -92,6 +92,7 @@ dependencies {
     implementation("androidx.viewpager2:viewpager2:1.1.0")
     implementation("com.google.zxing:core:3.4.1")
     implementation("com.journeyapps:zxing-android-embedded:4.3.0")
+    implementation("androidx.work:work-runtime:2.7.1")
     implementation("com.github.yalantis:ucrop:2.2.8")
     implementation(libs.jsoup)
     implementation(libs.generativeai)

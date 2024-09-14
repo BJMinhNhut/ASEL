@@ -175,7 +175,6 @@
                 android:layout_height="30dp"
                 android:layout_marginTop="10dp"
                 android:layout_gravity="center"
-                android:src="@drawable/barcode_default"
                 android:scaleType="fitXY"
                 android:adjustViewBounds="true"/>
         </LinearLayout>

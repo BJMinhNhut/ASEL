@@ -1,16 +1,25 @@
 package com.cs426.asel.ui.emails;
 
 import android.app.AlertDialog;
+import android.content.res.Resources;
+import android.graphics.Color;
 import android.graphics.Rect;
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.cardview.widget.CardView;
+import androidx.core.content.res.ResourcesCompat;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.Observer;
 import androidx.fragment.app.FragmentTransaction;
@@ -34,6 +43,7 @@ import com.google.android.material.tabs.TabLayout;
 import java.time.Instant;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
+import java.util.Objects;
 
 public class EmailsFragment extends Fragment {
     private MailList unread;
@@ -75,7 +85,7 @@ public class EmailsFragment extends Fragment {
         mailRepository = new MailRepository(requireContext(), userEmail);
         eventRepository = new EventRepository(requireContext(), userEmail);
         emailsViewModel = new ViewModelProvider(requireActivity()).get(EmailsViewModel.class);
-        emailsViewModel.fetchAllEmailsID();
+        emailsViewModel.fetchNextIdBatch();
         adapter = new EmailListAdapter();
         unread = new MailList();
         read = mailRepository.getMailByRead(true, "send_time", false);
@@ -106,18 +116,17 @@ public class EmailsFragment extends Fragment {
             }
         });
 
-        final Observer<Boolean> loadObserver = new Observer<Boolean>() {
-            @Override
-            public void onChanged(Boolean aBoolean) {
-                if (aBoolean) {
-                    showLoadIndicator();
-                } else {
-                    Log.d("EmailsFragment", "Hiding load");
-                    MailList newMails = emailsViewModel.getMailListFrom(unread.size());
-                    adapter.appendList(newMails);
-                    unread.append(newMails);
-                    hideLoadIndicator();
-                }
+        final Observer<Boolean> loadObserver = aBoolean -> {
+            if (aBoolean) {
+                // Show loading indicator at the bottom of the list
+                adapter.setLoading(true);
+            } else {
+                // Hide loading indicator
+                adapter.setLoading(false);
+
+                MailList newMails = emailsViewModel.getMailListFrom(unread.size());
+                adapter.appendList(newMails);
+                unread.append(newMails);
             }
         };
 
@@ -131,9 +140,60 @@ public class EmailsFragment extends Fragment {
         super.onViewCreated(view, savedInstanceState);
 
         View root = binding.getRoot();
-        emailListRecyclerView = root.findViewById(R.id.email_list_recycler_view);
+
+        binding.infoButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                String[] tags = {"Assignment", "Exam", "Meeting", "Course Material", "Other"};
+                int[] colors = {
+                        ResourcesCompat.getColor(getResources(), R.color.tag_assignment, null),
+                        ResourcesCompat.getColor(getResources(), R.color.tag_exam, null),
+                        ResourcesCompat.getColor(getResources(), R.color.tag_meeting, null),
+                        ResourcesCompat.getColor(getResources(), R.color.tag_course_material, null),
+                        ResourcesCompat.getColor(getResources(), R.color.tag_other, null)
+                };
+
+                LinearLayout layout = new LinearLayout(getContext());
+                layout.setOrientation(LinearLayout.VERTICAL);
+                layout.setPadding(20, 20, 20, 20);
+
+                for (int i = 0; i < tags.length; i++) {
+                    LinearLayout rowLayout = new LinearLayout(getContext());
+                    rowLayout.setOrientation(LinearLayout.HORIZONTAL);
+                    rowLayout.setPadding(20, 20, 20, 20);
+                    rowLayout.setGravity(Gravity.CENTER_VERTICAL);
+
+                    // Create the circle (using a View)
+                    CardView circleView = new CardView(getContext());
+                    LinearLayout.LayoutParams circleParams = new LinearLayout.LayoutParams(50, 50);
+                    circleParams.setMargins(0, 0, 20, 0);
+                    circleView.setLayoutParams(circleParams);
+                    circleView.setRadius(5);
+                    circleView.setCardElevation(0);
+                    circleView.setCardBackgroundColor(colors[i]);
+
+                    TextView textView = new TextView(getContext());
+                    textView.setText(tags[i]);
+                    textView.setTextAppearance(R.style.body_m);
+                    textView.setTextColor(ResourcesCompat.getColor(getResources(), R.color.dark_darkest, null));
+
+                    rowLayout.addView(circleView);
+                    rowLayout.addView(textView);
+
+                    layout.addView(rowLayout);
+                }
+
+                new AlertDialog.Builder(getContext())
+                        .setTitle("Tag color descriptions")
+                        .setView(layout)
+                        .setPositiveButton("OK", null)
+                        .show();
+            }
+        });
+
+        emailListRecyclerView = binding.emailListRecyclerView;
         emailListRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
-        emailListRecyclerView.addItemDecoration(new SpaceItemDecoration(20));
+        emailListRecyclerView.addItemDecoration(new SpaceItemDecoration(30));
         emailListRecyclerView.setAdapter(adapter);
         emailListRecyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
             @Override
@@ -145,6 +205,28 @@ public class EmailsFragment extends Fragment {
                     Log.d("EmailsFragment", "Loading more emails");
                     emailsViewModel.loadMoreEmails();
                 }
+            }
+        });
+
+        emailListRecyclerView.addOnItemTouchListener(new RecyclerView.OnItemTouchListener() {
+            @Override
+            public boolean onInterceptTouchEvent(RecyclerView rv, MotionEvent e) {
+                int action = e.getAction();
+                if (action == MotionEvent.ACTION_MOVE) {
+                    rv.getParent().requestDisallowInterceptTouchEvent(true);
+                }
+
+                return false;
+            }
+
+            @Override
+            public void onTouchEvent(RecyclerView rv, MotionEvent e) {
+
+            }
+
+            @Override
+            public void onRequestDisallowInterceptTouchEvent(boolean disallowIntercept) {
+
             }
         });
 
@@ -222,16 +304,6 @@ public class EmailsFragment extends Fragment {
         itemTouchHelper.attachToRecyclerView(emailListRecyclerView);
     }
 
-    private void hideLoadIndicator() {
-        binding.loadingIndicator.setVisibility(View.GONE);
-        binding.emailListRecyclerView.setVisibility(View.VISIBLE);
-    }
-
-    private void showLoadIndicator() {
-        binding.loadingIndicator.setVisibility(View.VISIBLE);
-        binding.emailListRecyclerView.setVisibility(View.GONE);
-    }
-
     private void moveMailToRead(int index, Mail mail) {
         removedMail = mail;
         removedIndex = index;
@@ -255,8 +327,11 @@ public class EmailsFragment extends Fragment {
         }
     }
 
-    class EmailListAdapter extends RecyclerView.Adapter<EmailListAdapter.EmailViewHolder> {
+    class EmailListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
+        private static final int VIEW_TYPE_ITEM = 0;
+        private static final int VIEW_TYPE_LOADING = 1;
         private MailList mailList;
+        private boolean isLoading = false;
 
         public EmailListAdapter() {
             mailList = new MailList();
@@ -270,15 +345,13 @@ public class EmailsFragment extends Fragment {
         public void appendList(MailList newMailList) {
             int position = this.mailList.size();
             this.mailList.append(newMailList);
-
             Log.d("EmailListAdapter", "Appending list from" + position + " to " + (position + newMailList.size()));
-
-            notifyItemRangeChanged(position, position + newMailList.size());
+            notifyItemRangeInserted(position, newMailList.size());
         }
 
         public void removeMail(int position) {
             mailList.removeMail(position);
-            notifyDataSetChanged();
+            notifyItemRemoved(position);
         }
 
         public void insertMail(Mail mail, int position) {
@@ -286,18 +359,40 @@ public class EmailsFragment extends Fragment {
             notifyItemInserted(position);
         }
 
+        // Set the loading state
+        public void setLoading(boolean isLoading) {
+            this.isLoading = isLoading;
+            if (isLoading) {
+                notifyItemInserted(mailList.size());
+            } else {
+                notifyItemRemoved(mailList.size());
+            }
+        }
+
         @NonNull
         @Override
-        public EmailViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-            View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_email, parent, false);
-            return new EmailViewHolder(view);
+        public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+            if (viewType == VIEW_TYPE_ITEM) {
+                View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_email, parent, false);
+                return new EmailViewHolder(view);
+            } else {
+                // Inflate a progress bar layout for loading view
+                View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_loading, parent, false);
+                return new LoadingViewHolder(view);
+            }
         }
 
         @Override
-        public void onBindViewHolder(@NonNull EmailViewHolder holder, int position) {
-            holder.itemView.setOnClickListener(v -> {
-                int curPosition = holder.getBindingAdapterPosition();
+        public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {
+            // No binding logic needed for LoadingViewHolder (loading spinner)
+            if (holder instanceof LoadingViewHolder) {
+                return;
+            }
 
+            // cast the holder to EmailViewHolder
+            EmailViewHolder emailHolder = (EmailViewHolder) holder;
+            emailHolder.itemView.setOnClickListener(v -> {
+                int curPosition = holder.getBindingAdapterPosition();
                 Bundle bundle = new Bundle();
                 bundle.putString("emailId", mailList.getMail(curPosition).getId()); // Replace 1 with the actual email ID you want to pass
                 FragmentTransaction ft = getParentFragmentManager().beginTransaction();
@@ -325,41 +420,60 @@ public class EmailsFragment extends Fragment {
                     eventTime += " - " + eventEndTime.atZone(ZoneId.of("Asia/Ho_Chi_Minh")).format(DateTimeFormatter.ofPattern("MMM dd, HH:mm"));
                 }
 
-                holder.eventTime.setText(eventTime);
-                holder.eventTime.setVisibility(View.VISIBLE);
-                holder.itemView.findViewById(R.id.time_icon).setVisibility(View.VISIBLE);
-                holder.itemView.findViewById(R.id.divider).setVisibility(View.VISIBLE);
+                emailHolder.eventTime.setText(eventTime);
+                emailHolder.eventTime.setVisibility(View.VISIBLE);
+                emailHolder.itemView.findViewById(R.id.time_icon).setVisibility(View.VISIBLE);
+                emailHolder.itemView.findViewById(R.id.divider).setVisibility(View.VISIBLE);
 
 
                 if (mailList.getMail(position).getLocation() != null) {
-                    holder.place.setText(mailList.getMail(position).getLocation());
-                    holder.place.setVisibility(View.VISIBLE);
-                    holder.itemView.findViewById(R.id.location_icon).setVisibility(View.VISIBLE);
+                    emailHolder.place.setText(mailList.getMail(position).getLocation());
+                    emailHolder.place.setVisibility(View.VISIBLE);
+                    emailHolder.itemView.findViewById(R.id.location_icon).setVisibility(View.VISIBLE);
                 } else {
-                    holder.place.setVisibility(View.GONE);
-                    holder.itemView.findViewById(R.id.location_icon).setVisibility(View.GONE);
+                    emailHolder.place.setVisibility(View.GONE);
+                    emailHolder.itemView.findViewById(R.id.location_icon).setVisibility(View.GONE);
                 }
             } else {
-                holder.itemView.findViewById(R.id.divider).setVisibility(View.GONE);
-                holder.eventTime.setVisibility(View.GONE);
-                holder.place.setVisibility(View.GONE);
-                holder.itemView.findViewById(R.id.location_icon).setVisibility(View.GONE);
-                holder.itemView.findViewById(R.id.time_icon).setVisibility(View.GONE);
+                emailHolder.itemView.findViewById(R.id.divider).setVisibility(View.GONE);
+                emailHolder.eventTime.setVisibility(View.GONE);
+                emailHolder.place.setVisibility(View.GONE);
+                emailHolder.itemView.findViewById(R.id.location_icon).setVisibility(View.GONE);
+                emailHolder.itemView.findViewById(R.id.time_icon).setVisibility(View.GONE);
             }
 
-            holder.senderName.setText(senderName);
-            holder.senderDomain.setText(senderDomain);
-            holder.title.setText(mailList.getMail(position).getTitle());
-            holder.sendTime.setText(mailList.getMail(position).getSentTime());
-            holder.tag.setText(mailList.getMail(position).getTag());
-            holder.summary.setText(mailList.getMail(position).getSummary());
+            String tag = mailList.getMail(position).getTag();
+            if (Objects.equals(tag, "Assignment")) {
+                emailHolder.tag.setBackground(ResourcesCompat.getDrawable(getResources(), R.color.tag_assignment, null));
+            } else if (Objects.equals(tag, "Exam")) {
+                emailHolder.tag.setBackground(ResourcesCompat.getDrawable(getResources(), R.color.tag_exam, null));
+            } else if (Objects.equals(tag, "Meeting")) {
+                emailHolder.tag.setBackground(ResourcesCompat.getDrawable(getResources(), R.color.tag_meeting, null));
+            } else if (Objects.equals(tag, "Course Material")) {
+                emailHolder.tag.setBackground(ResourcesCompat.getDrawable(getResources(), R.color.tag_course_material, null));
+            } else {
+                emailHolder.tag.setBackground(ResourcesCompat.getDrawable(getResources(), R.color.tag_other, null));
+            }
+
+            emailHolder.senderName.setText(senderName);
+            emailHolder.senderDomain.setText(senderDomain);
+            emailHolder.title.setText(mailList.getMail(position).getTitle());
+            emailHolder.sendTime.setText(mailList.getMail(position).getSentTime());
+            emailHolder.summary.setText(mailList.getMail(position).getSummary());
+        }
+
+        @Override
+        public int getItemViewType(int position) {
+            // Check if the position is for the loading view
+            return (position == mailList.size()) ? VIEW_TYPE_LOADING : VIEW_TYPE_ITEM;
         }
 
         @Override
         public int getItemCount() {
-            // Update to reflect actual number of emails from ViewModel or LiveData
-            return mailList.size();
+            // Include an extra item for the loading indicator if isLoading is true
+            return mailList.size() + (isLoading ? 1 : 0);
         }
+
 
         class EmailViewHolder extends RecyclerView.ViewHolder {
             TextView senderName;
@@ -369,7 +483,7 @@ public class EmailsFragment extends Fragment {
             TextView eventTime;
             TextView place;
             TextView summary;
-            TextView tag;
+            View tag;
 
             public EmailViewHolder(@NonNull View itemView) {
                 super(itemView);
@@ -381,6 +495,13 @@ public class EmailsFragment extends Fragment {
                 place = itemView.findViewById(R.id.location);
                 summary = itemView.findViewById(R.id.summary);
                 tag = itemView.findViewById(R.id.tag);
+            }
+        }
+
+        // ViewHolder for loading indicator
+        class LoadingViewHolder extends RecyclerView.ViewHolder {
+            public LoadingViewHolder(@NonNull View itemView) {
+                super(itemView);
             }
         }
     }

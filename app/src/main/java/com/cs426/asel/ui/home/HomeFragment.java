@@ -3,9 +3,11 @@ package com.cs426.asel.ui.home;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.res.Configuration;
+import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
+import android.graphics.drawable.BitmapDrawable;
 import android.os.Bundle;
 import android.util.Base64;
 import android.util.Log;
@@ -17,6 +19,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
+import androidx.core.content.res.ResourcesCompat;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -24,6 +27,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.cs426.asel.MainActivity;
 import com.cs426.asel.R;
+import com.cs426.asel.backend.Utility;
 import com.cs426.asel.backend.Event;
 import com.cs426.asel.backend.EventList;
 import com.cs426.asel.backend.EventRepository;
@@ -54,7 +58,7 @@ public class HomeFragment extends Fragment {
     private InfoViewModel infoViewModel;
     private EmailsViewModel emailsViewModel;
     private TitleAdapter mailsAdapter, eventsAdapter;
-    
+
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
         HomeViewModel homeViewModel =
@@ -77,8 +81,35 @@ public class HomeFragment extends Fragment {
         infoViewModel = new ViewModelProvider(requireActivity()).get(InfoViewModel.class);
         emailsViewModel = new ViewModelProvider(requireActivity()).get(EmailsViewModel.class);
         observeViewModel();
+        loadUserInfo();
 
         return root;
+    }
+
+    private void loadUserInfo() {
+        SharedPreferences sharedPreferences = requireActivity().getSharedPreferences(
+                "StudentInfo-" + Utility.getUserEmail(requireContext()), Context.MODE_PRIVATE);
+        String fullName = sharedPreferences.getString("full_name", "");
+        String studentId = sharedPreferences.getString("student_id", "");
+        String birthdate = sharedPreferences.getString("birthday", "");
+        String school = sharedPreferences.getString("school", "");
+        String faculty = sharedPreferences.getString("faculty", "");
+        String degree = sharedPreferences.getString("degree", "");
+        String imageEncoded = sharedPreferences.getString("avatar_image", null);
+        infoViewModel.setFullName(fullName);
+        infoViewModel.setStudentId(studentId);
+        infoViewModel.setBirthdate(birthdate);
+        infoViewModel.setSchool(school);
+        infoViewModel.setFaculty(faculty);
+        infoViewModel.setDegree(degree);
+        infoViewModel.setAvatar(imageEncoded);
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        loadUserInfo();
+        loadPreviewInfo();
     }
 
     private void observeViewModel() {
@@ -87,8 +118,10 @@ public class HomeFragment extends Fragment {
             binding.id.setText(studentId);
             Bitmap barcodeBitmap = generateBarcode(studentId);
             if (barcodeBitmap != null) {
+                barcode.setVisibility(View.VISIBLE);
                 barcode.setImageBitmap(barcodeBitmap);
             } else {
+                barcode.setVisibility(View.GONE);
                 Toast.makeText(getContext(), "Failed to generate barcode", Toast.LENGTH_SHORT).show();
             }
         });
@@ -107,7 +140,7 @@ public class HomeFragment extends Fragment {
                 binding.avatar.setImageResource(R.drawable.avatar_default); // Set default avatar if none
             }
         });
-        
+
         emailsViewModel.getIsLoading().observe(getViewLifecycleOwner(), isLoading -> {
             if (isLoading) {
                 showLoading();
@@ -199,7 +232,7 @@ public class HomeFragment extends Fragment {
 
             for (int x = 0; x < width; x++) {
                 for (int y = 0; y < height; y++) {
-                    bitmap.setPixel(x, y, bitMatrix.get(x, y) ? Color.BLACK : Color.TRANSPARENT);
+                    bitmap.setPixel(x, y, bitMatrix.get(x, y) ? ResourcesCompat.getColor(getResources(), R.color.dark_darkest, null) : Color.TRANSPARENT);
                 }
             }
 
@@ -209,12 +242,6 @@ public class HomeFragment extends Fragment {
         }
 
         return null;
-    }
-
-    @Override
-    public void onResume() {
-        super.onResume();
-        loadPreviewInfo();
     }
 
     public static class TitleAdapter extends RecyclerView.Adapter<HomeFragment.TitleAdapter.TitleViewHolder> {
