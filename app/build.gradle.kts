@@ -99,6 +99,7 @@ dependencies {
     implementation(libs.jackson.databind)
     implementation(libs.javax.mail)
     implementation(libs.google.material)
+    implementation(libs.text.recognition)
     testImplementation(libs.junit)
     androidTestImplementation(libs.ext.junit)
     androidTestImplementation(libs.espresso.core)

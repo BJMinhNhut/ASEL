@@ -52,12 +52,19 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.ai.client.generativeai.type.GenerateContentResponse;
 import com.cs426.asel.ui.home.HomeFragment;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.snackbar.Snackbar;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.common.util.concurrent.FutureCallback;
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
+import com.google.mlkit.vision.common.InputImage;
+import com.google.mlkit.vision.text.Text;
+import com.google.mlkit.vision.text.TextRecognition;
+import com.google.mlkit.vision.text.TextRecognizer;
+import com.google.mlkit.vision.text.latin.TextRecognizerOptions;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -65,9 +72,14 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class UpdateInfoFragment extends Fragment implements MainActivity.PermissionCallback {
     private static final int REQUEST_IMAGE_CAPTURE = 1;
@@ -135,7 +147,7 @@ public class UpdateInfoFragment extends Fragment implements MainActivity.Permiss
                     if (result.getResultCode() == getActivity().RESULT_OK && result.getData() != null) {
                         Bundle bundle = result.getData().getExtras();
                         Bitmap bitmap = (Bitmap) bundle.get("data");
-                        extractUserInfo(bitmap);
+                        runTextRecognition(bitmap);
                     }
                 }
         );
@@ -219,9 +231,10 @@ public class UpdateInfoFragment extends Fragment implements MainActivity.Permiss
         cameraLauncher.launch(intent);
     }
 
-    private void extractUserInfo(Bitmap bitmap) {
-        String prompt = "Extract user information from the image following the schema: { \"fullName\": str, \"studentId\": str, \"birthday\": str, \"degree\": str, \"school\": str, \"faculty\": str}. Birthday should be in the format \"dd/MM/yyyy\". Unclear info should be null.";
-        ListenableFuture<GenerateContentResponse> future = ChatGPTUtils.getResponse(prompt, bitmap);
+    private void extractUserInfo(String text) {
+        Log.d("UpdateInfoFragment", "Extracting " + text);
+        String prompt = "Extract user information of the following text using the schema: { \"fullName\": str, \"studentId\": str, \"birthday\": str, \"degree\": str, \"school\": str, \"faculty\": str}. Birthday should be in the format \"dd/MM/yyyy\". Unclear info should be null: ";
+        ListenableFuture<GenerateContentResponse> future = ChatGPTUtils.getResponse(prompt + text);
         Executor executor = Executors.newSingleThreadExecutor();
         // TODO: start loading screen
         Futures.addCallback(
@@ -240,6 +253,25 @@ public class UpdateInfoFragment extends Fragment implements MainActivity.Permiss
                 },
                 executor
         );
+    }
+
+    public void runTextRecognition(Bitmap bitmap) {
+        InputImage image = InputImage.fromBitmap(bitmap, 0);
+        TextRecognizer recognizer = TextRecognition.getClient(TextRecognizerOptions.DEFAULT_OPTIONS);
+        recognizer.process(image)
+                .addOnSuccessListener(new OnSuccessListener<Text>() {
+                    @Override
+                    public void onSuccess(Text texts) {
+                        extractUserInfo(texts.getText());
+                    }
+                })
+                .addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(Exception e) {
+                        Log.e("UpdateInfoFragment", "Error running text recognition");
+                        e.printStackTrace();
+                    }
+                });
     }
 
     private void setStudentInfo(String text) {
