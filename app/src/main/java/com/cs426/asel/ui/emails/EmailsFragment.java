@@ -176,7 +176,7 @@ public class EmailsFragment extends Fragment {
                 }
 
                 new AlertDialog.Builder(getContext())
-                        .setTitle("Tag color descriptions")
+                        .setTitle("Tag color descriptions:")
                         .setView(layout)
                         .setPositiveButton("OK", null)
                         .show();
@@ -437,8 +437,10 @@ public class EmailsFragment extends Fragment {
                 emailHolder.tag.setBackground(ResourcesCompat.getDrawable(getResources(), R.color.tag_meeting, null));
             } else if (Objects.equals(tag, "Course Material")) {
                 emailHolder.tag.setBackground(ResourcesCompat.getDrawable(getResources(), R.color.tag_course_material, null));
-            } else {
+            } else if (Objects.equals(tag, "Other")) {
                 emailHolder.tag.setBackground(ResourcesCompat.getDrawable(getResources(), R.color.tag_other, null));
+            } else {
+                emailHolder.tag.setBackground(ResourcesCompat.getDrawable(getResources(), R.color.tag_spam, null));
             }
 
             emailHolder.senderName.setText(senderName);

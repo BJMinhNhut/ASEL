@@ -23,6 +23,7 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import com.cs426.asel.R;
+import com.cs426.asel.backend.Utility;
 import com.cs426.asel.databinding.FragmentAccountBinding;
 
 public class AccountFragment extends Fragment {
@@ -77,7 +78,8 @@ public class AccountFragment extends Fragment {
     private void loadAccountInfo() {
         Handler mainHandler = new Handler(Looper.getMainLooper());
         new Thread(() -> {
-            SharedPreferences sharedPreferences = requireContext().getSharedPreferences("StudentInfo", Context.MODE_PRIVATE);
+            SharedPreferences sharedPreferences = requireContext().getSharedPreferences(
+                    "StudentInfo-" + Utility.getUserEmail(requireContext()), Context.MODE_PRIVATE);
 
             // Load the saved full name
             String fullName = sharedPreferences.getString("full_name", "Account Name");
