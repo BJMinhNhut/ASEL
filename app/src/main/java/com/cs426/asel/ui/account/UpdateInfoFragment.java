@@ -129,17 +129,9 @@ public class UpdateInfoFragment extends Fragment implements MainActivity.Permiss
                 new ActivityResultContracts.StartActivityForResult(),
                 result -> {
                     if (result.getResultCode() == getActivity().RESULT_OK && result.getData() != null) {
-                        // Get the bitmap from the camera result
                         Bundle bundle = result.getData().getExtras();
                         Bitmap bitmap = (Bitmap) bundle.get("data");
-
-                        // Save the bitmap to file and start uCrop
-                        Uri sourceUri = saveBitmapToFile(bitmap);  // Convert Bitmap to URI
-                        Uri destinationUri = Uri.fromFile(new File(getContext().getCacheDir(), "croppedImage.jpg"));
-
-                        // Launch uCrop for cropping
-                        UCrop.of(sourceUri, destinationUri)
-                                .start(getContext(), this);
+                        extractUserInfo(bitmap);
                     }
                 }
         );
@@ -164,9 +156,9 @@ public class UpdateInfoFragment extends Fragment implements MainActivity.Permiss
             }
         });
         // Set listener for camera button to open image picker
-        checkCameraPermission();
+//        checkCameraPermission();
         cameraButton.setOnClickListener(v -> {
-            openCamera();
+            openImagePicker();
         });
         // Set onClick listener for save button
         buttonSave.setOnClickListener(v -> {
@@ -214,41 +206,41 @@ public class UpdateInfoFragment extends Fragment implements MainActivity.Permiss
     }
 
     private void openCamera() {
-        Intent cameraIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+//        Intent cameraIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+        Intent cameraIntent = new Intent(MediaStore.ACTION_PICK_IMAGES);
         cameraLauncher.launch(cameraIntent);
     }
 
-    private void runTextRecognition(Bitmap bitmap) {
-        InputImage image = InputImage.fromBitmap(bitmap, 0);
-        textRecognizer.process(image)
-                .addOnSuccessListener(texts -> {
-                    // Handle successful OCR
-                    Log.d("OCR", texts.getText());
-                    extractUserInfo(texts.getText());
-                })
-                .addOnFailureListener(e -> {
-                    Log.e("OCR", "Text recognition failed", e);
-                });
-    }
+//    private void runTextRecognition(Bitmap bitmap) {
+//        InputImage image = InputImage.fromBitmap(bitmap, 0);
+//        textRecognizer.process(image)
+//                .addOnSuccessListener(texts -> {
+//                    // Handle successful OCR
+//                    Log.d("OCR", texts.getText());
+////                    extractUserInfo(texts.getText());
+//                })
+//                .addOnFailureListener(e -> {
+//                    Log.e("OCR", "Text recognition failed", e);
+//                });
+//    }
 
-    private Uri saveBitmapToFile(Bitmap bitmap) {
-        File tempFile = new File(getContext().getCacheDir(), "temp_image.jpg");
-        try {
-            FileOutputStream outputStream = new FileOutputStream(tempFile);
-            bitmap.compress(Bitmap.CompressFormat.JPEG, 100, outputStream);
-            outputStream.flush();
-            outputStream.close();
-            return FileProvider.getUriForFile(requireContext(), requireContext().getPackageName() + ".provider", tempFile);
-        } catch (IOException e) {
-            e.printStackTrace();
-            return null;
-        }
-    }
+//    private Uri saveBitmapToFile(Bitmap bitmap) {
+//        File tempFile = new File(getContext().getCacheDir(), "temp_image.jpg");
+//        try {
+//            FileOutputStream outputStream = new FileOutputStream(tempFile);
+//            bitmap.compress(Bitmap.CompressFormat.JPEG, 100, outputStream);
+//            outputStream.flush();
+//            outputStream.close();
+//            return FileProvider.getUriForFile(requireContext(), requireContext().getPackageName() + ".provider", tempFile);
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//            return null;
+//        }
+//    }
 
-    private void extractUserInfo(String text) {
-        Log.d("UpdateInfoFragment", "Extracting " + text);
+    private void extractUserInfo(Bitmap bitmap) {
         String prompt = "Extract user information of the following text using the schema: { \"fullName\": str, \"studentId\": str, \"birthday\": str, \"degree\": str, \"school\": str, \"faculty\": str}. Birthday should be in the format \"dd/MM/yyyy\". Unclear info should be null: ";
-        ListenableFuture<GenerateContentResponse> future = ChatGPTUtils.getResponse(prompt + text);
+        ListenableFuture<GenerateContentResponse> future = ChatGPTUtils.getResponse(prompt, bitmap);
         Executor executor = Executors.newSingleThreadExecutor();
         // TODO: start loading screen
         Futures.addCallback(
@@ -280,38 +272,16 @@ public class UpdateInfoFragment extends Fragment implements MainActivity.Permiss
         }
     }
 
-    @Override
-    public void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-
-        if (requestCode == UCrop.REQUEST_CROP && resultCode == RESULT_OK && data != null) {
-            Uri croppedImageUri = UCrop.getOutput(data);
-            if (croppedImageUri != null) {
-                try {
-                    // Load the cropped image as Bitmap
-                    Bitmap bitmap = MediaStore.Images.Media.getBitmap(requireContext().getContentResolver(), croppedImageUri);
-
-                    // Run OCR on the cropped bitmap
-                    runTextRecognition(bitmap);
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
-        } else if (resultCode == UCrop.RESULT_ERROR) {
-            final Throwable cropError = UCrop.getError(data);
-            if (cropError != null) {
-                Log.e("ImageCropError", cropError.getMessage());
-            }
-        }
-    }
-
     private void setStudentInfo(String text) {
         try {
             StudentInfo studentInfo = new ObjectMapper().readValue(text, StudentInfo.class);
             if (studentInfo.fullName == null || studentInfo.studentId == null || studentInfo.birthday == null || studentInfo.school == null || studentInfo.faculty == null) {
-                Snackbar snackbar = Snackbar.make(requireView(), "Invalid student info", Snackbar.LENGTH_SHORT);
-                snackbar.show();
-                throw new Exception("Invalid student info");
+                requireActivity().runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        Toast.makeText(requireContext(), "Failed to extract user info from image", Toast.LENGTH_SHORT).show();
+                    }
+                });
             }
             editTextFullName.setText(studentInfo.fullName);
             editTextStudentId.setText(studentInfo.studentId);
@@ -321,12 +291,6 @@ public class UpdateInfoFragment extends Fragment implements MainActivity.Permiss
             editTextFaculty.setText(studentInfo.faculty);
         } catch (Exception e) {
             e.printStackTrace();
-            requireActivity().runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    Toast.makeText(requireContext(), "Failed to extract user info from image", Toast.LENGTH_SHORT).show();
-                }
-            });
         }
     }
 
