@@ -92,7 +92,7 @@
                 app:boxCornerRadiusTopEnd="15dp"
                 app:boxCornerRadiusBottomStart="15dp"
                 app:boxCornerRadiusBottomEnd="15dp"
-                app:boxStrokeColor="@color/highlight_darkest"
+                app:boxStrokeColor="@color/text_input_color"
                 app:hintTextColor="@color/highlight_darkest"
                 app:cursorColor="@color/dark_darkest">
 
@@ -116,7 +116,8 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="All-day"
-                    android:textAppearance="@style/body_m"/>
+                    android:textAppearance="@style/body_m"
+                    android:textColor="@color/dark_darkest"/>
 
                 <View
                     android:layout_width="0dp"
@@ -148,7 +149,7 @@
                     app:boxCornerRadiusTopEnd="15dp"
                     app:boxCornerRadiusBottomStart="15dp"
                     app:boxCornerRadiusBottomEnd="15dp"
-                    app:boxStrokeColor="@color/highlight_darkest"
+                    app:boxStrokeColor="@color/text_input_color"
                     app:hintTextColor="@color/highlight_darkest"
                     app:cursorColor="@color/dark_darkest">
 
@@ -175,7 +176,7 @@
                     app:boxCornerRadiusTopEnd="15dp"
                     app:boxCornerRadiusBottomStart="15dp"
                     app:boxCornerRadiusBottomEnd="15dp"
-                    app:boxStrokeColor="@color/highlight_darkest"
+                    app:boxStrokeColor="@color/text_input_color"
                     app:hintTextColor="@color/highlight_darkest"
                     app:cursorColor="@color/dark_darkest">
 
@@ -208,7 +209,7 @@
                     app:boxCornerRadiusTopEnd="15dp"
                     app:boxCornerRadiusBottomStart="15dp"
                     app:boxCornerRadiusBottomEnd="15dp"
-                    app:boxStrokeColor="@color/highlight_darkest"
+                    app:boxStrokeColor="@color/text_input_color"
                     app:hintTextColor="@color/highlight_darkest"
                     app:cursorColor="@color/dark_darkest">
 
@@ -236,7 +237,7 @@
                     app:boxCornerRadiusTopEnd="15dp"
                     app:boxCornerRadiusBottomStart="15dp"
                     app:boxCornerRadiusBottomEnd="15dp"
-                    app:boxStrokeColor="@color/highlight_darkest"
+                    app:boxStrokeColor="@color/text_input_color"
                     app:hintTextColor="@color/highlight_darkest"
                     app:cursorColor="@color/dark_darkest">
 
@@ -262,7 +263,7 @@
                 app:boxCornerRadiusTopEnd="15dp"
                 app:boxCornerRadiusBottomStart="15dp"
                 app:boxCornerRadiusBottomEnd="15dp"
-                app:boxStrokeColor="@color/highlight_darkest"
+                app:boxStrokeColor="@color/text_input_color"
                 app:hintTextColor="@color/highlight_darkest"
                 app:cursorColor="@color/dark_darkest">
 
@@ -287,7 +288,7 @@
                 app:boxCornerRadiusTopEnd="15dp"
                 app:boxCornerRadiusBottomStart="15dp"
                 app:boxCornerRadiusBottomEnd="15dp"
-                app:boxStrokeColor="@color/highlight_darkest"
+                app:boxStrokeColor="@color/text_input_color"
                 app:hintTextColor="@color/highlight_darkest"
                 app:cursorColor="@color/dark_darkest">
 
@@ -313,7 +314,7 @@
                 app:boxCornerRadiusTopEnd="15dp"
                 app:boxCornerRadiusBottomStart="15dp"
                 app:boxCornerRadiusBottomEnd="15dp"
-                app:boxStrokeColor="@color/highlight_darkest"
+                app:boxStrokeColor="@color/text_input_color"
                 app:hintTextColor="@color/highlight_darkest"
                 app:cursorColor="@color/dark_darkest">
 
@@ -338,7 +339,7 @@
                 app:boxCornerRadiusTopEnd="15dp"
                 app:boxCornerRadiusBottomStart="15dp"
                 app:boxCornerRadiusBottomEnd="15dp"
-                app:boxStrokeColor="@color/highlight_darkest"
+                app:boxStrokeColor="@color/text_input_color"
                 app:hintTextColor="@color/highlight_darkest"
                 app:cursorColor="@color/dark_darkest">
 
