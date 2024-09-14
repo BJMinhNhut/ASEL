@@ -28,6 +28,15 @@
             android:textAlignment="center"
             android:textAppearance="@style/heading_l"
             android:textColor="@color/dark_darkest"/>
+
+        <ImageView
+            android:id="@+id/deleteButton"
+            android:layout_width="25dp"
+            android:layout_height="25dp"
+            android:layout_gravity="center|end"
+            android:src="@drawable/ic_calendar_delete"
+            app:tint="@color/highlight_darkest"
+            android:background="?android:attr/selectableItemBackground"/>
     </FrameLayout>
 
     <RelativeLayout

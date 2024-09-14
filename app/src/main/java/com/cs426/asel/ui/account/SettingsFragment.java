@@ -44,7 +44,7 @@ public class SettingsFragment extends Fragment {
         // Initialize SharedPreferences
         sharedPreferences = requireContext().getSharedPreferences("Settings", Context.MODE_PRIVATE);
         themeGroup = view.findViewById(R.id.theme_group);
-        emailNotificationGroup = view.findViewById(R.id.email_notification_group);
+//        emailNotificationGroup = view.findViewById(R.id.email_notification_group);
         reminderNotificationGroup = view.findViewById(R.id.reminder_notification_group);
 
         // Load saved preferences
@@ -55,22 +55,25 @@ public class SettingsFragment extends Fragment {
             if (checkedId == R.id.light_theme) {
                 savePreference("theme", "light");
                 AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO);
+                view.invalidate();
             } else if (checkedId == R.id.dark_theme) {
                 savePreference("theme", "dark");
                 AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES);
+                view.invalidate();
             } else if (checkedId == R.id.system_theme) {
                 savePreference("theme", "system");
                 AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM);
+                view.invalidate();
             }
         });
 
-        emailNotificationGroup.setOnCheckedChangeListener((group, checkedId) -> {
-            if (checkedId == R.id.email_notification_on) {
-                savePreference("new_email_notification", true);
-            } else {
-                savePreference("new_email_notification", false);
-            }
-        });
+//        emailNotificationGroup.setOnCheckedChangeListener((group, checkedId) -> {
+//            if (checkedId == R.id.email_notification_on) {
+//                savePreference("new_email_notification", true);
+//            } else {
+//                savePreference("new_email_notification", false);
+//            }
+//        });
 
         reminderNotificationGroup.setOnCheckedChangeListener((group, checkedId) -> {
             if (checkedId == R.id.reminder_notification_on) {
@@ -123,12 +126,12 @@ public class SettingsFragment extends Fragment {
         }
 
         // Load and set the new email notification preference
-        boolean newEmailNotification = sharedPreferences.getBoolean("new_email_notification", true);
-        if (newEmailNotification) {
-            emailNotificationGroup.check(R.id.email_notification_on);
-        } else {
-            emailNotificationGroup.check(R.id.email_notification_off);
-        }
+//        boolean newEmailNotification = sharedPreferences.getBoolean("new_email_notification", true);
+//        if (newEmailNotification) {
+//            emailNotificationGroup.check(R.id.email_notification_on);
+//        } else {
+//            emailNotificationGroup.check(R.id.email_notification_off);
+//        }
 
         // Load and set the reminder notification preference
         boolean reminderNotification = sharedPreferences.getBoolean("reminder_notification", true);
