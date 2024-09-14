@@ -1,57 +1,43 @@
 package com.cs426.asel.ui.account;
 
-import static com.cs426.asel.backend.ChatGPTUtils.getResponse;
-
-import androidx.activity.result.ActivityResultCallback;
-import androidx.activity.OnBackPressedCallback;
 import androidx.activity.OnBackPressedCallback;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
-import androidx.cardview.widget.CardView;
-import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
-import androidx.core.content.FileProvider;
 import androidx.fragment.app.FragmentManager;
-import androidx.fragment.app.FragmentManager;
-import androidx.fragment.app.FragmentTransaction;
 import androidx.lifecycle.ViewModelProvider;
 import android.app.DatePickerDialog;
-import android.app.Dialog;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.graphics.ImageDecoder;
 import android.graphics.drawable.BitmapDrawable;
 import android.net.Uri;
 import android.os.Bundle;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
-import androidx.navigation.fragment.NavHostFragment;
+
 import android.provider.MediaStore;
 import android.util.Base64;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
-import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ImageView;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import com.cs426.asel.MainActivity;
 import com.cs426.asel.R;
 import com.cs426.asel.backend.ChatGPTUtils;
+import com.cs426.asel.backend.Utility;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.ai.client.generativeai.type.GenerateContentResponse;
-import com.cs426.asel.ui.home.HomeFragment;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.snackbar.Snackbar;
 import com.google.android.material.textfield.TextInputEditText;
@@ -60,8 +46,6 @@ import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
 
 import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.IOException;
 import java.io.InputStream;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
@@ -142,6 +126,7 @@ public class UpdateInfoFragment extends Fragment implements MainActivity.Permiss
 
         // Load saved data
         loadStudentInfo();
+        saveViewModel();
 
         // Set onClick listener for back button
         buttonBack.setOnClickListener(v -> {
@@ -166,18 +151,7 @@ public class UpdateInfoFragment extends Fragment implements MainActivity.Permiss
         // Set onClick listener for save button
         buttonSave.setOnClickListener(v -> {
             saveStudentInfo();
-
-            mViewModel.setFullName(editTextFullName.getText().toString());
-            mViewModel.setStudentId(editTextStudentId.getText().toString());
-            mViewModel.setBirthdate(textViewBirthday.getText().toString());
-            mViewModel.setSchool(editTextSchool.getText().toString());
-            mViewModel.setFaculty(editTextFaculty.getText().toString());
-            mViewModel.setDegree(editTextDegree.getText().toString());
-
-            // Set the avatar image to the ViewModel
-            Bitmap avatarBitmap = ((BitmapDrawable) imageButtonAvatar.getDrawable()).getBitmap();
-            mViewModel.setAvatar(encodeToBase64(avatarBitmap));
-
+            saveViewModel();
             Toast.makeText(requireContext(), "Info saved successfully", Toast.LENGTH_SHORT).show();
             FragmentManager fm = getParentFragmentManager();
             fm.popBackStack();
@@ -188,6 +162,28 @@ public class UpdateInfoFragment extends Fragment implements MainActivity.Permiss
             public void handleOnBackPressed() {
                 FragmentManager fm = getParentFragmentManager();
                 fm.popBackStack();
+            }
+        });
+
+//        observeInfo();
+    }
+
+    private void observeInfo() {
+        mViewModel.getFullName().observe(getViewLifecycleOwner(), fullName -> editTextFullName.setText(fullName));
+        mViewModel.getStudentId().observe(getViewLifecycleOwner(), studentId -> editTextStudentId.setText(studentId));
+        mViewModel.getBirthdate().observe(getViewLifecycleOwner(), birthdate -> textViewBirthday.setText(birthdate));
+        mViewModel.getSchool().observe(getViewLifecycleOwner(), school -> editTextSchool.setText(school));
+        mViewModel.getFaculty().observe(getViewLifecycleOwner(), faculty -> editTextFaculty.setText(faculty));
+        mViewModel.getDegree().observe(getViewLifecycleOwner(), degree -> editTextDegree.setText(degree));
+
+        // Observe avatar and set the image in ImageView
+        mViewModel.getAvatar().observe(getViewLifecycleOwner(), avatarBase64 -> {
+            if (avatarBase64 != null && !avatarBase64.isEmpty()) {
+                byte[] decodedBytes = Base64.decode(avatarBase64, Base64.DEFAULT);
+                Bitmap avatarBitmap = BitmapFactory.decodeByteArray(decodedBytes, 0, decodedBytes.length);
+                imageButtonAvatar.setImageBitmap(avatarBitmap);
+            } else {
+                imageButtonAvatar.setImageResource(R.drawable.avatar_default); // Set default avatar if none
             }
         });
     }
@@ -286,7 +282,7 @@ public class UpdateInfoFragment extends Fragment implements MainActivity.Permiss
     }
 
     private void saveImageToPreferences(Bitmap bitmap) {
-        SharedPreferences sharedPreferences = requireContext().getSharedPreferences("StudentInfo", Context.MODE_PRIVATE);
+        SharedPreferences sharedPreferences = requireContext().getSharedPreferences("StudentInfo-" + getUserEmail(), Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = sharedPreferences.edit();
         editor.putString("avatar_image", encodeToBase64(bitmap));
         editor.apply();
@@ -295,8 +291,12 @@ public class UpdateInfoFragment extends Fragment implements MainActivity.Permiss
         mViewModel.setAvatar(encodeToBase64(bitmap));
     }
 
+    private String getUserEmail() {
+        return Utility.getUserEmail(requireContext());
+    }
+
     private Bitmap loadImageFromPreferences() {
-        SharedPreferences sharedPreferences = requireContext().getSharedPreferences("StudentInfo", Context.MODE_PRIVATE);
+        SharedPreferences sharedPreferences = requireContext().getSharedPreferences("StudentInfo-" + getUserEmail(), Context.MODE_PRIVATE);
         String imageEncoded = sharedPreferences.getString("avatar_image", null);
         if (imageEncoded != null) {
             byte[] decodedBytes = Base64.decode(imageEncoded, Base64.DEFAULT);
@@ -330,7 +330,7 @@ public class UpdateInfoFragment extends Fragment implements MainActivity.Permiss
     }
 
     private void loadStudentInfo() {
-        SharedPreferences sharedPreferences = requireContext().getSharedPreferences("StudentInfo", Context.MODE_PRIVATE);
+        SharedPreferences sharedPreferences = requireContext().getSharedPreferences("StudentInfo-" + getUserEmail(), Context.MODE_PRIVATE);
         editTextFullName.setText(sharedPreferences.getString("full_name", ""));
         editTextStudentId.setText(sharedPreferences.getString("student_id", ""));
         textViewBirthday.setText(sharedPreferences.getString("birthday", ""));
@@ -348,7 +348,7 @@ public class UpdateInfoFragment extends Fragment implements MainActivity.Permiss
     }
 
     private void saveStudentInfo() {
-        SharedPreferences sharedPreferences = requireContext().getSharedPreferences("StudentInfo", Context.MODE_PRIVATE);
+        SharedPreferences sharedPreferences = requireContext().getSharedPreferences("StudentInfo-" + getUserEmail(), Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = sharedPreferences.edit();
         editor.putString("full_name", editTextFullName.getText().toString());
         editor.putString("student_id", editTextStudentId.getText().toString());
@@ -357,6 +357,19 @@ public class UpdateInfoFragment extends Fragment implements MainActivity.Permiss
         editor.putString("faculty", editTextFaculty.getText().toString());
         editor.putString("degree", editTextDegree.getText().toString());
         editor.apply();
+    }
+
+    private void saveViewModel() {
+        mViewModel.setFullName(editTextFullName.getText().toString());
+        mViewModel.setStudentId(editTextStudentId.getText().toString());
+        mViewModel.setBirthdate(textViewBirthday.getText().toString());
+        mViewModel.setSchool(editTextSchool.getText().toString());
+        mViewModel.setFaculty(editTextFaculty.getText().toString());
+        mViewModel.setDegree(editTextDegree.getText().toString());
+
+        // Set the avatar image to the ViewModel
+        Bitmap avatarBitmap = ((BitmapDrawable) imageButtonAvatar.getDrawable()).getBitmap();
+        mViewModel.setAvatar(encodeToBase64(avatarBitmap));
     }
 
     @Override

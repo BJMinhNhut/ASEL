@@ -7,8 +7,10 @@ import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
+import android.graphics.drawable.BitmapDrawable;
 import android.os.Bundle;
 import android.util.Base64;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -23,6 +25,7 @@ import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.cs426.asel.R;
+import com.cs426.asel.backend.Utility;
 import com.cs426.asel.databinding.FragmentHomeBinding;
 import com.cs426.asel.ui.account.InfoViewModel;
 import com.cs426.asel.ui.account.UpdateInfoFragment;
@@ -55,8 +58,34 @@ public class HomeFragment extends Fragment {
 
         infoViewModel = new ViewModelProvider(requireActivity()).get(InfoViewModel.class);
         observeViewModel();
+        loadUserInfo();
 
         return root;
+    }
+
+    private void loadUserInfo() {
+        SharedPreferences sharedPreferences = requireActivity().getSharedPreferences(
+                "StudentInfo-" + Utility.getUserEmail(requireContext()), Context.MODE_PRIVATE);
+        String fullName = sharedPreferences.getString("full_name", "");
+        String studentId = sharedPreferences.getString("student_id", "");
+        String birthdate = sharedPreferences.getString("birthday", "");
+        String school = sharedPreferences.getString("school", "");
+        String faculty = sharedPreferences.getString("faculty", "");
+        String degree = sharedPreferences.getString("degree", "");
+        String imageEncoded = sharedPreferences.getString("avatar_image", null);
+        infoViewModel.setFullName(fullName);
+        infoViewModel.setStudentId(studentId);
+        infoViewModel.setBirthdate(birthdate);
+        infoViewModel.setSchool(school);
+        infoViewModel.setFaculty(faculty);
+        infoViewModel.setDegree(degree);
+        infoViewModel.setAvatar(imageEncoded);
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        loadUserInfo();
     }
 
     private void observeViewModel() {
