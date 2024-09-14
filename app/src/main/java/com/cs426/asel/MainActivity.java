@@ -38,6 +38,8 @@ import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
+import androidx.core.app.NotificationCompat;
+import androidx.core.app.NotificationManagerCompat;
 import androidx.core.content.ContextCompat;
 import androidx.appcompat.app.AppCompatDelegate;
 import androidx.fragment.app.Fragment;
@@ -249,6 +251,40 @@ public class MainActivity extends AppCompatActivity {
             AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM);
         }
     }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+
+        if (requestCode == REQUEST_CODE_POST_NOTIFICATION) {
+            // Check if the permission request was granted
+            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                Toast.makeText(this, "Notification permission granted", Toast.LENGTH_SHORT).show();
+                // Permission is granted, proceed with showing the notification
+                Log.d("MainActivity", "Attempting to noti");
+                NotificationCompat.Builder builder = new NotificationCompat.Builder(this, "event_channel_id")
+                        .setSmallIcon(android.R.drawable.ic_dialog_info) // Make sure you use a valid icon
+                        .setContentTitle("Test Notification")
+                        .setContentText("This is a test notification")
+                        .setPriority(NotificationCompat.PRIORITY_HIGH)
+                        .setAutoCancel(true);
+
+                NotificationManagerCompat notificationManager = NotificationManagerCompat.from(this);
+
+                // Ensure that you can post the notification
+                if (ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED) {
+                    notificationManager.notify(1, builder.build());
+                } else {
+                    // Log or notify the user that the permission is still not available
+                    Toast.makeText(this, "Notification permission not granted", Toast.LENGTH_SHORT).show();
+                }
+            } else {
+                // Permission was denied, handle this case
+                Toast.makeText(this, "Notification permission denied", Toast.LENGTH_SHORT).show();
+            }
+        }
+    }
+
 
     public interface PermissionCallback {
         void onPermissionResult(boolean isGranted);

@@ -24,7 +24,11 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.ASEL"
         tools:targetApi="tiramisu">
-        <receiver android:name=".NotificationReceiver" />
+        <receiver
+            android:name=".backend.NotificationReceiver"
+            android:exported="true"
+            android:enabled="true">
+        </receiver>
         <activity
             android:name=".MainActivity"
             android:configChanges="orientation|screenSize|keyboardHidden"

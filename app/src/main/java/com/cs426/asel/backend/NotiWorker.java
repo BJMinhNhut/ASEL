@@ -43,7 +43,7 @@ public class NotiWorker extends Worker implements GmailServices.EmailCallback{
         }
         Calendar currentTime = Calendar.getInstance();
         currentTime.add(Calendar.MINUTE, 1);
-        Notification notification = new Notification("New Emails", newMailCount + " emails for " + Utility.getUserEmail(appContext), currentTime, Notification.REPEAT_NONE, 0);
+        Notification notification = new Notification("New Emails", newMailCount + " emails for " + Utility.getUserEmail(appContext), currentTime, Notification.REPEAT_NONE, currentTime);
         Utility.scheduleNotification(appContext, -1, notification);
     }
 

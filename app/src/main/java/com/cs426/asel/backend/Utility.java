@@ -7,6 +7,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Build;
+import android.util.Log;
 
 import androidx.work.OneTimeWorkRequest;
 import androidx.work.PeriodicWorkRequest;
@@ -18,6 +19,7 @@ import com.cs426.asel.backend.NotificationReceiver;
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
 
+import java.sql.Date;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
@@ -71,9 +73,13 @@ public final class Utility {
         PendingIntent pendingIntent = PendingIntent.getBroadcast(context, eventId, intent, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
 
         Calendar eventDateTime = noti.getDateTime();
-        int minuteBefore = noti.getMinuteBefore();
+        Calendar reminderTime = noti.getReminderTime();
 
-        long triggerTime = eventDateTime.getTimeInMillis() - (minuteBefore * 60 * 1000);
+        long triggerTime = reminderTime.getTimeInMillis();
+        Log.d("Utility", "year month day: " + eventDateTime.get(Calendar.YEAR) + " " + eventDateTime.get(Calendar.MONTH) + " " + eventDateTime.get(Calendar.DAY_OF_MONTH));
+        Log.d("Utility", "hour minute second: " + eventDateTime.get(Calendar.HOUR_OF_DAY) + " " + eventDateTime.get(Calendar.MINUTE) + " " + eventDateTime.get(Calendar.SECOND));
+        Log.d("Utility", "year month day: " + reminderTime.get(Calendar.YEAR) + " " + reminderTime.get(Calendar.MONTH) + " " + reminderTime.get(Calendar.DAY_OF_MONTH));
+        Log.d("Utility", "hour minute second: " + reminderTime.get(Calendar.HOUR_OF_DAY) + " " + reminderTime.get(Calendar.MINUTE) + " " +reminderTime.get(Calendar.SECOND));
 
         // Set up the AlarmManager to trigger at the specified time
         AlarmManager alarmManager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
@@ -84,12 +90,6 @@ public final class Utility {
         } else {
             alarmManager.setExact(AlarmManager.RTC_WAKEUP, triggerTime, pendingIntent);
         }
-
-        // Optionally save the notification information using SharedPreferences for future reference
-        SharedPreferences prefs = context.getSharedPreferences("notifications", MODE_PRIVATE);
-        SharedPreferences.Editor editor = prefs.edit();
-        editor.putInt("event_" + eventId, eventId);
-        editor.apply();
     }
 
     // Method to cancel a scheduled notification
@@ -99,12 +99,6 @@ public final class Utility {
 
         AlarmManager alarmManager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
         alarmManager.cancel(pendingIntent);
-
-        // Also remove the saved notification data
-        SharedPreferences prefs = context.getSharedPreferences("notifications", MODE_PRIVATE);
-        SharedPreferences.Editor editor = prefs.edit();
-        editor.remove("event_" + eventId);
-        editor.apply();
     }
 
     // Method to update a scheduled notification
@@ -144,5 +138,11 @@ public final class Utility {
         // Cancel all work by the unique tag
         WorkManager.getInstance(context).cancelAllWorkByTag(PERIODIC_WORK_TAG);
         WorkManager.getInstance(context).cancelAllWorkByTag(IMMEDIATE_WORK_TAG);
+    }
+
+    public static Calendar toCalendar(Instant datetime) {
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTime(Date.from(datetime));
+        return calendar;
     }
 }

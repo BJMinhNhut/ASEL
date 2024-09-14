@@ -6,6 +6,9 @@ import android.app.NotificationManager;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.util.Log;
+import android.widget.Toast;
+
 import androidx.core.app.NotificationCompat;
 import androidx.core.app.NotificationManagerCompat;
 
@@ -17,6 +20,8 @@ public class NotificationReceiver extends BroadcastReceiver {
 
     @Override
     public void onReceive(Context context, Intent intent) {
+        Log.d("NotificationReceiver", "Notification received");
+        Toast.makeText(context, "Notification received", Toast.LENGTH_SHORT).show();
         Notification noti = intent.getParcelableExtra("notification");
         int eventId = intent.getIntExtra("event_id", -1);
         if (noti == null) {
@@ -26,7 +31,7 @@ public class NotificationReceiver extends BroadcastReceiver {
         String eventContent = noti.getContent();
         Calendar eventDateTime = noti.getDateTime();
         int repeatMode = noti.getRepeatMode();
-        int minuteBefore = noti.getMinuteBefore();
+        Calendar reminderTime = noti.getReminderTime();
 
         // Build and display the notification
         NotificationCompat.Builder builder = new NotificationCompat.Builder(context, "event_channel_id")
@@ -43,11 +48,13 @@ public class NotificationReceiver extends BroadcastReceiver {
         }
 
         // Reschedule the notification for the next day (or any interval you choose)
-        Calendar nextTriggerTime = Calendar.getInstance();
+        Calendar nextScheduledTime = eventDateTime;
+        Calendar nextTriggerTime = reminderTime;
         if (repeatMode != Notification.REPEAT_NONE) {
+            nextScheduledTime.add(Notification.getRepeatInterval(repeatMode), 1);
             nextTriggerTime.add(Notification.getRepeatInterval(repeatMode), 1);
 
-            Notification newNoti = new Notification(eventTitle, eventContent, nextTriggerTime, repeatMode, minuteBefore);
+            Notification newNoti = new Notification(eventTitle, eventContent, nextScheduledTime, repeatMode, nextTriggerTime);
 
             // Call scheduleNotification to reschedule for the next day
             scheduleNotification(context, eventId, newNoti);

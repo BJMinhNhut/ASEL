@@ -12,7 +12,7 @@ public class Notification implements Parcelable {
     private String content;
     private Calendar dateTime;
     private int repeatMode;
-    private int minuteBefore;
+    private Calendar reminderTime;
 
     public static final int REPEAT_NONE = 0;
     public static final int REPEAT_DAILY = 1;
@@ -20,13 +20,13 @@ public class Notification implements Parcelable {
     public static final int REPEAT_MONTHLY = 3;
     public static final int REPEAT_ANNUALLY = 4;
 
-    public Notification(String title, String content, Calendar dateTime, int repeatMode, int minuteBefore) {
+    public Notification(String title, String content, Calendar dateTime, int repeatMode, Calendar reminderTime) {
         this.title = title;
         this.content = content;
         this.dateTime = dateTime;
         this.repeatMode = repeatMode;
         assert(repeatMode >= REPEAT_NONE && repeatMode <= REPEAT_ANNUALLY);
-        this.minuteBefore = minuteBefore;
+        this.reminderTime = reminderTime;
     }
 
     protected Notification(Parcel in) {
@@ -34,7 +34,7 @@ public class Notification implements Parcelable {
         content = in.readString();
         dateTime = (Calendar) in.readSerializable(); // Calendar is Serializable
         repeatMode = in.readInt();
-        minuteBefore = in.readInt();
+        reminderTime = (Calendar) in.readSerializable();
     }
 
     public static final Creator<Notification> CREATOR = new Creator<Notification>() {
@@ -65,8 +65,8 @@ public class Notification implements Parcelable {
         return repeatMode;
     }
 
-    public int getMinuteBefore() {
-        return minuteBefore;
+    public Calendar getReminderTime() {
+        return reminderTime;
     }
 
     @Override
@@ -80,7 +80,7 @@ public class Notification implements Parcelable {
         parcel.writeString(content);
         parcel.writeSerializable(dateTime); // Calendar is Serializable
         parcel.writeInt(repeatMode);
-        parcel.writeInt(minuteBefore);
+        parcel.writeSerializable(reminderTime);
     }
 
     public static int getRepeatInterval(int repeatMode) {
@@ -95,6 +95,21 @@ public class Notification implements Parcelable {
                 return Calendar.YEAR;
             default:
                 return 0;
+        }
+    }
+
+    public static int stringToRepeatMode(String repeatModeString) {
+        switch (repeatModeString) {
+            case "Daily":
+                return REPEAT_DAILY;
+            case "Weekly":
+                return REPEAT_WEEKLY;
+            case "Monthly":
+                return REPEAT_MONTHLY;
+            case "Annually":
+                return REPEAT_ANNUALLY;
+            default:
+                return REPEAT_NONE;
         }
     }
 }
