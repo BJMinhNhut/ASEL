@@ -1,5 +1,7 @@
 package com.cs426.asel.backend;
 
+import static java.lang.Math.min;
+
 import android.content.Context;
 import android.content.Intent;
 import android.util.Log;
@@ -36,13 +38,15 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
 public class GmailServices {
-    private Context context;
+    private final Context context;
     private ExecutorService executorService;
-    private EmailCallback emailCallback;
+    private final EmailCallback emailCallback;
+    private String mCurrentPageToken;
 
     public GmailServices(Context context, EmailCallback emailCallback) {
         this.context = context;
         this.emailCallback = emailCallback;
+        mCurrentPageToken = null;
     }
 
     private Gmail getGmailService(GoogleSignInAccount account) {
@@ -56,6 +60,54 @@ public class GmailServices {
         return new Gmail.Builder(new NetHttpTransport(), GsonFactory.getDefaultInstance(), credential)
                 .setApplicationName("ASEL")
                 .build();
+    }
+
+    public void fetchNextIdBatch(long maxSize) {
+        Log.d("GmailServices", "Start fetching next batch of emails");
+        executorService = Executors.newSingleThreadExecutor();
+        executorService.submit(() -> {
+            List<Message> emailIDs = new ArrayList<>();
+            try {
+                GoogleSignInAccount account = GoogleSignIn.getLastSignedInAccount(context);
+                if (account == null) {
+                    Log.d("GmailServices", "Account is null. Skipping.");
+                    return;
+                }
+
+                Gmail gmailService = getGmailService(account);
+                String user = "me";
+
+                do {
+                    assert gmailService != null;
+                    ListMessagesResponse messagesResponse = gmailService.users().messages().list(user)
+                            .setMaxResults(min(maxSize, 500))  // You can increase this value up to 500
+                            .setPageToken(mCurrentPageToken)
+                            .execute();
+
+                    List<Message> messageList = messagesResponse.getMessages();
+                    if (messageList != null) {
+                        emailIDs.addAll(messageList);
+                    }
+
+                    // Get the nextPageToken to continue fetching emails on later calls
+                    mCurrentPageToken = messagesResponse.getNextPageToken();
+                    Log.d("GmailServices", "Fetched " + emailIDs.size() + " emails so far.");
+                } while (mCurrentPageToken != null && emailIDs.size() < maxSize);
+
+                Log.d("GmailServices", "Fetched " + emailIDs.size() + " emails in total.");
+                emailCallback.onEmailIDsFetched(emailIDs);
+
+            } catch (GoogleJsonResponseException e) {
+                Log.e("GmailServices", "Google API error: " + e.getMessage(), e);
+                emailCallback.onEmailIDsFetched(null);
+            } catch (IOException e) {
+                Log.e("GmailServices", "Network error: " + e.getMessage(), e);
+                emailCallback.onEmailIDsFetched(null);
+            } catch (Exception e) {
+                Log.e("GmailServices", "Unknown error occurred", e);
+                emailCallback.onEmailIDsFetched(null);
+            }
+        });
     }
 
     public void fetchAllEmailIDs() {

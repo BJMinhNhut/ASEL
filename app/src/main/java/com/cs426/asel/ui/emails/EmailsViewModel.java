@@ -45,13 +45,13 @@ import java.util.concurrent.TimeUnit;
 public class EmailsViewModel extends ViewModel implements GmailServices.EmailCallback {
     private static final int MAX_RETRY_COUNT = 5;
     private static final int RETRY_DELAY_MS = 1000;
-    private static final int EMAIL_PER_FETCH = 15;
-
-    private static int currentIndex = 0;
+    private static final int EMAIL_PER_FETCH = 7; // for fetching content
+    private static final int ID_PER_FETCH = 10; // for fetching IDs
+    private int currentIndex = 0;
 
     public MutableLiveData<Boolean> isLoading = new MutableLiveData<>(true);
 
-    private GmailServices gmailServices;
+    private final GmailServices gmailServices;
     private Map<String, Message> messageCache;
     private Map<ListenableFuture<GenerateContentResponse>, Integer> retryCounts;
 
@@ -71,6 +71,10 @@ public class EmailsViewModel extends ViewModel implements GmailServices.EmailCal
 
     public void fetchAllEmailsID() {
         gmailServices.fetchAllEmailIDs();
+    }
+
+    public void fetchNextIdBatch() {
+        gmailServices.fetchNextIdBatch(ID_PER_FETCH);
     }
 
     private List<String> getUnfetchedID() {
@@ -120,12 +124,20 @@ public class EmailsViewModel extends ViewModel implements GmailServices.EmailCal
         if (emailIDs != null) {
             reset();
             for (Message message: emailIDs) {
-                String id = message.getId();
                 storeID(message.getId());
             }
 
-            fetchAllEmailsContent(); // Step 2: Fetch all emails content after IDs are fetched
+            // Step 2: if no new mail then fetch id again, otherwise fetch all emails content after IDs are fetched
+            List<String> unfetchedID = getUnfetchedID();
+            if (unfetchedID.isEmpty()) {
+                Log.w("EmailsViewModel", "No new emails found. Fetching more IDs.");
+                loadMoreEmails();
+            } else {
+                Log.d("EmailsViewModel", "Fetching email content for " + unfetchedID.size() + " emails.");
+                fetchEmailContent(unfetchedID);
+            }
         }
+        Log.d("EmailsViewModel", "Message cache size:" + messageCache.size());
     }
 
     @Override
@@ -136,14 +148,21 @@ public class EmailsViewModel extends ViewModel implements GmailServices.EmailCal
     }
 
     public void loadMoreEmails() {
-        if (isLoading.getValue()) {
+        if (Boolean.TRUE.equals(isLoading.getValue())) {
             return;
         }
         isLoading.postValue(true);
         ExecutorService executor = Executors.newSingleThreadExecutor();
         executor.submit(() -> {
-            processEmails();
+            if (needMoreIds()) {
+                Log.d("EmailsViewModel", "All emails are processed. Try to fetch more");
+                fetchNextIdBatch();
+            } else processEmails();
         });
+    }
+
+    private boolean needMoreIds() {
+        return currentIndex + ID_PER_FETCH > messageCache.size();
     }
 
     private void processEmails() {
@@ -259,6 +278,7 @@ public class EmailsViewModel extends ViewModel implements GmailServices.EmailCal
     public void reset() {
         if (messageCache != null) {
             messageCache.clear();
+            currentIndex = 0;
         } else {
             messageCache = new LinkedHashMap<>();
         }
