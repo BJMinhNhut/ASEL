@@ -38,6 +38,7 @@ import com.cs426.asel.backend.Utility;
 import com.cs426.asel.databinding.FragmentHomeBinding;
 import com.cs426.asel.ui.account.InfoViewModel;
 import com.cs426.asel.ui.account.UpdateInfoFragment;
+import com.cs426.asel.ui.emails.EmailsFragment;
 import com.cs426.asel.ui.emails.EmailsViewModel;
 import com.google.api.services.gmail.Gmail;
 import com.google.zxing.BarcodeFormat;
@@ -73,7 +74,9 @@ public class HomeFragment extends Fragment {
         mailsAdapter = new TitleAdapter(new ArrayList<>(), new ArrayList<>());
 
         binding.events.setAdapter(eventsAdapter);
+        binding.events.addItemDecoration(new EmailsFragment.SpaceItemDecoration(5));
         binding.mails.setAdapter(mailsAdapter);
+        binding.mails.addItemDecoration(new EmailsFragment.SpaceItemDecoration(5));
 
         binding.mails.setLayoutManager(new LinearLayoutManager(getContext()));
         binding.events.setLayoutManager(new LinearLayoutManager(getContext()));
