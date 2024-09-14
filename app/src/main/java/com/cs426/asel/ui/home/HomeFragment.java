@@ -82,6 +82,12 @@ public class HomeFragment extends Fragment {
         infoViewModel.setAvatar(imageEncoded);
     }
 
+    @Override
+    public void onResume() {
+        super.onResume();
+        loadUserInfo();
+    }
+
     private void observeViewModel() {
         infoViewModel.getFullName().observe(getViewLifecycleOwner(), fullName -> binding.fullname.setText(fullName));
         infoViewModel.getStudentId().observe(getViewLifecycleOwner(), studentId -> {
