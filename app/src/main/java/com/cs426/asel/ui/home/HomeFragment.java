@@ -175,14 +175,18 @@ public class HomeFragment extends Fragment {
         // Insert on going and upcoming events into eventList
         for (int i = 0; i < published.getSize(); i++) {
             Event event = published.getEvent(i);
+            Instant startTime = event.getStartTime();
 
-            if (event.getStartTime().isAfter(Instant.now())) {
+            if (startTime == null)
+                continue;
+
+            if (startTime.isAfter(Instant.now())) {
                 eventList.addEvent(published.getEvent(i));
                 continue;
             }
 
             int duration = event.getDuration();
-            if (duration > 0 && event.getStartTime().plusSeconds(duration * 60).isAfter(Instant.now())) {
+            if (duration > 0 && startTime.plusSeconds(duration * 60).isAfter(Instant.now())) {
                 eventList.addEvent(published.getEvent(i));
             }
         }
